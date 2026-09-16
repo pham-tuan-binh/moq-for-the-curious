@@ -1,0 +1,13 @@
+/*-- scss:defaults --*/
+$body-bg: #faf8f3;
+$body-color: #303c38;
+$link-color: #276453;
+$sidebar-bg: #f2f0e8;
+$sidebar-fg: #515d56;
+$sidebar-hl: #205c49;
+$border-color: #dedfd5;
+$code-color: #765237;
+$code-bg: #efede5;
+$font-family-sans-serif: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/*-- scss:rules --*/
+body { --book-muted: #67716a; --book-surface: #f2f0e8; --book-accent: #276453; }

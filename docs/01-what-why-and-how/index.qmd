@@ -98,7 +98,7 @@ Start with the next chapter if QUIC is new to you. Continue through tracks, subs
 
 We assume you know what a client and a server are. You do not need to know how video compression works or have read a networking RFC. Examples use a fictional live lecture throughout; numbers and names in those examples are teaching choices, not protocol defaults.
 
-This is an independently written guide inspired by the chapter-based, concepts-first approach of WebRTC for the Curious. Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.
+This guide is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/). Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.
 
 ## Sources and further reading {.unnumbered #sources}
 

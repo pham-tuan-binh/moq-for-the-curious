@@ -14,12 +14,10 @@ A fictional lecture runs through the examples. When a new term appears, we expla
 
 ## A protocol still taking shape
 
-This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. It distinguishes that transport specification from the **moq.dev** implementation, **moq-lite**, and the **hang** media format. Draft-specific details and implementation examples are labeled throughout.
+This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. Implementation examples are identified separately from the transport specification. Draft-specific details and implementation examples are labeled throughout.
 
 The research date is **September 16, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
 
-## About the approach
+## About this project
 
-The approachable, concepts-first prose is inspired by [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/). The explanations, examples, and diagrams are original. The familiar online textbook presentation is inspired by [RLHF Book](https://rlhfbook.com/), and this site is built using Quarto’s standard book framework.
-
-This is an independent guide. It is not affiliated with or endorsed by the IETF, moq.dev, WebRTC for the Curious, or RLHF Book.
+MoQ for the Curious is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/), with original explanations, examples, and diagrams for Media over QUIC.

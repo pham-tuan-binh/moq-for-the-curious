@@ -41,11 +41,11 @@ book:
 format:
   html:
     theme:
-      light: cosmo
-      dark: darkly
+      light: [cosmo, assets/paper-light.scss]
+      dark: [darkly, assets/paper-dark.scss]
     grid:
-      body-width: 760px
-      sidebar-width: 240px
+      body-width: 720px
+      sidebar-width: 260px
       margin-width: 200px
     css: assets/book.css
     toc: true

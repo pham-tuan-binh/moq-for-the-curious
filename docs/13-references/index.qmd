@@ -58,7 +58,7 @@ Research for this edition was checked on **September 16, 2026**. The guide empha
 
 This guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.
 
-[WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/) inspired the concepts-first chapter structure and accessible tone. This site uses original prose and diagrams and is not an official extension of that book.
+This book is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/), with original explanations, examples, and diagrams for Media over QUIC.
 
 ## Keeping an edition accurate
 

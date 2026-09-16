@@ -24,17 +24,17 @@
     "href": "index.html#a-protocol-still-taking-shape",
     "title": "MoQ for the Curious",
     "section": "A protocol still taking shape",
-    "text": "A protocol still taking shape\nThis edition uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It distinguishes that transport specification from the moq.dev implementation, moq-lite, and the hang media format. Draft-specific details and implementation examples are labeled throughout.\nThe research date is September 16, 2026. Each chapter links to primary sources; the references explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.",
+    "text": "A protocol still taking shape\nThis edition uses MOQT draft-21, published September 8, 2026, as its IETF baseline. Implementation examples are identified separately from the transport specification. Draft-specific details and implementation examples are labeled throughout.\nThe research date is September 16, 2026. Each chapter links to primary sources; the references explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.",
     "crumbs": [
       "About this book"
     ]
   },
   {
-    "objectID": "index.html#about-the-approach",
-    "href": "index.html#about-the-approach",
+    "objectID": "index.html#about-this-project",
+    "href": "index.html#about-this-project",
     "title": "MoQ for the Curious",
-    "section": "About the approach",
-    "text": "About the approach\nThe approachable, concepts-first prose is inspired by WebRTC for the Curious. The explanations, examples, and diagrams are original. The familiar online textbook presentation is inspired by RLHF Book, and this site is built using Quarto’s standard book framework.\nThis is an independent guide. It is not affiliated with or endorsed by the IETF, moq.dev, WebRTC for the Curious, or RLHF Book.",
+    "section": "About this project",
+    "text": "About this project\nMoQ for the Curious is based on WebRTC for the Curious, with original explanations, examples, and diagrams for Media over QUIC.",
     "crumbs": [
       "About this book"
     ]
@@ -121,7 +121,7 @@
     "href": "docs/01-what-why-and-how/index.html#how-to-read-this-book",
     "title": "1  What, Why and How",
     "section": "How to read this book",
-    "text": "How to read this book\nStart with the next chapter if QUIC is new to you. Continue through tracks, subscriptions, relays, and media to build a picture of the whole system. The later chapters cover security, a practical first experiment, and debugging. The glossary is there whenever an unfamiliar word interrupts your reading.\nWe assume you know what a client and a server are. You do not need to know how video compression works or have read a networking RFC. Examples use a fictional live lecture throughout; numbers and names in those examples are teaching choices, not protocol defaults.\nThis is an independently written guide inspired by the chapter-based, concepts-first approach of WebRTC for the Curious. Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.",
+    "text": "How to read this book\nStart with the next chapter if QUIC is new to you. Continue through tracks, subscriptions, relays, and media to build a picture of the whole system. The later chapters cover security, a practical first experiment, and debugging. The glossary is there whenever an unfamiliar word interrupts your reading.\nWe assume you know what a client and a server are. You do not need to know how video compression works or have read a networking RFC. Examples use a fictional live lecture throughout; numbers and names in those examples are teaching choices, not protocol defaults.\nThis guide is based on WebRTC for the Curious. Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.",
     "crumbs": [
       "The fundamentals",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
@@ -935,7 +935,7 @@
     "href": "docs/11-faq/index.html#can-i-use-this-book-as-a-specification",
     "title": "11  Frequently Asked Questions",
     "section": "Can I use this book as a specification?",
-    "text": "Can I use this book as a specification?\nUse it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.\nThe prose, diagrams, and examples were written independently for this guide. WebRTC for the Curious inspired the accessible book structure. Neither its authors, moq.dev, nor the IETF endorse this project.",
+    "text": "Can I use this book as a specification?\nUse it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.\nThe prose, diagrams, and examples were written independently for this guide. The book is based on WebRTC for the Curious. Neither its authors, moq.dev, nor the IETF endorse this project.",
     "crumbs": [
       "Keep exploring",
       "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
@@ -1155,7 +1155,7 @@
     "href": "docs/13-references/index.html#editorial-approach-and-limitations",
     "title": "13  References and Reading",
     "section": "Editorial approach and limitations",
-    "text": "Editorial approach and limitations\nResearch for this edition was checked on September 16, 2026. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.\nThis guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.\nWebRTC for the Curious inspired the concepts-first chapter structure and accessible tone. This site uses original prose and diagrams and is not an official extension of that book.",
+    "text": "Editorial approach and limitations\nResearch for this edition was checked on September 16, 2026. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.\nThis guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.\nThis book is based on WebRTC for the Curious, with original explanations, examples, and diagrams for Media over QUIC.",
     "crumbs": [
       "Keep exploring",
       "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"

@@ -54,7 +54,7 @@ No. moq-lite uses a simpler model, and the moq.dev stack implements compatibilit
 
 Use it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.
 
-The prose, diagrams, and examples were written independently for this guide. WebRTC for the Curious inspired the accessible book structure. Neither its authors, moq.dev, nor the IETF endorse this project.
+The prose, diagrams, and examples were written independently for this guide. The book is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/). Neither its authors, moq.dev, nor the IETF endorse this project.
 
 ## Sources and further reading {.unnumbered #sources}
 
