@@ -20,6 +20,8 @@ Check the exact name bytes when working close to MOQT. Similar-looking text is n
 
 Look for subscription acceptance or a specific rejection. Confirm the publisher is producing the requested track and the relay has an upstream source. Discovery of a publication is not proof that every expected track is available.
 
+Keep the scope of an error with its code. In MOQT draft-21, a session error closes the protocol relationship, a `REQUEST_ERROR` rejects a particular request, and a stream reset ends that stream. For example, a `DELIVERY_TIMEOUT` stream reset does not by itself say that every other track stopped. A numeric code without its message or stream context is ambiguous because the error tables are separate. See [draft-21 §12](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-12); moq-lite implementations may expose different errors.
+
 Check filters, cancellation, and request lifetime. An accidentally closed subscription can look like a stalled network. If objects are requested from history, verify they remain retained; live availability does not imply old-object availability.
 
 ## Objects arrive, but media does not play

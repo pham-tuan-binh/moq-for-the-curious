@@ -492,9 +492,50 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="start-with-the-local-demo" class="level2">
 <h2 class="anchored" data-anchor-id="start-with-the-local-demo">Start with the local demo</h2>
-<p>With the project’s documented Nix setup available, its quick-start command opens a development environment and starts the demo:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> develop <span class="at">-c</span> just</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This walkthrough follows the upstream quick start’s recommended <a href="https://doc.moq.dev/setup/">Nix route, with flakes enabled</a>. After installing that prerequisite, obtain the project and record the checkout you are using:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/moq-dev/moq</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> moq</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rev-parse HEAD</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> develop <span class="at">--command</span> just</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.</p>
+<p>Save the revision printed by <code>git rev-parse HEAD</code> with your notes. The command opens the development environment and starts the demo. We are following the upstream recipe, not claiming this book has tested every platform or checkout.</p>
+<p>For more detailed Rust logging, stop the demo and rerun it with the project’s <a href="https://doc.moq.dev/setup/dev">documented logging setting</a>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUST_LOG</span><span class="op">=</span>debug <span class="ex">nix</span> develop <span class="at">--command</span> just</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The exact log messages depend on the checkout. Use the player UI and available logs to fill in this notebook; write “not observed” when a value is not exposed rather than guessing.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Observation</th>
+<th>Your result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Project revision</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Actual transport selected</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Broadcast/publication name</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Selected media rendition</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Codec, if exposed</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Test video visible and audio audible</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <p>Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”</p>
 </section>
 <section id="trace-one-frame-conceptually" class="level2">

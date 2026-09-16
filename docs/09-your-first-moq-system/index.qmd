@@ -14,13 +14,35 @@ The commands below are documented project recipes reviewed for this edition. The
 
 ## Start with the local demo
 
-With the project’s documented Nix setup available, its quick-start command opens a development environment and starts the demo:
+This walkthrough follows the upstream quick start’s recommended [Nix route, with flakes enabled](https://doc.moq.dev/setup/). After installing that prerequisite, obtain the project and record the checkout you are using:
 
 ```sh
-nix develop -c just
+git clone https://github.com/moq-dev/moq
+cd moq
+git rev-parse HEAD
+nix develop --command just
 ```
 
 The documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.
+
+Save the revision printed by `git rev-parse HEAD` with your notes. The command opens the development environment and starts the demo. We are following the upstream recipe, not claiming this book has tested every platform or checkout.
+
+For more detailed Rust logging, stop the demo and rerun it with the project's [documented logging setting](https://doc.moq.dev/setup/dev):
+
+```sh
+RUST_LOG=debug nix develop --command just
+```
+
+The exact log messages depend on the checkout. Use the player UI and available logs to fill in this notebook; write “not observed” when a value is not exposed rather than guessing.
+
+| Observation | Your result |
+| --- | --- |
+| Project revision | |
+| Actual transport selected | |
+| Broadcast/publication name | |
+| Selected media rendition | |
+| Codec, if exposed | |
+| Test video visible and audio audible | |
 
 Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”
 

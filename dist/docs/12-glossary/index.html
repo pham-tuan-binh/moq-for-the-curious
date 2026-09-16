@@ -422,6 +422,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#keyframe-and-rendition" id="toc-keyframe-and-rendition" class="nav-link" data-scroll-target="#keyframe-and-rendition">Keyframe and rendition</a></li>
   <li><a href="#latency-jitter-and-congestion" id="toc-latency-jitter-and-congestion" class="nav-link" data-scroll-target="#latency-jitter-and-congestion">Latency, jitter, and congestion</a></li>
   <li><a href="#moqt-moq-lite-and-hang" id="toc-moqt-moq-lite-and-hang" class="nav-link" data-scroll-target="#moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</a></li>
+  <li><a href="#codec-container-and-timestamp" id="toc-codec-container-and-timestamp" class="nav-link" data-scroll-target="#codec-container-and-timestamp">Codec, container, and timestamp</a></li>
+  <li><a href="#authentication-and-authorization" id="toc-authentication-and-authorization" class="nav-link" data-scroll-target="#authentication-and-authorization">Authentication and authorization</a></li>
   <li><a href="#sources" id="toc-sources" class="nav-link" data-scroll-target="#sources">Sources and further reading</a></li>
   </ul>
 </nav>
@@ -456,50 +458,73 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="broadcast-and-catalog">Broadcast and catalog</h2>
 <p><strong>Broadcast:</strong> in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.</p>
 <p><strong>Catalog:</strong> media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.</p>
+<p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
 </section>
 <section id="connection-and-session" class="level2">
 <h2 class="anchored" data-anchor-id="connection-and-session">Connection and session</h2>
 <p><strong>Connection:</strong> the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.</p>
 <p><strong>Session:</strong> the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.</p>
+<p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
 </section>
 <section id="object-group-and-subgroup" class="level2">
 <h2 class="anchored" data-anchor-id="object-group-and-subgroup">Object, group, and subgroup</h2>
 <p><strong>Object:</strong> an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.</p>
 <p><strong>Group:</strong> a collection of objects providing a join point within a track. It should be independently useful; the application format decides how that maps to media dependencies.</p>
-<p><strong>Subgroup:</strong> ordered objects within one group, normally sharing a transport stream. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.</p>
+<p><strong>Subgroup:</strong> an ordered subset of objects within one group. Subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.</p>
+<p>Read more in <a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups, and Objects</a>.</p>
 </section>
 <section id="track-and-namespace" class="level2">
 <h2 class="anchored" data-anchor-id="track-and-namespace">Track and namespace</h2>
 <p><strong>Track:</strong> the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.</p>
 <p><strong>Namespace:</strong> the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.</p>
+<p>Read more in <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a>.</p>
 </section>
 <section id="publisher-subscriber-and-relay" class="level2">
 <h2 class="anchored" data-anchor-id="publisher-subscriber-and-relay">Publisher, subscriber, and relay</h2>
 <p><strong>Publisher:</strong> an endpoint that supplies requested objects. An original publisher first introduces the content.</p>
 <p><strong>Subscriber:</strong> an endpoint requesting and receiving a track.</p>
 <p><strong>Relay:</strong> an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.</p>
+<p>Read more in <a href="../../docs/05-relays-and-distribution/index.html">Relays and Distribution</a>.</p>
 </section>
 <section id="stream-and-datagram" class="level2">
 <h2 class="anchored" data-anchor-id="stream-and-datagram">Stream and datagram</h2>
 <p><strong>Stream:</strong> here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.</p>
 <p><strong>Datagram:</strong> an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.</p>
+<p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
 </section>
 <section id="keyframe-and-rendition" class="level2">
 <h2 class="anchored" data-anchor-id="keyframe-and-rendition">Keyframe and rendition</h2>
 <p><strong>Keyframe:</strong> in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.</p>
 <p><strong>Rendition:</strong> an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.</p>
+<p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
 </section>
 <section id="latency-jitter-and-congestion" class="level2">
 <h2 class="anchored" data-anchor-id="latency-jitter-and-congestion">Latency, jitter, and congestion</h2>
 <p><strong>Latency:</strong> delay between specified events. Always ask which events: packet send and receipt, capture and display, or another pair.</p>
 <p><strong>Jitter:</strong> variation in delay. A playback buffer can absorb some variation at the cost of additional latency.</p>
 <p><strong>Congestion:</strong> a condition where demand exceeds available network capacity, causing queues or loss. Application queues can also grow when production outpaces delivery.</p>
+<p>Read more in <a href="../../docs/06-latency-and-congestion/index.html">Latency and Congestion</a>.</p>
 </section>
 <section id="moqt-moq-lite-and-hang" class="level2">
 <h2 class="anchored" data-anchor-id="moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</h2>
 <p><strong>MOQT:</strong> Media over QUIC Transport, the IETF publish/subscribe protocol described by a versioned draft in this edition.</p>
 <p><strong>moq-lite:</strong> the smaller protocol model used by the moq.dev project, with implementation-specific compatibility support.</p>
 <p><strong>hang:</strong> the moq.dev media layer providing catalog and container conventions above its generic transport model.</p>
+<p>Read more in <a href="../../docs/01-what-why-and-how/index.html">What, Why, and How</a>.</p>
+</section>
+<section id="codec-container-and-timestamp" class="level2">
+<h2 class="anchored" data-anchor-id="codec-container-and-timestamp">Codec, container, and timestamp</h2>
+<p><strong>Codec:</strong> a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.</p>
+<p><strong>Container:</strong> a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.</p>
+<p><strong>Timestamp:</strong> a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.</p>
+<p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
+</section>
+<section id="authentication-and-authorization" class="level2">
+<h2 class="anchored" data-anchor-id="authentication-and-authorization">Authentication and authorization</h2>
+<p><strong>Authentication:</strong> establishing which identity an endpoint or user has.</p>
+<p><strong>Authorization:</strong> deciding what that identity may do, such as publishing a lecture or subscribing to it.</p>
+<p><strong>End-to-end encryption:</strong> content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.</p>
+<p>Read more in <a href="../../docs/08-security-and-access/index.html">Security and Access</a>.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

@@ -8,7 +8,7 @@ Imagine watching a live lecture. You want the lecturer’s voice to arrive on ti
 
 ## Where to begin
 
-The first chapter explains what MoQ is and [how it compares with WebRTC](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc). From there, we follow a live publication through its connection, tracks, subscriptions, relays, and player. The later chapters cover a first experiment, security, and debugging.
+The first chapter explains what MoQ is and [how it compares with WebRTC](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc). From there, we follow five steps: connect, discover, request, deliver, and present. Tracks, groups, and objects give those steps a shared vocabulary. The later chapters cover security, a first experiment, and debugging.
 
 A fictional lecture runs through the examples. When a new term appears, we explain what it means and why it matters. The [glossary](docs/12-glossary/index.qmd) is here whenever a word gets in the way.
 

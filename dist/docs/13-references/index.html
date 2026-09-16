@@ -413,8 +413,10 @@ ul.task-list li input[type="checkbox"] {
    
   <ul class="collapse">
   <li><a href="#the-protocol-baseline" id="toc-the-protocol-baseline" class="nav-link active" data-scroll-target="#the-protocol-baseline">The protocol baseline</a></li>
+  <li><a href="#a-route-through-the-moqt-specification" id="toc-a-route-through-the-moqt-specification" class="nav-link" data-scroll-target="#a-route-through-the-moqt-specification">A route through the MOQT specification</a></li>
   <li><a href="#the-transport-underneath" id="toc-the-transport-underneath" class="nav-link" data-scroll-target="#the-transport-underneath">The transport underneath</a></li>
   <li><a href="#browser-interfaces" id="toc-browser-interfaces" class="nav-link" data-scroll-target="#browser-interfaces">Browser interfaces</a></li>
+  <li><a href="#the-webrtc-comparison" id="toc-the-webrtc-comparison" class="nav-link" data-scroll-target="#the-webrtc-comparison">The WebRTC comparison</a></li>
   <li><a href="#the-moq.dev-implementation" id="toc-the-moq.dev-implementation" class="nav-link" data-scroll-target="#the-moq.dev-implementation">The moq.dev implementation</a></li>
   <li><a href="#editorial-approach-and-limitations" id="toc-editorial-approach-and-limitations" class="nav-link" data-scroll-target="#editorial-approach-and-limitations">Editorial approach and limitations</a></li>
   <li><a href="#keeping-an-edition-accurate" id="toc-keeping-an-edition-accurate" class="nav-link" data-scroll-target="#keeping-an-edition-accurate">Keeping an edition accurate</a></li>
@@ -453,6 +455,49 @@ ul.task-list li input[type="checkbox"] {
 <p>The IETF baseline is <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21">Media over QUIC Transport, draft-21</a>, published September 8, 2026. Chapters link to relevant sections of that pinned version. Consult the <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/">current document status</a> for later revisions and the <a href="https://datatracker.ietf.org/wg/moq/about/">MoQ working group</a> for the broader standards effort.</p>
 <p>Read the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.</p>
 </section>
+<section id="a-route-through-the-moqt-specification" class="level2">
+<h2 class="anchored" data-anchor-id="a-route-through-the-moqt-specification">A route through the MOQT specification</h2>
+<p>Start with the question you are trying to answer. These links all refer to draft-21, so their terminology and section numbers belong to the same edition.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Question</th>
+<th>Where to read</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>What identifies a piece of content?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1">Objects (§2.1)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1">track naming (§2.4.1)</a></td>
+</tr>
+<tr class="even">
+<td>How do groups and subgroups organize it?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2">Subgroups (§2.2)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.3">groups (§2.3)</a></td>
+</tr>
+<tr class="odd">
+<td>How do I follow new content or request older objects?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1">Subscriptions (§3.1)</a>, <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2">fetch (§3.2)</a>, and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.5">joining an ongoing track (§3.5)</a></td>
+</tr>
+<tr class="even">
+<td>How are publications discovered?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4">Namespace discovery (§4)</a></td>
+</tr>
+<tr class="odd">
+<td>Which work gets sent first, and when does it stop?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1">Priorities (§5.1)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2">delivery timeouts (§5.2)</a></td>
+</tr>
+<tr class="even">
+<td>What happens when peers connect?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2">Session establishment (§6.2)</a>, <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3">initialization (§6.3)</a>, and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4">stream usage (§6.4)</a></td>
+</tr>
+<tr class="odd">
+<td>What can a relay retain and forward?</td>
+<td><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1">Caching relays (§7.1)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.7">relay object handling (§7.7)</a></td>
+</tr>
+</tbody>
+</table>
+<p>Read the explanatory sections first, then use <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9">control messages (§9)</a> when you need field layouts. The words <strong>MUST</strong>, <strong>SHOULD</strong>, and <strong>MAY</strong> express requirement levels in specifications. In particular, a recommendation is not a guarantee that every implementation will behave identically.</p>
+</section>
 <section id="the-transport-underneath" class="level2">
 <h2 class="anchored" data-anchor-id="the-transport-underneath">The transport underneath</h2>
 <p><a href="https://www.rfc-editor.org/rfc/rfc9000.html">RFC 9000</a> defines QUIC’s transport, including streams, flow control, and cancellation. <a href="https://www.rfc-editor.org/rfc/rfc9001.html">RFC 9001</a> describes its use of TLS. <a href="https://www.rfc-editor.org/rfc/rfc9002.html">RFC 9002</a> covers loss detection and congestion control.</p>
@@ -462,6 +507,12 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="browser-interfaces">Browser interfaces</h2>
 <p>The <a href="https://www.w3.org/TR/webtransport/">W3C WebTransport specification</a> describes the browser API for streams and datagrams. Its presence does not remove the need for a protocol library above it.</p>
 <p>The <a href="https://www.w3.org/TR/webcodecs/">W3C WebCodecs specification</a> describes low-level codec interfaces. It is useful for understanding decoder configuration and frame ownership. It does not define a full media player.</p>
+</section>
+<section id="the-webrtc-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="the-webrtc-comparison">The WebRTC comparison</h2>
+<p>The early comparison uses the <a href="https://www.w3.org/TR/webrtc/">W3C WebRTC specification</a> for the browser interface. The network behavior comes from IETF documents: <a href="https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4">RFC 8835, section 3.4</a> covers connection establishment with ICE and relay support, while <a href="https://www.rfc-editor.org/rfc/rfc8835.html#section-3.5">section 3.5</a> identifies the media and data transports.</p>
+<p>For media, WebRTC uses <strong>SRTP</strong>, the secure form of the Real-time Transport Protocol. Data channels use <strong>SCTP</strong>, the Stream Control Transmission Protocol, carried inside <strong>DTLS</strong>, Datagram Transport Layer Security. You do not need to learn these packet formats to understand the comparison; the distinction is that WebRTC specifies how these pieces fit together for real-time communication.</p>
+<p><a href="https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7">RFC 7667, section 3.7</a> explains selective-forwarding media servers. It supports the important point that a WebRTC conference can distribute media through a server; it need not connect every participant directly to every other participant.</p>
 </section>
 <section id="the-moq.dev-implementation" class="level2">
 <h2 class="anchored" data-anchor-id="the-moq.dev-implementation">The moq.dev implementation</h2>

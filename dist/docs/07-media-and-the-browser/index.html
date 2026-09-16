@@ -458,6 +458,8 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="a-catalog-describes-the-choices">A catalog describes the choices</h2>
 <p>In the moq.dev ecosystem, <strong>hang</strong> supplies a media catalog and frame packaging above moq-lite. The catalog describes media renditions and their decoder configuration. This lets a player discover available choices instead of guessing from track names.</p>
 <p>A lecture might offer one audio track and several video renditions. The player must select a rendition it can decode and afford to receive. “Highest resolution” is not necessarily the right initial choice on an unknown connection.</p>
+<p>For example, a video rendition’s metadata might describe H.264 pictures at 1280 × 720 pixels. The codec identifier tells the receiver which decoder it needs; the dimensions describe the encoded pictures; decoder initialization data supplies codec-specific setup. The container field tells the receiver how to separate timing information from encoded media bytes.</p>
+<p>In hang, the player first reads the <code>catalog.json</code> track, chooses a supported rendition, subscribes to its media track, parses the declared container, and passes encoded chunks to the decoder. These are <a href="https://doc.moq.dev/concept/hang">hang conventions</a>, not requirements imposed by MOQT on every application.</p>
 <p>Catalogs can change during a publication. A player needs to handle a track appearing, disappearing, or becoming unusable. Treat metadata as part of the live system rather than a permanent fact learned only at startup.</p>
 </section>
 <section id="keyframes-and-dependencies" class="level2">
@@ -470,12 +472,52 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="webcodecs-handles-codec-work">WebCodecs handles codec work</h2>
 <p>WebCodecs exposes low-level encoding and decoding interfaces. It can turn encoded chunks into decoded frames, but it does not implement a complete MoQ player. The application still needs transport, demultiplexing or parsing, buffering, synchronization, and rendering.</p>
 <p>A decoder configuration must be supported on the actual device. Detect support rather than assuming that an API being present means every codec, profile, resolution, or acceleration path is available.</p>
-<p>Decoded video frames also consume resources. Release frames when finished with them, and bound queues so that a background tab or slow renderer does not accumulate unlimited work.</p>
+<p>For video, the basic WebCodecs sequence is to check a configuration with <code>VideoDecoder.isConfigSupported()</code>, apply it with <code>configure()</code>, and submit encoded chunks with <code>decode()</code>. Decoded pictures arrive through an output callback as <code>VideoFrame</code> objects. That callback does not automatically display them: the player must schedule and render them.</p>
+<p>Call <code>VideoFrame.close()</code> when a frame is no longer needed. Keeping frames until garbage collection can retain scarce decoder resources and stall decoding. Bound the application’s queues as well: a slow renderer must not turn every incoming picture into more pending work. See the <a href="https://www.w3.org/TR/webcodecs/#videodecoder-interface">WebCodecs decoder interface</a> and <a href="https://www.w3.org/TR/webcodecs/#raw-media-memory-model">resource memory model</a>.</p>
 </section>
 <section id="timestamps-are-not-arrival-times" class="level2">
 <h2 class="anchored" data-anchor-id="timestamps-are-not-arrival-times">Timestamps are not arrival times</h2>
-<p>Packets take variable amounts of time to travel. If a player displays each frame immediately upon arrival, network jitter becomes presentation jitter. Media timestamps let it schedule content according to the intended timeline.</p>
-<p>Audio and video need a shared synchronization strategy. Their object arrival order is not enough. The player may have to buffer, wait, skip, or correct its presentation clock.</p>
+<p>Packets take variable amounts of time to travel. This variation in delivery timing is called <strong>jitter</strong>. If a player displays each frame immediately upon arrival, uneven network timing becomes uneven presentation. Media timestamps let it schedule content according to the intended timeline.</p>
+<p>Consider three frames in a simplified playback timeline. All numbers below are milliseconds; the media clock and receiver clock have different origins.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 26%">
+<col style="width: 26%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Frame</th>
+<th style="text-align: right;">Media timestamp</th>
+<th style="text-align: right;">Arrival on receiver clock</th>
+<th style="text-align: right;">Planned display on receiver clock</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">160</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">145</td>
+<td style="text-align: right;">193</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">150</td>
+<td style="text-align: right;">227</td>
+</tr>
+</tbody>
+</table>
+<p>The player chooses to display media time zero at receiver time 160. Adding each media timestamp to that anchor preserves the intended spacing, even though arrivals are uneven. The initial wait leaves room for some network variation. If B instead arrives at receiver time 205, it misses its planned display time; the player needs a late-frame policy, such as skipping it or moving playback later.</p>
+<p>This is an illustration, not a required MoQ scheduling algorithm. It also does not measure capture-to-display latency: to measure that, we would need to relate the source’s capture clock to the receiver’s clock.</p>
+<p>Audio and video need a shared synchronization strategy. For example, an audio sample and a video frame intended for media time 67 ms may arrive at different times. The player can hold the earlier one so both follow the same presentation clock. Their object arrival order is not enough. The player may have to buffer, wait, skip, or correct its presentation clock.</p>
 <p>Group and object IDs are positions in the transport model, not substitutes for media timestamps. Keep those concepts separate even when an implementation happens to relate them.</p>
 </section>
 <section id="build-around-the-whole-browser" class="level2">

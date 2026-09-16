@@ -453,6 +453,8 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="an-object-is-a-named-piece-of-data">An object is a named piece of data</h2>
 <p>An <strong>object</strong> is an addressable payload. In our lecture example, we might put one encoded video frame in one object. That is a format choice, not a universal rule: another format can package its bytes differently.</p>
 <p>In MOQT, an object’s identity includes its track namespace, track name, group ID, and object ID. Its payload is immutable. If two receivers request that identity, they must not receive different payload bytes simply because they connected at different times.</p>
+<p>Those identities apply within an agreed <strong>scope</strong>: a set of servers where the same full track name identifies the same track. They are not globally unique names across every MoQ service. In our lecture service, namespace <code>lectures / session-7</code>, track <code>video-low</code>, group <code>42</code>, object <code>3</code> identifies one particular payload. Another relay in the same scope must not serve different bytes under that identity. An unrelated service may use those same labels within its own scope. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5">MOQT draft-21 §2.5</a>.</p>
+<p>If a publisher needs to correct an object, it must give the corrected payload a new identity rather than silently replace the old bytes.</p>
 <p>This makes shared caching possible. An identity points to a particular piece of content, rather than an instruction to generate a personalized response.</p>
 </section>
 <section id="a-track-is-something-you-subscribe-to" class="level2">
@@ -464,14 +466,15 @@ ul.task-list li input[type="checkbox"] {
 <section id="groups-create-places-to-join" class="level2">
 <h2 class="anchored" data-anchor-id="groups-create-places-to-join">Groups create places to join</h2>
 <p>A new viewer should not have to receive a lecture from its beginning. A <strong>group</strong> creates a join point within a track. MOQT recommends that groups be independently useful, avoiding dependencies on objects in other groups.</p>
-<p>For a simple video format, start a group with a keyframe, followed by the frames that depend on it. A viewer can then start at that group instead of reconstructing all preceding video. Decoder configuration may still need to come from the media format’s metadata.</p>
+<p>For a simple video format, start a group with a <strong>keyframe</strong>, a picture from which decoding can restart, followed by the frames that depend on it. A viewer can then start at that group instead of reconstructing all preceding video. Decoder configuration may still need to come from the media format’s metadata.</p>
 <figure class="group-figure figure"><div class="track-label">TRACK · video / low</div><div class="groups"><div><strong>Group 41</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div><div><strong>Group 42</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div></div><figcaption>Example media mapping: each group starts with a keyframe; later frames depend on earlier frames within that group. Δ means a predicted frame.</figcaption></figure>
 <p>The diagram is one possible media mapping. A group is not automatically a second of media, and its ID is not inherently a timestamp. The format and publisher decide those relationships.</p>
 </section>
 <section id="subgroups-decide-what-shares-a-stream" class="level2">
 <h2 class="anchored" data-anchor-id="subgroups-decide-what-shares-a-stream">Subgroups decide what shares a stream</h2>
-<p>MOQT also has <strong>subgroups</strong> within a group. Objects in a subgroup are ordered by object ID and normally share a transport stream. This can express dependency and priority relationships more precisely than putting an entire group on one stream.</p>
-<p>For example, a layered codec may have a base layer and an enhancement layer. Keeping them separate lets a scheduler favor the base layer. A receiver still needs to understand the codec’s actual dependencies; putting data on a different stream does not make it independently decodable.</p>
+<p>MOQT also has <strong>subgroups</strong> within a group. Objects in a subgroup are ordered by object ID. For subscription delivery, they share a subgroup stream; fetched objects use a separate fetch-stream representation. This can express dependency and priority relationships more precisely than putting an entire group on one stream.</p>
+<p>Objects sent as datagrams do not belong to subgroups. The subgroup model describes the stream-based delivery path; a group can also contain datagram objects. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2">MOQT draft-21 §2.2</a>.</p>
+<p>For example, a layered codec may have a base layer and an enhancement layer. The base layer gives a usable picture; the enhancement layer adds detail and depends on the base. Keeping them separate lets a scheduler favor the base layer. A receiver still needs to understand the codec’s actual dependencies; putting data on a different stream does not make it independently decodable.</p>
 <p>Do not assume “one group equals one QUIC stream” for all MOQT implementations. That simpler model is useful for moq-lite, which omits MOQT subgroups.</p>
 </section>
 <section id="a-vocabulary-translation" class="level2">

@@ -10,11 +10,15 @@ The same word can have different meanings at different layers. These definitions
 
 **Catalog:** media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.
 
+Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
+
 ## Connection and session
 
 **Connection:** the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.
 
 **Session:** the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.
+
+Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
 ## Object, group, and subgroup
 
@@ -22,13 +26,17 @@ The same word can have different meanings at different layers. These definitions
 
 **Group:** a collection of objects providing a join point within a track. It should be independently useful; the application format decides how that maps to media dependencies.
 
-**Subgroup:** ordered objects within one group, normally sharing a transport stream. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
+**Subgroup:** an ordered subset of objects within one group. Subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
+
+Read more in [Tracks, Groups, and Objects](../03-tracks-groups-and-objects/index.qmd).
 
 ## Track and namespace
 
 **Track:** the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.
 
 **Namespace:** the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.
+
+Read more in [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd).
 
 ## Publisher, subscriber, and relay
 
@@ -38,17 +46,23 @@ The same word can have different meanings at different layers. These definitions
 
 **Relay:** an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.
 
+Read more in [Relays and Distribution](../05-relays-and-distribution/index.qmd).
+
 ## Stream and datagram
 
 **Stream:** here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.
 
 **Datagram:** an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.
 
+Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
+
 ## Keyframe and rendition
 
 **Keyframe:** in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.
 
 **Rendition:** an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.
+
+Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 
 ## Latency, jitter, and congestion
 
@@ -58,6 +72,8 @@ The same word can have different meanings at different layers. These definitions
 
 **Congestion:** a condition where demand exceeds available network capacity, causing queues or loss. Application queues can also grow when production outpaces delivery.
 
+Read more in [Latency and Congestion](../06-latency-and-congestion/index.qmd).
+
 ## MOQT, moq-lite, and hang
 
 **MOQT:** Media over QUIC Transport, the IETF publish/subscribe protocol described by a versioned draft in this edition.
@@ -65,6 +81,28 @@ The same word can have different meanings at different layers. These definitions
 **moq-lite:** the smaller protocol model used by the moq.dev project, with implementation-specific compatibility support.
 
 **hang:** the moq.dev media layer providing catalog and container conventions above its generic transport model.
+
+Read more in [What, Why, and How](../01-what-why-and-how/index.qmd).
+
+## Codec, container, and timestamp
+
+**Codec:** a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.
+
+**Container:** a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.
+
+**Timestamp:** a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.
+
+Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
+
+## Authentication and authorization
+
+**Authentication:** establishing which identity an endpoint or user has.
+
+**Authorization:** deciding what that identity may do, such as publishing a lecture or subscribing to it.
+
+**End-to-end encryption:** content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.
+
+Read more in [Security and Access](../08-security-and-access/index.qmd).
 
 ## Sources and further reading {.unnumbered #sources}
 

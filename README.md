@@ -30,3 +30,5 @@ Chapter directory URLs remain compatible with the original site. Quarto supplies
 Research baseline: September 16, 2026; MOQT draft-21. MOQT, moq-lite, and hang are identified separately. Upstream commands are sourced examples, not executed compatibility tests. Teaching numbers are not benchmarks. See chapter 13 for the source policy.
 
 The explanations and diagrams are original. This guide is independent of the IETF, moq.dev, WebRTC for the Curious, and RLHF Book. RLHF Book uses Pandoc with custom templates; this project uses Quarto, an established Pandoc-based book framework, rather than copying that site's templates or text.
+
+After rendering, run `python3 scripts/check-book.py` to validate chapter links, fragments, assets, and reading landmarks. Editorial review findings and their resolution are recorded in `reviews/2026-09-16.md`.

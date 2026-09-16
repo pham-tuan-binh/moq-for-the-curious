@@ -462,6 +462,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="the-track-is-found-but-objects-do-not-arrive" class="level2">
 <h2 class="anchored" data-anchor-id="the-track-is-found-but-objects-do-not-arrive">The track is found, but objects do not arrive</h2>
 <p>Look for subscription acceptance or a specific rejection. Confirm the publisher is producing the requested track and the relay has an upstream source. Discovery of a publication is not proof that every expected track is available.</p>
+<p>Keep the scope of an error with its code. In MOQT draft-21, a session error closes the protocol relationship, a <code>REQUEST_ERROR</code> rejects a particular request, and a stream reset ends that stream. For example, a <code>DELIVERY_TIMEOUT</code> stream reset does not by itself say that every other track stopped. A numeric code without its message or stream context is ambiguous because the error tables are separate. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-12">draft-21 §12</a>; moq-lite implementations may expose different errors.</p>
 <p>Check filters, cancellation, and request lifetime. An accidentally closed subscription can look like a stalled network. If objects are requested from history, verify they remain retained; live availability does not imply old-object availability.</p>
 </section>
 <section id="objects-arrive-but-media-does-not-play" class="level2">

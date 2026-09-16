@@ -10,35 +10,48 @@ Discovery answers “what is available?” Subscription answers “which of it d
 
 This is not a global search engine. A relay only exposes the namespace information available within its scope and access policy. A room roster, an invitation URL, and a searchable public directory are application features built around discovery.
 
-For our lecture, the page might carry a session identifier. The application uses it to find the publication and its media description. That description tells the player which named tracks represent audio and each video rendition.
+For our lecture, the page might carry a session identifier. The application uses it to find the publication and its media description. That description tells the player which named tracks represent audio and each video rendition—a version of the video, such as a lower-resolution one.
 
 ## Establishing a session
 
-Before exchanging application content, endpoints establish their transport and initialize the MoQ session. Exact setup, version negotiation, and request framing depend on the protocol revision and implementation.
+Endpoints establish their transport and initialize a MoQ session: the relationship in which they exchange requests and content. In MOQT draft-21, version selection belongs to transport establishment. Native QUIC uses ALPN, a handshake field that identifies the application protocol; WebTransport uses its protocol negotiation header. The selected draft identifier is `moqt-21`. See [§6.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2).
+
+Each endpoint then opens a unidirectional control stream, meaning a stream on which only that endpoint sends, and starts it with `SETUP`. These messages exchange session options and supported extensions. Requests such as `SUBSCRIBE` use separate bidirectional streams, on which both endpoints can send. Object data travels separately from those request messages.
+
+This is a logical explanation, not a requirement to wait between every step. Draft-21 permits requests and data to be sent in parallel with initialization; early arrivals may need buffering until setup completes. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
 
 Pin a client and relay to compatible versions. A transport connection that opens successfully does not prove that their MoQ messages are compatible. Keeping these two milestones distinct makes logs much easier to read.
 
 ## Asking for a track
 
-A subscription expresses interest in a track, including the applicable delivery choices. The publisher or relay accepts or rejects the request. Accepted requests can deliver new objects as they are produced.
+A subscription expresses interest in a track, including the applicable delivery choices. In draft-21, the viewer sends `SUBSCRIBE` on a new request stream. The publisher or relay replies on that stream with `SUBSCRIBE_OK` to accept, or `REQUEST_ERROR` to reject. An accepted subscription can deliver new objects as they are produced.
+
+A publisher can also offer a track with `PUBLISH`; the receiver answers `REQUEST_OK` (called `PUBLISH_OK` in the draft when accepting a publication) or `REQUEST_ERROR`. Both exchanges establish the same kind of subscription. A relay must first know that the client is interested in and authorized for the offered content. See [§3.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1).
 
 In the lecture, the player first selects audio and low-resolution video. Later it may switch to a different video track. That switch is meaningful only if the media format gives the player enough information to find a usable decoding point.
 
-```text
-Conceptual exchange — not wire syntax
+Here is a worked example with two viewers. Both want the same lecture audio track and compatible delivery settings. The application already knows its name, and the relay knows which publisher supplies it. Each connection has completed setup. The table uses actual draft-21 message names, but omits their fields and encoding.
 
-Viewer → Relay      Request lecture audio
-Relay  → Publisher  Obtain audio if not already available
-Relay  → Viewer     Accept request
-Publisher → Relay   New audio objects
-Relay  → Viewer     Forward requested objects
-```
+| Event | What happens | Why it matters |
+| --- | --- | --- |
+| Alice asks for audio | Alice sends `SUBSCRIBE` to the relay. | A connected viewer has now expressed demand for a specific track. |
+| The relay obtains a source | It sends its own `SUBSCRIBE` to the publisher, which accepts with `SUBSCRIBE_OK`. | The upstream request belongs to a different session from Alice's request. |
+| Alice's request is accepted | The relay sends Alice `SUBSCRIBE_OK` and forwards objects on data streams. | Acceptance and delivery are separate events. |
+| Bob asks for the same audio | The relay accepts Bob's `SUBSCRIBE` and forwards the shared source to him too. | It can reuse the upstream subscription rather than request a second copy. |
+| Alice leaves | Alice cancels her request stream. | The relay stops serving Alice; Bob's subscription still needs the upstream content. |
+| Bob leaves | Bob cancels his request stream. | With no other consumer, the relay can cancel its upstream request too. |
 
-Real systems have more state: request identifiers or request streams, errors, cancellations, and metadata. The point of this example is the direction of demand. Content travels toward the viewer; interest travels toward a source that can supply it.
+This is one valid application scenario, not a required message ordering for every relay. A recorder might remain interested after both viewers leave. The important distinction is that downstream demand can be combined, while each viewer still has a separate subscription and connection. [Draft-21 §7](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7) describes these relay roles.
 
 ## Following live content versus fetching history
 
 A live subscription and a finite fetch serve different needs. Following the lecture means receiving new content as it appears. Fetching means requesting a bounded portion, such as recently published material needed to start playback.
+
+In draft-21, a standalone `FETCH` request receives `FETCH_OK` or `REQUEST_ERROR`, with fetched objects on a separate data stream. Successful delivery ends when that data stream finishes. The request response and the object bytes have different jobs; receiving acceptance is not the same as having all the content. See [§3.2.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1).
+
+Consider arriving halfway through group 42 in our keyframe-based video example. Following only newly produced objects may give you predicted frames without the keyframe they need. You have two useful choices: retrieve the missing beginning while following new content, or wait for the next independent group.
+
+Draft-21 supports the first choice with `FILL_PARAMETERS` on a subscription: a bounded fill range arrives on a fetch stream, alongside subscription delivery. For the second, a location filter can ask to begin at the next group. A location is a group ID and object ID; it identifies content, not a wall-clock time. This is why “subscribe to live video” still requires a startup policy. See [§3.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.5).
 
 Neither operation guarantees that old objects are still available. A relay may not cache them, and a publisher may have discarded them. A transport with fetch support is not automatically a recording service.
 
@@ -47,6 +60,10 @@ For a catch-up feature, decide who retains the objects, for how long, and how ti
 ## Ending interest is useful information
 
 When the viewer closes the lecture or disables video, cancel the associated subscriptions. Leaving them alive wastes work and makes demand harder to interpret.
+
+In draft-21, cancellation abruptly closes the request stream’s open directions: `STOP_SENDING` asks the peer to stop its sending direction, and `RESET_STREAM` abandons your own sending direction. A plain `FIN`, meaning “I have no more bytes to send,” is not cancellation. A subscriber may finish sending request messages while still expecting content. See [§6.4.2.2–3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4.2.2).
+
+When the publisher ends an established subscription, it closes the associated data streams, sends `PUBLISH_DONE`, and closes its request-stream direction. Separate streams can arrive in different orders, so the subscriber cannot assume that seeing the completion message means every last object byte has already arrived. See [§3.1.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1.1) and [§9.9](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9.9).
 
 The moq.dev stack can aggregate subscriptions at relays, and its demand-aware media paths can avoid encoding content nobody has requested. That is a useful implementation behavior, not proof that every MoQ publisher is lazy. A recorder or background process may still need the same track.
 

@@ -10,6 +10,22 @@ The IETF baseline is [Media over QUIC Transport, draft-21](https://datatracker.i
 
 Read the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.
 
+## A route through the MOQT specification
+
+Start with the question you are trying to answer. These links all refer to draft-21, so their terminology and section numbers belong to the same edition.
+
+| Question | Where to read |
+| --- | --- |
+| What identifies a piece of content? | [Objects (§2.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1) and [track naming (§2.4.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1) |
+| How do groups and subgroups organize it? | [Subgroups (§2.2)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2) and [groups (§2.3)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.3) |
+| How do I follow new content or request older objects? | [Subscriptions (§3.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1), [fetch (§3.2)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2), and [joining an ongoing track (§3.5)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.5) |
+| How are publications discovered? | [Namespace discovery (§4)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4) |
+| Which work gets sent first, and when does it stop? | [Priorities (§5.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1) and [delivery timeouts (§5.2)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2) |
+| What happens when peers connect? | [Session establishment (§6.2)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2), [initialization (§6.3)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3), and [stream usage (§6.4)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4) |
+| What can a relay retain and forward? | [Caching relays (§7.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1) and [relay object handling (§7.7)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.7) |
+
+Read the explanatory sections first, then use [control messages (§9)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9) when you need field layouts. The words **MUST**, **SHOULD**, and **MAY** express requirement levels in specifications. In particular, a recommendation is not a guarantee that every implementation will behave identically.
+
 ## The transport underneath
 
 [RFC 9000](https://www.rfc-editor.org/rfc/rfc9000.html) defines QUIC’s transport, including streams, flow control, and cancellation. [RFC 9001](https://www.rfc-editor.org/rfc/rfc9001.html) describes its use of TLS. [RFC 9002](https://www.rfc-editor.org/rfc/rfc9002.html) covers loss detection and congestion control.
@@ -21,6 +37,14 @@ Read the object model before the wire-message tables. Once tracks and groups mak
 The [W3C WebTransport specification](https://www.w3.org/TR/webtransport/) describes the browser API for streams and datagrams. Its presence does not remove the need for a protocol library above it.
 
 The [W3C WebCodecs specification](https://www.w3.org/TR/webcodecs/) describes low-level codec interfaces. It is useful for understanding decoder configuration and frame ownership. It does not define a full media player.
+
+## The WebRTC comparison
+
+The early comparison uses the [W3C WebRTC specification](https://www.w3.org/TR/webrtc/) for the browser interface. The network behavior comes from IETF documents: [RFC 8835, section 3.4](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4) covers connection establishment with ICE and relay support, while [section 3.5](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.5) identifies the media and data transports.
+
+For media, WebRTC uses **SRTP**, the secure form of the Real-time Transport Protocol. Data channels use **SCTP**, the Stream Control Transmission Protocol, carried inside **DTLS**, Datagram Transport Layer Security. You do not need to learn these packet formats to understand the comparison; the distinction is that WebRTC specifies how these pieces fit together for real-time communication.
+
+[RFC 7667, section 3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) explains selective-forwarding media servers. It supports the important point that a WebRTC conference can distribute media through a server; it need not connect every participant directly to every other participant.
 
 ## The moq.dev implementation
 

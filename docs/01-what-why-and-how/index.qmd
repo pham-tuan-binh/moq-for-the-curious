@@ -8,7 +8,9 @@ Delivering live media is about more than moving bytes. It is about deciding whic
 
 ## What is MoQ?
 
-MoQ is a family of work around delivering media over QUIC. At its center is **MoQ Transport**, or **MOQT**: a publish/subscribe protocol. A publisher makes named content available. A subscriber asks for the content it wants. A relay can sit between them, forwarding that content to many subscribers.
+MoQ is a family of work around delivering media over **QUIC**, a secure network transport that can carry several independent sequences of bytes over one connection. At its center is **MoQ Transport**, or **MOQT**: a publish/subscribe protocol. A **publisher** makes named content available. A **subscriber** asks for the content it wants. A **relay** can sit between them, forwarding that content to many subscribers.
+
+The content is divided into **objects**: individually identifiable pieces of data. Objects belong to named **tracks**, such as the lecturer’s audio or camera video. A relay can also **cache** objects, keeping copies to serve later requests.
 
 ```{=html}
 <figure class="flow"><div class="flow-nodes"><div><span class="node-icon">01</span><strong>Publisher</strong><span>Creates objects</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">02</span><strong>Relay</strong><span>Forwards &amp; caches</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">03</span><strong>Subscribers</strong><span>Choose their tracks</span></div></div><figcaption>One publisher. A shared relay. Each viewer receives the tracks they request.</figcaption></figure>
@@ -24,15 +26,14 @@ If you already know WebRTC, MoQ can sound familiar: both can carry live audio, v
 
 Imagine our lecture becoming a conversation. A student turns on a microphone and asks a question. With WebRTC, the browser provides `RTCPeerConnection` to negotiate and exchange media with another endpoint. The application still supplies signaling—the channel used to exchange setup information—and decides who joins the room. Encoding, media transport, and receiving media are integrated into the browser’s WebRTC machinery. See the [WebRTC API specification](https://www.w3.org/TR/webrtc/).
 
-With MoQ, the lecturer and student can each publish tracks and subscribe to one another. The transport knows how to deliver their objects, but a media layer still has to describe codecs and timestamps, and a player has to turn received content into sound and pictures. A library can provide those pieces; they are not all supplied by MOQT itself. This separation is part of the [MOQT design](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1).
+With MoQ, the lecturer and student can each publish tracks and subscribe to one another. The transport knows how to deliver their objects, but a media layer still has to describe how to interpret them. That includes the **codec**, the method used to compress and reconstruct the media, and **timestamps**, which say where each piece belongs on the media timeline. A player then turns received content into sound and pictures. A library can provide those pieces; they are not all supplied by MOQT itself. This separation is part of the [MOQT design](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1).
 
 ::: {.book-table-scroll role="region" aria-label="WebRTC and MoQ comparison" tabindex="0"}
 
 | Question | WebRTC | MoQ Transport |
 | --- | --- | --- |
-| What does the application work with? | A negotiated connection carrying media tracks and data channels. | Named tracks of grouped objects, delivered through publication and subscription. |
-| How does it connect? | ICE finds a usable path, with STUN and TURN support for connectivity and relaying. | Native QUIC or WebTransport; the usual browser path connects to a server. |
-| What carries the content? | Secure RTP for media; SCTP over DTLS for data channels. | QUIC streams or datagrams, directly or through WebTransport. |
+| What does the application work with? | A connection set up to exchange media tracks and application messages. | Named tracks of objects that receivers request. |
+| How does it connect? | It checks possible network paths, including paths through a relay. | Browser applications usually connect to a server using WebTransport, a browser interface to the underlying transport. |
 | How does a larger audience receive it? | A media server can selectively forward streams to participants. | Relays forward requested objects and can cache them for reuse. |
 | Who supplies media playback? | The browser’s WebRTC media stack handles much of the pipeline. | The chosen media library and application supply the pipeline above MOQT. |
 
@@ -41,9 +42,9 @@ With MoQ, the lecturer and student can each publish tracks and subscribe to one 
 :::
 
 
-The table compares the core models, not every feature a product can add. The WebRTC connectivity and transport details come from [RFC 8835](https://www.rfc-editor.org/rfc/rfc8835.html); MoQ’s delivery model is described in [draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21).
+Underneath WebRTC’s connection setup is **ICE**, the procedure that tests possible paths. **STUN** helps an endpoint learn how it is reachable, and **TURN** supplies a server through which traffic can be relayed. These mechanisms help peers communicate across home routers and firewalls. The requirements are described in [RFC 8835, section 3.4](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4). We explore MoQ’s QUIC and WebTransport connection in the next chapter.
 
-**Both can use servers.** A WebRTC conference can use a selective forwarding unit, or **SFU**: a server that receives media and forwards selected streams to participants. It does not require a separate direct connection between every pair of people. A TURN server has a different job: relaying traffic when a direct network path is unavailable. Neither should be casually equated with a MoQ relay’s named-object publication, subscription, and optional caching. See the [RTP topology guide](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7).
+**Both can use servers.** A WebRTC conference can use a selective forwarding unit, or **SFU**: a server that receives media and forwards selected streams to participants. It does not require a separate direct connection between every pair of people. A TURN server has a different job: relaying packets when the connection uses a relay path, whether because of network restrictions or application policy. Neither should be casually equated with a MoQ relay’s named-object publication, subscription, and optional caching. See the [RTP topology guide](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7).
 
 **Both must make choices when the network is slow.** WebRTC has media feedback and adaptation mechanisms; MoQ uses its object structure, scheduling, and delivery rules alongside QUIC’s congestion control. Neither name guarantees lower latency. Encoding, routing, buffering, and the particular implementation all affect the result. We will work through those decisions in [Latency and Congestion](/docs/06-latency-and-congestion/).
 
@@ -51,11 +52,25 @@ For a browser conversation, WebRTC gives you many of the media pieces together. 
 
 ## Why another protocol?
 
-Suppose your connection can carry two megabits per second, but the publisher produces four. Waiting longer cannot make that mismatch disappear. If you keep every byte in a queue, you fall further behind. If you throw away bytes carelessly, the decoder may lose the reference frames it needs.
+Suppose your connection can carry two megabits per second, but the publisher produces four. Waiting longer cannot make that mismatch disappear. If you keep every byte in a queue, you fall further behind. If you throw away bytes carelessly, the decoder—the component reconstructing pictures from compressed data—may lose a picture that later pictures depend on.
 
-We need a more informed choice: preserve useful data, stop spending time on data that has become stale, and keep enough structure for the receiver to continue. MoQ combines named pieces of content with the independent streams available in QUIC. Relays can use that structure without becoming video decoders.
+We need a more informed choice: preserve useful data, stop spending time on data that has become stale, and keep enough structure for the receiver to continue. WebRTC also has mechanisms for handling congestion and adapting media. The interesting MoQ question is how to make useful delivery decisions throughout a distribution network.
+
+MoQ gives pieces of content stable identities and groups them into boundaries that a relay can recognize. A relay can reuse an object requested by several viewers, retain a recent group for someone joining late, and schedule delivery for each viewer’s connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated work need not all wait behind the same missing bytes. The following chapters explain both the possibilities and the limits of those choices. See the draft’s [motivation](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2) and [relay model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7).
 
 This is especially interesting when one live experience needs both immediacy and distribution. Think of an interactive class with a handful of speakers and thousands of listeners. The speakers and listeners need not make exactly the same tradeoff between delay and completeness.
+
+## From opening a page to hearing the lecturer
+
+We will follow five steps through the book:
+
+1. **Connect.** The viewer opens a transport connection and initializes a compatible MoQ session.
+2. **Discover.** The application finds the lecture and learns which tracks it offers. It may already know their names.
+3. **Request.** The viewer asks for the audio and video it wants to receive.
+4. **Deliver.** The publisher and relays move the requested objects toward the viewer.
+5. **Present.** The player interprets the media format, reconstructs sound and pictures, and presents them at the right time.
+
+These are responsibilities to understand, not a rigid one-time sequence. While a lecture is playing, the viewer might request a different video track or discover that the lecturer has added a screen share.
 
 ## A few pieces, working together
 

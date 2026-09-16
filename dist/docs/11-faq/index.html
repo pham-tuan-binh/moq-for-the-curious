@@ -416,7 +416,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#is-moq-a-finished-standard" id="toc-is-moq-a-finished-standard" class="nav-link active" data-scroll-target="#is-moq-a-finished-standard">Is MoQ a finished standard?</a></li>
   <li><a href="#does-moq-replace-webrtc" id="toc-does-moq-replace-webrtc" class="nav-link" data-scroll-target="#does-moq-replace-webrtc">Does MoQ replace WebRTC?</a></li>
   <li><a href="#does-it-replace-hls-or-dash" id="toc-does-it-replace-hls-or-dash" class="nav-link" data-scroll-target="#does-it-replace-hls-or-dash">Does it replace HLS or DASH?</a></li>
-  <li><a href="#is-all-moq-traffic-unreliable" id="toc-is-all-moq-traffic-unreliable" class="nav-link" data-scroll-target="#is-all-moq-traffic-unreliable">Is all MoQ traffic unreliable?</a></li>
+  <li><a href="#is-all-moq-traffic-unreliable" id="toc-is-all-moq-traffic-unreliable" class="nav-link" data-scroll-target="#is-all-moq-traffic-unreliable">Why would I cancel a reliable stream?</a></li>
   <li><a href="#can-i-send-chat-or-game-state" id="toc-can-i-send-chat-or-game-state" class="nav-link" data-scroll-target="#can-i-send-chat-or-game-state">Can I send chat or game state?</a></li>
   <li><a href="#is-moq-peer-to-peer" id="toc-is-moq-peer-to-peer" class="nav-link" data-scroll-target="#is-moq-peer-to-peer">Is MoQ peer-to-peer?</a></li>
   <li><a href="#is-moq-lite-the-same-as-moqt" id="toc-is-moq-lite-the-same-as-moqt" class="nav-link" data-scroll-target="#is-moq-lite-the-same-as-moqt">Is moq-lite the same as MOQT?</a></li>
@@ -450,7 +450,7 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>The questions that tend to arrive just after the first explanation.</p>
-<p>Some questions cross chapter boundaries. This is a place to bring the pieces back together without turning every answer into a protocol promise.</p>
+<p>Some questions cross chapter boundaries. Here we bring those pieces back together.</p>
 <section id="is-moq-a-finished-standard" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-a-finished-standard">Is MoQ a finished standard?</h2>
 <p>The baseline for this edition is <strong>draft-ietf-moq-transport-21</strong>, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/">IETF document status</a> before implementing them.</p>
@@ -459,17 +459,20 @@ ul.task-list li input[type="checkbox"] {
 <section id="does-moq-replace-webrtc" class="level2">
 <h2 class="anchored" data-anchor-id="does-moq-replace-webrtc">Does MoQ replace WebRTC?</h2>
 <p>For a side-by-side introduction, start with <a href="../../docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a>.</p>
-<p>It can serve some overlapping use cases, but choosing a transport is not the same as choosing a complete media system. WebRTC supplies a mature collection of media and connectivity machinery. A MoQ application still needs its chosen capture, codec, playback, routing, and access components.</p>
-<p>Compare the requirements of your actual product: interactive delay, audience size, target devices, network constraints, and operational experience. This book explains a design, not a universal winner.</p>
+<p>The two can serve some of the same applications. Consider our lecture: a conversation between the lecturer and a student, and delivery to a large listening audience, are different parts of the same experience. Either technology may be used in a larger system that supports both.</p>
+<p>In a browser, WebRTC provides much of the encoding, transmission, and receiving machinery together. A MoQ implementation supplies named-content delivery; its media library supplies the capture, codec, and playback pieces above it. Compare complete systems on the devices and network paths your audience uses. The protocol name alone does not tell you the delay or operating cost.</p>
 </section>
 <section id="does-it-replace-hls-or-dash" class="level2">
 <h2 class="anchored" data-anchor-id="does-it-replace-hls-or-dash">Does it replace HLS or DASH?</h2>
-<p>MoQ offers another delivery model, especially interesting for live interaction and relay-based distribution. HTTP-based playback remains relevant where existing players, caches, workflows, and device reach matter.</p>
+<p><strong>HLS</strong> (HTTP Live Streaming) and <strong>DASH</strong> (Dynamic Adaptive Streaming over HTTP) describe ways for players to obtain media in pieces over HTTP, the protocol used for web requests. A description of the available media tells the player which pieces to request. This fits established web servers and caching infrastructure. The <a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf">DASH Industry Forum’s architecture overview</a> describes DASH’s presentation description and segment model.</p>
+<p>MoQ instead lets a receiver subscribe to a named track and receive objects as they become available. Both approaches need media formats, players, and a policy for adapting to the network. Neither the use of HTTP nor subscription by itself fixes the final playback delay. HLS’s playlist-and-segment model is described in <a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2">RFC 8216, section 2</a>; MoQ subscriptions are described in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1">draft-21, section 3.1</a>.</p>
 <p>A service can use more than one delivery path. The moq.dev project includes gateways for established formats and protocols. A gateway is a concrete integration to test, not evidence that every arbitrary MoQ publication is playable by an HLS player.</p>
 </section>
 <section id="is-all-moq-traffic-unreliable" class="level2">
-<h2 class="anchored" data-anchor-id="is-all-moq-traffic-unreliable">Is all MoQ traffic unreliable?</h2>
-<p>No.&nbsp;QUIC streams provide reliable, ordered bytes within each stream. MoQ can abandon stale stream work according to its rules and policy. Datagram delivery is another option with different properties. Distinguish reliable delivery of an active stream from a promise to preserve all media forever.</p>
+<h2 class="anchored" data-anchor-id="is-all-moq-traffic-unreliable">Why would I cancel a reliable stream?</h2>
+<p>Reliability repairs missing bytes; it does not decide whether you still want them. Suppose the viewer has fallen behind and the player can restart from a newer, independently decodable group. Spending more time repairing an older group may prolong the delay. The delivery policy can stop that old work while retaining reliable delivery for work that is still useful.</p>
+<p>The receiver also needs to discard its stale playback queue and resume at a valid point. Cancellation alone cannot make a player catch up. <a href="../../docs/06-latency-and-congestion/">Latency and Congestion</a> follows those decisions.</p>
+<p>This also answers a common question: is all MoQ traffic unreliable? No.&nbsp;An active QUIC stream provides reliable, ordered bytes. Datagrams are a separate option: QUIC does not retransmit them when they are lost. <a href="../../docs/02-quic-and-webtransport/">QUIC and WebTransport</a> explains the distinction.</p>
 </section>
 <section id="can-i-send-chat-or-game-state" class="level2">
 <h2 class="anchored" data-anchor-id="can-i-send-chat-or-game-state">Can I send chat or game state?</h2>
@@ -495,6 +498,8 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li><a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/">MOQT: current document status</a></li>
 <li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21">MOQT draft-21</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2">RFC 8216: HTTP Live Streaming</a></li>
+<li><a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf">DASH-IF interoperability guidelines: architecture</a></li>
 <li><a href="https://doc.moq.dev/">moq.dev: implementation and integrations</a></li>
 <li><a href="https://doc.moq.dev/concept/moq-lite">moq-lite: compatibility boundaries</a></li>
 </ul>

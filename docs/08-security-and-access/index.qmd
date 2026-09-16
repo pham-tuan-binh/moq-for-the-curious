@@ -8,6 +8,8 @@ Our lecture is private. The browser shows a secure connection. Can we now assume
 
 QUIC incorporates TLS to authenticate and protect its connection. For a browser connecting to a relay, the certificate and hostname must meet the applicable trust requirements. Disabling verification is not a production solution to a failed connection.
 
+The usual certificate check tells the browser which relay it reached. It does not tell the relay which student is watching. TLS permits separate client authentication, and an application can use its own identity and authorization mechanism. Keeping these directions separate avoids treating a secure connection as a room invitation. [RFC 9001 §4.4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4.4) describes the distinction.
+
 With a relay in the path, there are separate transport connections on either side. The relay terminates them. Transport encryption therefore does not, by itself, hide the application’s payload from the relay.
 
 ## End-to-end content protection
@@ -22,7 +24,9 @@ Decide your trust model before picking a feature label. “Encrypted” is incom
 
 Publishing and subscribing are separate permissions. A student allowed to watch a lecture should not automatically be allowed to impersonate the lecturer or publish objects under the same namespace.
 
-Bind permissions to the relevant identity and namespace. A token format, including JWT when used by an implementation, is a way to carry authorization information. Its mere presence does not prove that an endpoint checks scope, expiry, issuer, or intended audience correctly.
+Bind permissions to the relevant identity and namespace. A token format, including JSON Web Token (JWT) when used by an implementation, is a way to carry authorization information. Its mere presence does not prove that an endpoint checks scope, expiry, issuer, or intended audience correctly.
+
+Expiry also does not prevent every replay: a stolen bearer credential may be usable again while it remains valid. The deployment needs a policy for stolen credentials, revocation, and any restrictions that bind a credential to its intended use. MOQT discusses replay risks separately from authorization in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
 
 Discovery also needs a policy. A private lecture’s name can be sensitive even if its media requests are rejected. Decide whether unauthorized clients may learn that it exists.
 
@@ -35,6 +39,8 @@ Authorize publication ownership and avoid name collisions across restarts. Consi
 ## Limit work as well as access
 
 Even an authenticated client can request too much. Connections, subscriptions, discovery results, queued bytes, and cached objects all consume resources. Apply bounds that match the deployment and observe when they are reached.
+
+A low-priority stream can remain unsent while more urgent work keeps arriving. Its buffered bytes still occupy memory. In MOQT draft-21, reaching a resource limit requires an endpoint, whether publisher or subscriber, to cancel a stream, preferably the lowest-priority one; choosing an actual memory budget remains an implementation decision. See [§15.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.5).
 
 For the lecture, it is reasonable to limit how many tracks a viewer can request at once. Otherwise, a client might subscribe to every rendition while displaying only one. Authorization answers whether it may access the content; resource policy answers how much work the service will do for it.
 
