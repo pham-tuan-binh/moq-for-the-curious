@@ -1,0 +1,64 @@
+# Publishing and Subscribing
+
+A connection moves bytes. A subscription says which bytes matter.
+
+A viewer has opened your lecture page. The network connection is ready. Nothing about that alone tells the relay which lecture the viewer wants, or whether it should send audio, video, or both.
+
+## Finding the content
+
+Discovery answers “what is available?” Subscription answers “which of it do I want?” An application might already know a track name from its own server, or use namespace discovery to learn what publishers are available.
+
+This is not a global search engine. A relay only exposes the namespace information available within its scope and access policy. A room roster, an invitation URL, and a searchable public directory are application features built around discovery.
+
+For our lecture, the page might carry a session identifier. The application uses it to find the publication and its media description. That description tells the player which named tracks represent audio and each video rendition.
+
+## Establishing a session
+
+Before exchanging application content, endpoints establish their transport and initialize the MoQ session. Exact setup, version negotiation, and request framing depend on the protocol revision and implementation.
+
+Pin a client and relay to compatible versions. A transport connection that opens successfully does not prove that their MoQ messages are compatible. Keeping these two milestones distinct makes logs much easier to read.
+
+## Asking for a track
+
+A subscription expresses interest in a track, including the applicable delivery choices. The publisher or relay accepts or rejects the request. Accepted requests can deliver new objects as they are produced.
+
+In the lecture, the player first selects audio and low-resolution video. Later it may switch to a different video track. That switch is meaningful only if the media format gives the player enough information to find a usable decoding point.
+
+```text
+Conceptual exchange — not wire syntax
+
+Viewer → Relay      Request lecture audio
+Relay  → Publisher  Obtain audio if not already available
+Relay  → Viewer     Accept request
+Publisher → Relay   New audio objects
+Relay  → Viewer     Forward requested objects
+```
+
+Real systems have more state: request identifiers or request streams, errors, cancellations, and metadata. The point of this example is the direction of demand. Content travels toward the viewer; interest travels toward a source that can supply it.
+
+## Following live content versus fetching history
+
+A live subscription and a finite fetch serve different needs. Following the lecture means receiving new content as it appears. Fetching means requesting a bounded portion, such as recently published material needed to start playback.
+
+Neither operation guarantees that old objects are still available. A relay may not cache them, and a publisher may have discarded them. A transport with fetch support is not automatically a recording service.
+
+For a catch-up feature, decide who retains the objects, for how long, and how timestamps map to group positions. A “rewind 30 seconds” button requires those application and storage decisions in addition to protocol support.
+
+## Ending interest is useful information
+
+When the viewer closes the lecture or disables video, cancel the associated subscriptions. Leaving them alive wastes work and makes demand harder to interpret.
+
+The moq.dev stack can aggregate subscriptions at relays, and its demand-aware media paths can avoid encoding content nobody has requested. That is a useful implementation behavior, not proof that every MoQ publisher is lazy. A recorder or background process may still need the same track.
+
+## Publication is not permission
+
+Knowing a name does not entitle a viewer to its content. Check publication and subscription authorization separately. Our lecturer may publish to a lecture namespace while students may only subscribe.
+
+Keep access policy near the request lifecycle. If authorization changes or a token expires, define what happens to existing subscriptions as well as new ones. A successful request is the beginning of an ongoing relationship.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: publishing and receiving tracks](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3)
+- [MOQT draft-21: discovery](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4)
+- [MOQT draft-21: sessions](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6)
+- [moq.dev: demand and subscriptions](https://doc.moq.dev/concept/moq-lite)

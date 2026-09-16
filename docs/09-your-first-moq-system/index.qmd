@@ -1,0 +1,63 @@
+# Your First MoQ System
+
+Follow one publication from a local source to a working player.
+
+You now know enough to make an experiment understandable. Keep the first system small: one publisher, one relay, one viewer, and a known media source. The goal is to see each layer working, not to reproduce a global distribution network on your first afternoon.
+
+## Choose the implementation deliberately
+
+This walkthrough uses the **moq.dev project**, including its moq-lite and hang stack. It is not a minimal implementation of every feature in MOQT draft-21. The project’s current documentation is the authority for installation and command changes.
+
+Use its [setup guide](https://doc.moq.dev/setup/) to install the prerequisites and obtain the project checkout. Record the checkout revision and library versions alongside your observations. A reproducible experiment needs more than the name “MoQ.”
+
+The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.
+
+## Start with the local demo
+
+With the project’s documented Nix setup available, its quick-start command opens a development environment and starts the demo:
+
+```sh
+nix develop -c just
+```
+
+The documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.
+
+Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”
+
+## Trace one frame conceptually
+
+A source produces media. An encoder compresses it. The media layer supplies timing and configuration, and maps the encoded data into named tracks and groups. The publisher makes that content available through the relay.
+
+The viewer chooses tracks, receives objects, interprets the media format, and decodes and presents the content. At each stage, ask what information is added and what can fail.
+
+```{=html}
+<figure class="layers"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>Each layer solves a different problem. A working connection is only the beginning.</figcaption></figure>
+```
+
+Write down the publication name, selected track, negotiated transport, and codec. These four observations are much more useful than a screenshot of a playing video when you later compare runs.
+
+## Add a second viewer
+
+Open another viewer for the same publication. The relay now has more downstream work, while the original publication can be shared upstream. Inspect the relay’s metrics or logs instead of assuming the bandwidth pattern from the diagram alone.
+
+Then close one viewer. Confirm that the other continues. Close both and observe whether the chosen publisher stops producing or transmitting the unused track. Demand-aware behavior depends on the application path and other subscribers, so record what actually happens.
+
+## Make the network inconvenient
+
+Use a network test setup to constrain bandwidth or introduce delay. Start with one change at a time. Watch the selected rendition, playback age, audio continuity, and recovery after the constraint is removed.
+
+Ordinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.
+
+You are looking for understandable behavior: a lower rendition, a skipped group, a brief pause, or a growing backlog. “It stuttered” is a starting observation, not a diagnosis.
+
+## Going beyond localhost
+
+Moving to another machine adds certificate trust, network reachability, and access policy. QUIC uses UDP; opening only a TCP listener does not establish its path. Follow the deployment guide for the listener and fallback configuration actually in use.
+
+Do not add recording, multiple regions, and private user accounts simultaneously. Add one boundary, verify it, then continue. When something breaks, the debugging chapter gives you a way to locate the first failed layer.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [moq.dev: setup](https://doc.moq.dev/setup/)
+- [moq.dev: development commands](https://doc.moq.dev/setup/dev)
+- [moq.dev: production deployment](https://doc.moq.dev/setup/prod)

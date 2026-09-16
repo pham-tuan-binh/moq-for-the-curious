@@ -1,0 +1,25 @@
+# About this book {.unnumbered}
+
+Imagine watching a live lecture. You want the lecturer’s voice to arrive on time, the picture to stay close to live, and the system to work just as well when a hundred more people join. How do we make that happen?
+
+**MoQ for the Curious** explains Media over QUIC from the first idea to a working mental model. We introduce each problem before the mechanism that solves it. You do not need to know QUIC, video compression, or the language of protocol specifications to begin.
+
+[Start reading: What, Why and How →](docs/01-what-why-and-how/index.qmd)
+
+## Where to begin
+
+The first chapter explains what MoQ is and [how it compares with WebRTC](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc). From there, we follow a live publication through its connection, tracks, subscriptions, relays, and player. The later chapters cover a first experiment, security, and debugging.
+
+A fictional lecture runs through the examples. When a new term appears, we explain what it means and why it matters. The [glossary](docs/12-glossary/index.qmd) is here whenever a word gets in the way.
+
+## A protocol still taking shape
+
+This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. It distinguishes that transport specification from the **moq.dev** implementation, **moq-lite**, and the **hang** media format. Draft-specific details and implementation examples are labeled throughout.
+
+The research date is **September 16, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
+
+## About the approach
+
+The approachable, concepts-first prose is inspired by [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/). The explanations, examples, and diagrams are original. The familiar online textbook presentation is inspired by [RLHF Book](https://rlhfbook.com/), and this site is built using Quarto’s standard book framework.
+
+This is an independent guide. It is not affiliated with or endorsed by the IETF, moq.dev, WebRTC for the Curious, or RLHF Book.

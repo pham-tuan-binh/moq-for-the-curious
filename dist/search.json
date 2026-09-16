@@ -1,0 +1,1120 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "MoQ for the Curious",
+    "section": "",
+    "text": "About this book\nImagine watching a live lecture. You want the lecturer’s voice to arrive on time, the picture to stay close to live, and the system to work just as well when a hundred more people join. How do we make that happen?\nMoQ for the Curious explains Media over QUIC from the first idea to a working mental model. We introduce each problem before the mechanism that solves it. You do not need to know QUIC, video compression, or the language of protocol specifications to begin.\nStart reading: What, Why and How →",
+    "crumbs": [
+      "About this book"
+    ]
+  },
+  {
+    "objectID": "index.html#where-to-begin",
+    "href": "index.html#where-to-begin",
+    "title": "MoQ for the Curious",
+    "section": "Where to begin",
+    "text": "Where to begin\nThe first chapter explains what MoQ is and how it compares with WebRTC. From there, we follow a live publication through its connection, tracks, subscriptions, relays, and player. The later chapters cover a first experiment, security, and debugging.\nA fictional lecture runs through the examples. When a new term appears, we explain what it means and why it matters. The glossary is here whenever a word gets in the way.",
+    "crumbs": [
+      "About this book"
+    ]
+  },
+  {
+    "objectID": "index.html#a-protocol-still-taking-shape",
+    "href": "index.html#a-protocol-still-taking-shape",
+    "title": "MoQ for the Curious",
+    "section": "A protocol still taking shape",
+    "text": "A protocol still taking shape\nThis edition uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It distinguishes that transport specification from the moq.dev implementation, moq-lite, and the hang media format. Draft-specific details and implementation examples are labeled throughout.\nThe research date is September 16, 2026. Each chapter links to primary sources; the references explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.",
+    "crumbs": [
+      "About this book"
+    ]
+  },
+  {
+    "objectID": "index.html#about-the-approach",
+    "href": "index.html#about-the-approach",
+    "title": "MoQ for the Curious",
+    "section": "About the approach",
+    "text": "About the approach\nThe approachable, concepts-first prose is inspired by WebRTC for the Curious. The explanations, examples, and diagrams are original. The familiar online textbook presentation is inspired by RLHF Book, and this site is built using Quarto’s standard book framework.\nThis is an independent guide. It is not affiliated with or endorsed by the IETF, moq.dev, WebRTC for the Curious, or RLHF Book.",
+    "crumbs": [
+      "About this book"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html",
+    "href": "docs/01-what-why-and-how/index.html",
+    "title": "1  What, Why and How",
+    "section": "",
+    "text": "What is MoQ?\nA video is only live if it arrives in time. Let’s start there.\nImagine watching a concert with a friend. You are both looking at the same stage, but your friend cheers before you see the singer appear. The picture on your screen may be sharp. Every byte may have arrived correctly. Yet something important has been lost: the shared moment.\nDelivering live media is about more than moving bytes. It is about deciding which bytes are still worth moving. Media over QUIC, usually shortened to MoQ, gives us a way to make those decisions while distributing content through a network of relays.\nMoQ is a family of work around delivering media over QUIC. At its center is MoQ Transport, or MOQT: a publish/subscribe protocol. A publisher makes named content available. A subscriber asks for the content it wants. A relay can sit between them, forwarding that content to many subscribers.\nThink of a live lecture. The lecturer produces audio, camera video, and slides. A listener on a weak connection might request audio and slides. Another might request high-quality video too. Giving the pieces separate names lets the delivery system treat them separately.\nThe word “media” is useful context, not a restriction on the payload. An object can carry encoded audio, a video frame, or application data. The transport moves bytes; a format above it tells the receiver what those bytes mean.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#what-is-moq",
+    "href": "docs/01-what-why-and-how/index.html#what-is-moq",
+    "title": "1  What, Why and How",
+    "section": "",
+    "text": "01PublisherCreates objects→02RelayForwards & caches→03SubscribersChoose their tracksOne publisher. A shared relay. Each viewer receives the tracks they request.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#how-does-moq-compare-with-webrtc",
+    "href": "docs/01-what-why-and-how/index.html#how-does-moq-compare-with-webrtc",
+    "title": "1  What, Why and How",
+    "section": "How does MoQ compare with WebRTC?",
+    "text": "How does MoQ compare with WebRTC?\nIf you already know WebRTC, MoQ can sound familiar: both can carry live audio, video, and data. The useful question is what each gives the application to work with. WebRTC brings an integrated real-time media stack. MoQ Transport organizes delivery around named content that receivers request.\nImagine our lecture becoming a conversation. A student turns on a microphone and asks a question. With WebRTC, the browser provides RTCPeerConnection to negotiate and exchange media with another endpoint. The application still supplies signaling—the channel used to exchange setup information—and decides who joins the room. Encoding, media transport, and receiving media are integrated into the browser’s WebRTC machinery. See the WebRTC API specification.\nWith MoQ, the lecturer and student can each publish tracks and subscribe to one another. The transport knows how to deliver their objects, but a media layer still has to describe codecs and timestamps, and a player has to turn received content into sound and pictures. A library can provide those pieces; they are not all supplied by MOQT itself. This separation is part of the MOQT design.\n\n\nWebRTC and MoQ at a glance\n\n\n\n\n\n\n\nQuestion\nWebRTC\nMoQ Transport\n\n\n\n\nWhat does the application work with?\nA negotiated connection carrying media tracks and data channels.\nNamed tracks of grouped objects, delivered through publication and subscription.\n\n\nHow does it connect?\nICE finds a usable path, with STUN and TURN support for connectivity and relaying.\nNative QUIC or WebTransport; the usual browser path connects to a server.\n\n\nWhat carries the content?\nSecure RTP for media; SCTP over DTLS for data channels.\nQUIC streams or datagrams, directly or through WebTransport.\n\n\nHow does a larger audience receive it?\nA media server can selectively forward streams to participants.\nRelays forward requested objects and can cache them for reuse.\n\n\nWho supplies media playback?\nThe browser’s WebRTC media stack handles much of the pipeline.\nThe chosen media library and application supply the pipeline above MOQT.\n\n\n\n\nThe table compares the core models, not every feature a product can add. The WebRTC connectivity and transport details come from RFC 8835; MoQ’s delivery model is described in draft-21.\nBoth can use servers. A WebRTC conference can use a selective forwarding unit, or SFU: a server that receives media and forwards selected streams to participants. It does not require a separate direct connection between every pair of people. A TURN server has a different job: relaying traffic when a direct network path is unavailable. Neither should be casually equated with a MoQ relay’s named-object publication, subscription, and optional caching. See the RTP topology guide.\nBoth must make choices when the network is slow. WebRTC has media feedback and adaptation mechanisms; MoQ uses its object structure, scheduling, and delivery rules alongside QUIC’s congestion control. Neither name guarantees lower latency. Encoding, routing, buffering, and the particular implementation all affect the result. We will work through those decisions in Latency and Congestion.\nFor a browser conversation, WebRTC gives you many of the media pieces together. For an application built around publishing content once and distributing it through reusable relay infrastructure, MoQ is worth understanding. That is a starting point for evaluation, not a rule that WebRTC cannot broadcast or MoQ cannot conference. Test the actual devices, network paths, and libraries you plan to use. In this edition, also remember that MOQT is still a versioned draft.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#why-another-protocol",
+    "href": "docs/01-what-why-and-how/index.html#why-another-protocol",
+    "title": "1  What, Why and How",
+    "section": "Why another protocol?",
+    "text": "Why another protocol?\nSuppose your connection can carry two megabits per second, but the publisher produces four. Waiting longer cannot make that mismatch disappear. If you keep every byte in a queue, you fall further behind. If you throw away bytes carelessly, the decoder may lose the reference frames it needs.\nWe need a more informed choice: preserve useful data, stop spending time on data that has become stale, and keep enough structure for the receiver to continue. MoQ combines named pieces of content with the independent streams available in QUIC. Relays can use that structure without becoming video decoders.\nThis is especially interesting when one live experience needs both immediacy and distribution. Think of an interactive class with a handful of speakers and thousands of listeners. The speakers and listeners need not make exactly the same tradeoff between delay and completeness.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#a-few-pieces-working-together",
+    "href": "docs/01-what-why-and-how/index.html#a-few-pieces-working-together",
+    "title": "1  What, Why and How",
+    "section": "A few pieces, working together",
+    "text": "A few pieces, working together\nIt helps to separate four responsibilities. Your application decides what the user can watch. A media format describes the content. MoQ handles publication and delivery. QUIC provides the underlying connection.\nYour applicationRooms, permissions, playback decisionsMedia formatCodec configuration, timestamps, payloadsMoQ transportNames, subscriptions, groups, objectsQUIC / WebTransportSecure streams, datagrams, congestion controlEach layer solves a different problem. A working connection is only the beginning.\nThese boundaries matter when something goes wrong. A successful connection does not prove that you requested the right track. Receiving a track does not prove that your decoder understands its codec. We will visit each layer separately, then put them together.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#the-protocol-and-the-project",
+    "href": "docs/01-what-why-and-how/index.html#the-protocol-and-the-project",
+    "title": "1  What, Why and How",
+    "section": "The protocol and the project",
+    "text": "The protocol and the project\nThe IETF MoQ effort and moq.dev are related, but they are not the same thing. The IETF develops the transport specification through public drafts. The moq.dev project provides applications and libraries, including a smaller protocol model called moq-lite and a media format called hang.\n\n\n\n\n\n\nNoteAbout this edition\n\n\n\nThis book uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It is an Internet-Draft, not a finished RFC. moq.dev examples describe its documentation as reviewed on September 16, 2026. Check negotiated versions before assuming two implementations interoperate.\n\n\nYou will see those names again. For now, remember that learning the ideas and choosing a particular library are different steps. You can understand subscriptions without memorizing message numbers or installing an SDK.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#how-to-read-this-book",
+    "href": "docs/01-what-why-and-how/index.html#how-to-read-this-book",
+    "title": "1  What, Why and How",
+    "section": "How to read this book",
+    "text": "How to read this book\nStart with the next chapter if QUIC is new to you. Continue through tracks, subscriptions, relays, and media to build a picture of the whole system. The later chapters cover security, a practical first experiment, and debugging. The glossary is there whenever an unfamiliar word interrupts your reading.\nWe assume you know what a client and a server are. You do not need to know how video compression works or have read a networking RFC. Examples use a fictional live lecture throughout; numbers and names in those examples are teaching choices, not protocol defaults.\nThis is an independently written guide inspired by the chapter-based, concepts-first approach of WebRTC for the Curious. Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/01-what-why-and-how/index.html#sources",
+    "href": "docs/01-what-why-and-how/index.html#sources",
+    "title": "1  What, Why and How",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: introduction\nmoq.dev: concepts\nWebRTC for the Curious: the inspiration\nW3C: WebRTC browser API\nRFC 8835: WebRTC connectivity and transports\nRFC 7667: selective forwarding topology",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>What, Why and How</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html",
+    "href": "docs/02-quic-and-webtransport/index.html",
+    "title": "2  QUIC and WebTransport",
+    "section": "",
+    "text": "Why one ordered stream can hurt\nThe connection underneath MoQ, explained one stream at a time.\nBefore we discuss tracks, we need a connection that can carry them. A useful starting question is: when one part of a conversation is delayed, should every other part have to wait?\nImagine sending camera video and captions through a single ordered byte stream. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is head-of-line blocking.\nOrdering is often exactly what we want. The trouble is imposing one ordering on unrelated work. Captions may be useful even while an old video frame is being repaired.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#independent-streams",
+    "href": "docs/02-quic-and-webtransport/index.html#independent-streams",
+    "title": "2  QUIC and WebTransport",
+    "section": "Independent streams",
+    "text": "Independent streams\nQUIC runs over UDP and provides multiple reliable, ordered byte streams within a connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.\nThe independence is not unlimited. Streams still compete for connection bandwidth, and connection-level flow control can constrain them together. QUIC removes a particular delivery dependency; it does not give every stream a private network.\nMoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#reliability-can-have-an-ending",
+    "href": "docs/02-quic-and-webtransport/index.html#reliability-can-have-an-ending",
+    "title": "2  QUIC and WebTransport",
+    "section": "Reliability can have an ending",
+    "text": "Reliability can have an ending\nReliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.\nConsider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#where-datagrams-fit",
+    "href": "docs/02-quic-and-webtransport/index.html#where-datagrams-fit",
+    "title": "2  QUIC and WebTransport",
+    "section": "Where datagrams fit",
+    "text": "Where datagrams fit\nQUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.\nThat can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.\nA QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#webtransport-is-the-browser-doorway",
+    "href": "docs/02-quic-and-webtransport/index.html#webtransport-is-the-browser-doorway",
+    "title": "2  QUIC and WebTransport",
+    "section": "WebTransport is the browser doorway",
+    "text": "WebTransport is the browser doorway\nBrowser JavaScript does not generally get a raw QUIC socket. WebTransport exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.\nWebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#a-fallback-changes-the-tradeoffs",
+    "href": "docs/02-quic-and-webtransport/index.html#a-fallback-changes-the-tradeoffs",
+    "title": "2  QUIC and WebTransport",
+    "section": "A fallback changes the tradeoffs",
+    "text": "A fallback changes the tradeoffs\nThe moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: a TCP-based fallback has different loss and ordering characteristics.\nWhen testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.\nFor a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/02-quic-and-webtransport/index.html#sources",
+    "href": "docs/02-quic-and-webtransport/index.html#sources",
+    "title": "2  QUIC and WebTransport",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nQUIC: streams and stream cancellation\nQUIC datagrams: RFC 9221\nW3C WebTransport\nmoq.dev: transport choices",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>QUIC and WebTransport</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html",
+    "href": "docs/03-tracks-groups-and-objects/index.html",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "",
+    "text": "An object is a named piece of data\nGive the bytes a structure, and the network can make better choices.\nA relay should not need to understand a video codec to forward a lecture. It does, however, need to recognize which pieces belong together. The MoQ object model supplies those boundaries.\nAn object is an addressable payload. In our lecture example, we might put one encoded video frame in one object. That is a format choice, not a universal rule: another format can package its bytes differently.\nIn MOQT, an object’s identity includes its track namespace, track name, group ID, and object ID. Its payload is immutable. If two receivers request that identity, they must not receive different payload bytes simply because they connected at different times.\nThis makes shared caching possible. An identity points to a particular piece of content, rather than an instruction to generate a personalized response.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#a-track-is-something-you-subscribe-to",
+    "href": "docs/03-tracks-groups-and-objects/index.html#a-track-is-something-you-subscribe-to",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "A track is something you subscribe to",
+    "text": "A track is something you subscribe to\nA track is a sequence of groups. In our application, audio, low-resolution video, high-resolution video, and captions can each have a track. A subscriber chooses tracks instead of receiving a single inseparable bundle.\nThe full track name combines a namespace and a track name. MOQT namespace fields and names are byte sequences; human-readable paths in this book are illustrations, not a statement that all implementations use URL strings on the wire.\nFor example, we might describe a namespace as lectures / networking / session-7 and a track as video-low. The application must define how those labels become the exact name bytes its peers compare.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#groups-create-places-to-join",
+    "href": "docs/03-tracks-groups-and-objects/index.html#groups-create-places-to-join",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "Groups create places to join",
+    "text": "Groups create places to join\nA new viewer should not have to receive a lecture from its beginning. A group creates a join point within a track. MOQT recommends that groups be independently useful, avoiding dependencies on objects in other groups.\nFor a simple video format, start a group with a keyframe, followed by the frames that depend on it. A viewer can then start at that group instead of reconstructing all preceding video. Decoder configuration may still need to come from the media format’s metadata.\nTRACK · video / lowGroup 41KeyΔΔΔGroup 42KeyΔΔΔExample media mapping: each group starts with a keyframe; later frames depend on earlier frames within that group. Δ means a predicted frame.\nThe diagram is one possible media mapping. A group is not automatically a second of media, and its ID is not inherently a timestamp. The format and publisher decide those relationships.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#subgroups-decide-what-shares-a-stream",
+    "href": "docs/03-tracks-groups-and-objects/index.html#subgroups-decide-what-shares-a-stream",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "Subgroups decide what shares a stream",
+    "text": "Subgroups decide what shares a stream\nMOQT also has subgroups within a group. Objects in a subgroup are ordered by object ID and normally share a transport stream. This can express dependency and priority relationships more precisely than putting an entire group on one stream.\nFor example, a layered codec may have a base layer and an enhancement layer. Keeping them separate lets a scheduler favor the base layer. A receiver still needs to understand the codec’s actual dependencies; putting data on a different stream does not make it independently decodable.\nDo not assume “one group equals one QUIC stream” for all MOQT implementations. That simpler model is useful for moq-lite, which omits MOQT subgroups.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#a-vocabulary-translation",
+    "href": "docs/03-tracks-groups-and-objects/index.html#a-vocabulary-translation",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "A vocabulary translation",
+    "text": "A vocabulary translation\nThe moq.dev model uses broadcast for a named collection of tracks and frame for the sized payload unit corresponding to an object. Its stream-based group is a sequence of frames on one stream. These words are convenient at the library level, but they can hide differences from the broader IETF model.\nWhen reading an example, first identify which vocabulary it uses. A “frame” in a generic data track need not be a decoded video image. A “stream” might mean a QUIC byte stream, a live broadcast, or a JavaScript stream. Ask which one the author means.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#restarting-is-a-naming-problem-too",
+    "href": "docs/03-tracks-groups-and-objects/index.html#restarting-is-a-naming-problem-too",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "Restarting is a naming problem too",
+    "text": "Restarting is a naming problem too\nSuppose the lecturer’s publisher crashes, then restarts its counters at group zero under the same track name. A relay may still have old objects with those identities. New payloads would collide with cached ones.\nA practical design gives a new publication a fresh namespace or preserves a non-conflicting sequence across restarts. Decide this before adding caching. Otherwise, a restart that seems harmless locally can produce confusing results elsewhere in the delivery network.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/03-tracks-groups-and-objects/index.html#sources",
+    "href": "docs/03-tracks-groups-and-objects/index.html#sources",
+    "title": "3  Tracks, Groups and Objects",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: object model and naming\nmoq.dev: moq-lite terminology",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tracks, Groups and Objects</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html",
+    "href": "docs/04-publishing-and-subscribing/index.html",
+    "title": "4  Publishing and Subscribing",
+    "section": "",
+    "text": "Finding the content\nA connection moves bytes. A subscription says which bytes matter.\nA viewer has opened your lecture page. The network connection is ready. Nothing about that alone tells the relay which lecture the viewer wants, or whether it should send audio, video, or both.\nDiscovery answers “what is available?” Subscription answers “which of it do I want?” An application might already know a track name from its own server, or use namespace discovery to learn what publishers are available.\nThis is not a global search engine. A relay only exposes the namespace information available within its scope and access policy. A room roster, an invitation URL, and a searchable public directory are application features built around discovery.\nFor our lecture, the page might carry a session identifier. The application uses it to find the publication and its media description. That description tells the player which named tracks represent audio and each video rendition.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#establishing-a-session",
+    "href": "docs/04-publishing-and-subscribing/index.html#establishing-a-session",
+    "title": "4  Publishing and Subscribing",
+    "section": "Establishing a session",
+    "text": "Establishing a session\nBefore exchanging application content, endpoints establish their transport and initialize the MoQ session. Exact setup, version negotiation, and request framing depend on the protocol revision and implementation.\nPin a client and relay to compatible versions. A transport connection that opens successfully does not prove that their MoQ messages are compatible. Keeping these two milestones distinct makes logs much easier to read.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#asking-for-a-track",
+    "href": "docs/04-publishing-and-subscribing/index.html#asking-for-a-track",
+    "title": "4  Publishing and Subscribing",
+    "section": "Asking for a track",
+    "text": "Asking for a track\nA subscription expresses interest in a track, including the applicable delivery choices. The publisher or relay accepts or rejects the request. Accepted requests can deliver new objects as they are produced.\nIn the lecture, the player first selects audio and low-resolution video. Later it may switch to a different video track. That switch is meaningful only if the media format gives the player enough information to find a usable decoding point.\nConceptual exchange — not wire syntax\n\nViewer → Relay      Request lecture audio\nRelay  → Publisher  Obtain audio if not already available\nRelay  → Viewer     Accept request\nPublisher → Relay   New audio objects\nRelay  → Viewer     Forward requested objects\nReal systems have more state: request identifiers or request streams, errors, cancellations, and metadata. The point of this example is the direction of demand. Content travels toward the viewer; interest travels toward a source that can supply it.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#following-live-content-versus-fetching-history",
+    "href": "docs/04-publishing-and-subscribing/index.html#following-live-content-versus-fetching-history",
+    "title": "4  Publishing and Subscribing",
+    "section": "Following live content versus fetching history",
+    "text": "Following live content versus fetching history\nA live subscription and a finite fetch serve different needs. Following the lecture means receiving new content as it appears. Fetching means requesting a bounded portion, such as recently published material needed to start playback.\nNeither operation guarantees that old objects are still available. A relay may not cache them, and a publisher may have discarded them. A transport with fetch support is not automatically a recording service.\nFor a catch-up feature, decide who retains the objects, for how long, and how timestamps map to group positions. A “rewind 30 seconds” button requires those application and storage decisions in addition to protocol support.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#ending-interest-is-useful-information",
+    "href": "docs/04-publishing-and-subscribing/index.html#ending-interest-is-useful-information",
+    "title": "4  Publishing and Subscribing",
+    "section": "Ending interest is useful information",
+    "text": "Ending interest is useful information\nWhen the viewer closes the lecture or disables video, cancel the associated subscriptions. Leaving them alive wastes work and makes demand harder to interpret.\nThe moq.dev stack can aggregate subscriptions at relays, and its demand-aware media paths can avoid encoding content nobody has requested. That is a useful implementation behavior, not proof that every MoQ publisher is lazy. A recorder or background process may still need the same track.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#publication-is-not-permission",
+    "href": "docs/04-publishing-and-subscribing/index.html#publication-is-not-permission",
+    "title": "4  Publishing and Subscribing",
+    "section": "Publication is not permission",
+    "text": "Publication is not permission\nKnowing a name does not entitle a viewer to its content. Check publication and subscription authorization separately. Our lecturer may publish to a lecture namespace while students may only subscribe.\nKeep access policy near the request lifecycle. If authorization changes or a token expires, define what happens to existing subscriptions as well as new ones. A successful request is the beginning of an ongoing relationship.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/04-publishing-and-subscribing/index.html#sources",
+    "href": "docs/04-publishing-and-subscribing/index.html#sources",
+    "title": "4  Publishing and Subscribing",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: publishing and receiving tracks\nMOQT draft-21: discovery\nMOQT draft-21: sessions\nmoq.dev: demand and subscriptions",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Publishing and Subscribing</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html",
+    "href": "docs/05-relays-and-distribution/index.html",
+    "title": "5  Relays and Distribution",
+    "section": "",
+    "text": "A relay plays both roles\nHow one publication reaches many people without becoming many publications.\nIf every viewer needs a separate copy directly from the lecturer, the lecturer’s upload becomes the audience limit. A relay moves the copying work into the distribution network.\nA relay is a subscriber toward an upstream source and a publisher toward downstream subscribers. It terminates transport connections and handles MoQ metadata. It is more than a router forwarding encrypted IP packets.\nWith several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.\nThis does not eliminate bandwidth costs. If a relay sends a two-megabit-per-second track to 100 viewers, the payload egress is roughly 200 megabits per second, before overhead. The benefit is sharing the upstream path and placing fan-out where capacity is available.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#a-relay-plays-both-roles",
+    "href": "docs/05-relays-and-distribution/index.html#a-relay-plays-both-roles",
+    "title": "5  Relays and Distribution",
+    "section": "",
+    "text": "01PublisherCreates objects→02RelayForwards & caches→03SubscribersChoose their tracksOne publisher. A shared relay. Each viewer receives the tracks they request.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#caching-helps-but-has-limits",
+    "href": "docs/05-relays-and-distribution/index.html#caching-helps-but-has-limits",
+    "title": "5  Relays and Distribution",
+    "section": "Caching helps, but has limits",
+    "text": "Caching helps, but has limits\nA caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. Immutable object identities let different viewers reuse the same cached payload.\nMOQT permits caching; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. Never infer that an accepted live subscription includes an unlimited archive.\nFor the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#each-hop-has-its-own-conditions",
+    "href": "docs/05-relays-and-distribution/index.html#each-hop-has-its-own-conditions",
+    "title": "5  Relays and Distribution",
+    "section": "Each hop has its own conditions",
+    "text": "Each hop has its own conditions\nThe lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.\nThis is also why “the stream has low latency” is incomplete. Which subscriber? Which path? Which queue? A nearby viewer and a distant viewer may have very different experiences of the same publication.\nMeasure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#relays-need-structure-not-codec-knowledge",
+    "href": "docs/05-relays-and-distribution/index.html#relays-need-structure-not-codec-knowledge",
+    "title": "5  Relays and Distribution",
+    "section": "Relays need structure, not codec knowledge",
+    "text": "Relays need structure, not codec knowledge\nA relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.\nIt also means the publisher must describe content honestly. If a supposed join point actually depends on an earlier group, the relay cannot repair the mistake by looking at a label. Format design and encoder behavior must agree.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#what-a-relay-does-not-automatically-do",
+    "href": "docs/05-relays-and-distribution/index.html#what-a-relay-does-not-automatically-do",
+    "title": "5  Relays and Distribution",
+    "section": "What a relay does not automatically do",
+    "text": "What a relay does not automatically do\nForwarding a high-resolution track does not create a low-resolution version. A transcoder decodes and re-encodes media; a relay distributes the objects it receives. A service can run both roles, but they are different jobs.\nLikewise, DNS routing, selecting a nearby relay, arranging redundancy, and recovering application state are deployment choices. The moq.dev project supplies clustering features; they should not be mistaken for a universal, automatic global MoQ network.\nBefore scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked. That small drawing often reveals more than a single “CDN” box.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/05-relays-and-distribution/index.html#sources",
+    "href": "docs/05-relays-and-distribution/index.html#sources",
+    "title": "5  Relays and Distribution",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: relays\nmoq.dev: deployment and clustering",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Relays and Distribution</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html",
+    "href": "docs/06-latency-and-congestion/index.html",
+    "title": "6  Latency and Congestion",
+    "section": "",
+    "text": "Latency has several owners\nWhen the network cannot carry everything, decide what is still useful.\nA player can be receiving data continuously and still be getting worse. If the data arrives slower than it is produced, its picture becomes steadily older. The problem is not necessarily a disconnected network. It may be a growing queue.\nEnd-to-end delay includes capture, encoding, network transit, buffering, decoding, and presentation. Relays and operating systems can introduce additional queues. Improving one stage does not erase the others.\nThe numbers above are an invented teaching example. If this player spends 80 milliseconds buffering, shaving five milliseconds off network transit will not create a five-millisecond experience. Measure the whole path you care about.\nA lecture viewer might prefer a little extra buffering to avoid interruptions. A person talking back to the lecturer may prefer lower delay, accepting occasional missing video. The best policy depends on the interaction.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#latency-has-several-owners",
+    "href": "docs/06-latency-and-congestion/index.html#latency-has-several-owners",
+    "title": "6  Latency and Congestion",
+    "section": "",
+    "text": "Capture20 msEncode35 msNetwork45 msBuffer80 msRender20 msIllustrative budget: 200 ms from capture to display. These are teaching values, not a MoQ benchmark.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#congestion-control-versus-media-adaptation",
+    "href": "docs/06-latency-and-congestion/index.html#congestion-control-versus-media-adaptation",
+    "title": "6  Latency and Congestion",
+    "section": "Congestion control versus media adaptation",
+    "text": "Congestion control versus media adaptation\nCongestion control governs how much the transport can send without overwhelming the path. Media adaptation decides what content to produce or request within that budget. They cooperate, but they solve different problems.\nIf the encoder continually produces more data than the connection can carry, a careful congestion controller will slow the sender. Unless the application also adapts, data accumulates above it. Respecting the network is necessary; keeping the media fresh takes another decision.\nOne response is to request a lower-bitrate rendition. Another is to reduce future encoding quality. A third is to abandon stale content. These choices can be combined, but none makes bandwidth unlimited.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#priority-is-a-preference-under-scarcity",
+    "href": "docs/06-latency-and-congestion/index.html#priority-is-a-preference-under-scarcity",
+    "title": "6  Latency and Congestion",
+    "section": "Priority is a preference under scarcity",
+    "text": "Priority is a preference under scarcity\nFor the lecture, audio may deserve service before high-resolution video. If bandwidth becomes scarce, hearing the lecturer while the picture pauses can be better than losing both.\nA scheduler needs that preference in a form it can use. Priority is not a reserved pipe or a promise that every important byte will arrive by a deadline. It only helps choose among work competing for available capacity.\nNumeric priority conventions vary between APIs and protocol fields. Do not copy a number from a moq-lite example into an unrelated MOQT implementation without checking its ordering rules.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#give-old-work-a-stopping-point",
+    "href": "docs/06-latency-and-congestion/index.html#give-old-work-a-stopping-point",
+    "title": "6  Latency and Congestion",
+    "section": "Give old work a stopping point",
+    "text": "Give old work a stopping point\nSuppose group 41 is incomplete and group 42 can independently restart decoding. Finishing 41 might preserve a moment the viewer has already missed. Sending 42 may bring the viewer closer to live.\nMOQT delivery timeouts and stream cancellation provide mechanisms for giving up on work. Their precise timer start points and behavior are draft-specific. A per-hop delivery timeout is not a universal guarantee about capture-to-display delay.\nThe player also needs a policy for already received data. A network can deliver fresh objects quickly while the player continues displaying an old queue. Observe both transport backlog and playback backlog.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#a-simple-queue-calculation",
+    "href": "docs/06-latency-and-congestion/index.html#a-simple-queue-calculation",
+    "title": "6  Latency and Congestion",
+    "section": "A simple queue calculation",
+    "text": "A simple queue calculation\nImagine a publisher generating four megabits each second over a path carrying two. In five seconds, ten megabits of extra work accumulate, ignoring overhead. At two megabits per second, that backlog alone takes five seconds to transmit after production stops.\nThis simplified arithmetic explains why “wait and catch up” is not a policy when the mismatch continues. Reduce the rate, discard safely, or accept an increasing delay. A different protocol cannot repeal that relationship.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#test-recovery-not-just-steady-playback",
+    "href": "docs/06-latency-and-congestion/index.html#test-recovery-not-just-steady-playback",
+    "title": "6  Latency and Congestion",
+    "section": "Test recovery, not just steady playback",
+    "text": "Test recovery, not just steady playback\nA good experiment briefly restricts bandwidth, then restores it. Watch whether playback returns near the live edge, remains far behind, or repeatedly switches quality. Record gaps as well as averages.\nUse a repeatable recorded source before involving a camera. You want to distinguish a network response from changes in scene complexity or encoder load. Later, repeat on real devices and real networks; a tidy simulation cannot cover every queue in the path.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/06-latency-and-congestion/index.html#sources",
+    "href": "docs/06-latency-and-congestion/index.html#sources",
+    "title": "6  Latency and Congestion",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: priorities and delivery timeouts\nMOQT draft-21: transport considerations\nQUIC loss detection and congestion control: RFC 9002",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Latency and Congestion</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html",
+    "href": "docs/07-media-and-the-browser/index.html",
+    "title": "7  Media and the Browser",
+    "section": "",
+    "text": "The format supplies meaning\nReceiving bytes is not the same as hearing sound or seeing a picture.\nThe relay says objects are arriving. The player remains black. That can happen without any transport bug: a media application needs more information than the payload bytes alone.\nA receiver needs to know which track contains audio, which codec was used, how to configure the decoder, and when to present each decoded frame. The media format provides the agreement between publisher and receiver.\nMOQT is deliberately content agnostic. It does not require every application to use one codec or interpret one object as one video frame. Two endpoints can speak the same transport and still disagree about what its payload means.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#a-catalog-describes-the-choices",
+    "href": "docs/07-media-and-the-browser/index.html#a-catalog-describes-the-choices",
+    "title": "7  Media and the Browser",
+    "section": "A catalog describes the choices",
+    "text": "A catalog describes the choices\nIn the moq.dev ecosystem, hang supplies a media catalog and frame packaging above moq-lite. The catalog describes media renditions and their decoder configuration. This lets a player discover available choices instead of guessing from track names.\nA lecture might offer one audio track and several video renditions. The player must select a rendition it can decode and afford to receive. “Highest resolution” is not necessarily the right initial choice on an unknown connection.\nCatalogs can change during a publication. A player needs to handle a track appearing, disappearing, or becoming unusable. Treat metadata as part of the live system rather than a permanent fact learned only at startup.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#keyframes-and-dependencies",
+    "href": "docs/07-media-and-the-browser/index.html#keyframes-and-dependencies",
+    "title": "7  Media and the Browser",
+    "section": "Keyframes and dependencies",
+    "text": "Keyframes and dependencies\nMany video frames describe changes from other pictures. A keyframe, in the simple model used here, supplies a fresh decoding starting point. Later predicted frames depend on the decoder having the appropriate reference pictures.\nThat is why our example aligns group boundaries with independent video sequences. Arbitrarily cutting a byte stream every second does not necessarily produce safe join points. The encoder and packager must agree on the boundary.\nSwitching video quality has the same concern. A low-resolution frame and a high-resolution frame are not automatically interchangeable decoder state. Switch at a valid point with the correct configuration for the new rendition.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#webcodecs-handles-codec-work",
+    "href": "docs/07-media-and-the-browser/index.html#webcodecs-handles-codec-work",
+    "title": "7  Media and the Browser",
+    "section": "WebCodecs handles codec work",
+    "text": "WebCodecs handles codec work\nWebCodecs exposes low-level encoding and decoding interfaces. It can turn encoded chunks into decoded frames, but it does not implement a complete MoQ player. The application still needs transport, demultiplexing or parsing, buffering, synchronization, and rendering.\nA decoder configuration must be supported on the actual device. Detect support rather than assuming that an API being present means every codec, profile, resolution, or acceleration path is available.\nDecoded video frames also consume resources. Release frames when finished with them, and bound queues so that a background tab or slow renderer does not accumulate unlimited work.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#timestamps-are-not-arrival-times",
+    "href": "docs/07-media-and-the-browser/index.html#timestamps-are-not-arrival-times",
+    "title": "7  Media and the Browser",
+    "section": "Timestamps are not arrival times",
+    "text": "Timestamps are not arrival times\nPackets take variable amounts of time to travel. If a player displays each frame immediately upon arrival, network jitter becomes presentation jitter. Media timestamps let it schedule content according to the intended timeline.\nAudio and video need a shared synchronization strategy. Their object arrival order is not enough. The player may have to buffer, wait, skip, or correct its presentation clock.\nGroup and object IDs are positions in the transport model, not substitutes for media timestamps. Keep those concepts separate even when an implementation happens to relate them.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#build-around-the-whole-browser",
+    "href": "docs/07-media-and-the-browser/index.html#build-around-the-whole-browser",
+    "title": "7  Media and the Browser",
+    "section": "Build around the whole browser",
+    "text": "Build around the whole browser\nA working media page must also handle capture permission, autoplay policy, device changes, tab lifecycle, and cleanup. Start playback from a user action when required, and make failures understandable.\nThe moq.dev stack provides higher-level player and publisher packages that handle much of this integration. For a first application, learn the lower layers conceptually while using the existing player. Reimplementing capture, clocks, and rendering at once makes transport debugging unnecessarily difficult.",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/07-media-and-the-browser/index.html#sources",
+    "href": "docs/07-media-and-the-browser/index.html#sources",
+    "title": "7  Media and the Browser",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nmoq.dev: hang catalog and containers\nW3C WebCodecs\nmoq.dev: browser libraries",
+    "crumbs": [
+      "The fundamentals",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Media and the Browser</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html",
+    "href": "docs/08-security-and-access/index.html",
+    "title": "8  Security and Access",
+    "section": "",
+    "text": "Connection encryption\nProtecting the connection and protecting the content are different jobs.\nOur lecture is private. The browser shows a secure connection. Can we now assume that only invited students can watch? No. We have established one property of the connection, but not the application’s complete access policy.\nQUIC incorporates TLS to authenticate and protect its connection. For a browser connecting to a relay, the certificate and hostname must meet the applicable trust requirements. Disabling verification is not a production solution to a failed connection.\nWith a relay in the path, there are separate transport connections on either side. The relay terminates them. Transport encryption therefore does not, by itself, hide the application’s payload from the relay.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#end-to-end-content-protection",
+    "href": "docs/08-security-and-access/index.html#end-to-end-content-protection",
+    "title": "8  Security and Access",
+    "section": "End-to-end content protection",
+    "text": "End-to-end content protection\nIf the relay must not read the media, the payload needs a separate end-to-end encryption design. That includes distributing keys to authorized viewers, changing keys when appropriate, authenticating the content, and defining how new viewers join.\nA relay can forward encrypted payloads using visible routing metadata. This does not mean it learns nothing. Names, sizes, timing, and subscription relationships can still reveal information about the session.\nDecide your trust model before picking a feature label. “Encrypted” is incomplete unless you can say who holds the keys and which parties can see the content.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#who-may-publish-and-who-may-subscribe",
+    "href": "docs/08-security-and-access/index.html#who-may-publish-and-who-may-subscribe",
+    "title": "8  Security and Access",
+    "section": "Who may publish, and who may subscribe?",
+    "text": "Who may publish, and who may subscribe?\nPublishing and subscribing are separate permissions. A student allowed to watch a lecture should not automatically be allowed to impersonate the lecturer or publish objects under the same namespace.\nBind permissions to the relevant identity and namespace. A token format, including JWT when used by an implementation, is a way to carry authorization information. Its mere presence does not prove that an endpoint checks scope, expiry, issuer, or intended audience correctly.\nDiscovery also needs a policy. A private lecture’s name can be sensitive even if its media requests are rejected. Decide whether unauthorized clients may learn that it exists.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#shared-caches-need-trustworthy-names",
+    "href": "docs/08-security-and-access/index.html#shared-caches-need-trustworthy-names",
+    "title": "8  Security and Access",
+    "section": "Shared caches need trustworthy names",
+    "text": "Shared caches need trustworthy names\nCaching assumes that the same object identity represents the same payload. If an unauthorized publisher can inject objects under another publisher’s names, the problem can spread beyond a single connection.\nAuthorize publication ownership and avoid name collisions across restarts. Consider what happens when two sources claim the same track. A relay should not resolve identity ambiguity by treating whoever arrived last as trustworthy.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#limit-work-as-well-as-access",
+    "href": "docs/08-security-and-access/index.html#limit-work-as-well-as-access",
+    "title": "8  Security and Access",
+    "section": "Limit work as well as access",
+    "text": "Limit work as well as access\nEven an authenticated client can request too much. Connections, subscriptions, discovery results, queued bytes, and cached objects all consume resources. Apply bounds that match the deployment and observe when they are reached.\nFor the lecture, it is reasonable to limit how many tracks a viewer can request at once. Otherwise, a client might subscribe to every rendition while displaying only one. Authorization answers whether it may access the content; resource policy answers how much work the service will do for it.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#keep-experiments-private-on-purpose",
+    "href": "docs/08-security-and-access/index.html#keep-experiments-private-on-purpose",
+    "title": "8  Security and Access",
+    "section": "Keep experiments private on purpose",
+    "text": "Keep experiments private on purpose\nThe moq.dev public anonymous relay is documented as public and discoverable. Use public test media there. For private media, use a relay with an explicit access configuration and verify rejection with an unauthorized client.\nA successful authorized playback test proves only the allowed case. Also check that a viewer cannot publish, another room cannot subscribe, and an expired credential cannot begin a new request. Keep tokens out of copied logs and shared URLs wherever your integration permits.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/08-security-and-access/index.html#sources",
+    "href": "docs/08-security-and-access/index.html#sources",
+    "title": "8  Security and Access",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nUsing TLS to secure QUIC: RFC 9001\nMOQT draft-21: security considerations\nmoq.dev: production access configuration\nmoq.dev: public relay caveat",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Security and Access</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html",
+    "href": "docs/09-your-first-moq-system/index.html",
+    "title": "9  Your First MoQ System",
+    "section": "",
+    "text": "Choose the implementation deliberately\nFollow one publication from a local source to a working player.\nYou now know enough to make an experiment understandable. Keep the first system small: one publisher, one relay, one viewer, and a known media source. The goal is to see each layer working, not to reproduce a global distribution network on your first afternoon.\nThis walkthrough uses the moq.dev project, including its moq-lite and hang stack. It is not a minimal implementation of every feature in MOQT draft-21. The project’s current documentation is the authority for installation and command changes.\nUse its setup guide to install the prerequisites and obtain the project checkout. Record the checkout revision and library versions alongside your observations. A reproducible experiment needs more than the name “MoQ.”\nThe commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#start-with-the-local-demo",
+    "href": "docs/09-your-first-moq-system/index.html#start-with-the-local-demo",
+    "title": "9  Your First MoQ System",
+    "section": "Start with the local demo",
+    "text": "Start with the local demo\nWith the project’s documented Nix setup available, its quick-start command opens a development environment and starts the demo:\nnix develop -c just\nThe documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.\nWatch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#trace-one-frame-conceptually",
+    "href": "docs/09-your-first-moq-system/index.html#trace-one-frame-conceptually",
+    "title": "9  Your First MoQ System",
+    "section": "Trace one frame conceptually",
+    "text": "Trace one frame conceptually\nA source produces media. An encoder compresses it. The media layer supplies timing and configuration, and maps the encoded data into named tracks and groups. The publisher makes that content available through the relay.\nThe viewer chooses tracks, receives objects, interprets the media format, and decodes and presents the content. At each stage, ask what information is added and what can fail.\nYour applicationRooms, permissions, playback decisionsMedia formatCodec configuration, timestamps, payloadsMoQ transportNames, subscriptions, groups, objectsQUIC / WebTransportSecure streams, datagrams, congestion controlEach layer solves a different problem. A working connection is only the beginning.\nWrite down the publication name, selected track, negotiated transport, and codec. These four observations are much more useful than a screenshot of a playing video when you later compare runs.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#add-a-second-viewer",
+    "href": "docs/09-your-first-moq-system/index.html#add-a-second-viewer",
+    "title": "9  Your First MoQ System",
+    "section": "Add a second viewer",
+    "text": "Add a second viewer\nOpen another viewer for the same publication. The relay now has more downstream work, while the original publication can be shared upstream. Inspect the relay’s metrics or logs instead of assuming the bandwidth pattern from the diagram alone.\nThen close one viewer. Confirm that the other continues. Close both and observe whether the chosen publisher stops producing or transmitting the unused track. Demand-aware behavior depends on the application path and other subscribers, so record what actually happens.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#make-the-network-inconvenient",
+    "href": "docs/09-your-first-moq-system/index.html#make-the-network-inconvenient",
+    "title": "9  Your First MoQ System",
+    "section": "Make the network inconvenient",
+    "text": "Make the network inconvenient\nUse a network test setup to constrain bandwidth or introduce delay. Start with one change at a time. Watch the selected rendition, playback age, audio continuity, and recovery after the constraint is removed.\nOrdinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.\nYou are looking for understandable behavior: a lower rendition, a skipped group, a brief pause, or a growing backlog. “It stuttered” is a starting observation, not a diagnosis.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#going-beyond-localhost",
+    "href": "docs/09-your-first-moq-system/index.html#going-beyond-localhost",
+    "title": "9  Your First MoQ System",
+    "section": "Going beyond localhost",
+    "text": "Going beyond localhost\nMoving to another machine adds certificate trust, network reachability, and access policy. QUIC uses UDP; opening only a TCP listener does not establish its path. Follow the deployment guide for the listener and fallback configuration actually in use.\nDo not add recording, multiple regions, and private user accounts simultaneously. Add one boundary, verify it, then continue. When something breaks, the debugging chapter gives you a way to locate the first failed layer.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/09-your-first-moq-system/index.html#sources",
+    "href": "docs/09-your-first-moq-system/index.html#sources",
+    "title": "9  Your First MoQ System",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nmoq.dev: setup\nmoq.dev: development commands\nmoq.dev: production deployment",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Your First MoQ System</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html",
+    "href": "docs/10-debugging/index.html",
+    "title": "10  Debugging",
+    "section": "",
+    "text": "The transport never connects\nFind the first broken boundary, instead of guessing at the last symptom.\nA black player is a symptom shared by many unrelated failures. The fastest path to an explanation is to work from the connection toward presentation and stop at the first missing fact.\nCheck the endpoint address, certificate trust, listener, and network path. For a QUIC path, confirm UDP reachability. A successful HTTPS request to the same hostname may only prove TCP reachability.\nIf the application uses a fallback, log which transport won. Test from outside the server’s local network before concluding that a public endpoint works. Separate a certificate error from a timeout; their remedies are different.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#the-session-opens-but-nothing-appears",
+    "href": "docs/10-debugging/index.html#the-session-opens-but-nothing-appears",
+    "title": "10  Debugging",
+    "section": "The session opens, but nothing appears",
+    "text": "The session opens, but nothing appears\nConfirm protocol compatibility and the scope or path the client joined. Then verify that the publication actually exists and the client is authorized to discover it. A connected client looking in the wrong namespace can wait forever without any packet loss.\nCheck the exact name bytes when working close to MOQT. Similar-looking text is not necessarily the same identifier. At the library level, inspect any normalization or path-prefix rules.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#the-track-is-found-but-objects-do-not-arrive",
+    "href": "docs/10-debugging/index.html#the-track-is-found-but-objects-do-not-arrive",
+    "title": "10  Debugging",
+    "section": "The track is found, but objects do not arrive",
+    "text": "The track is found, but objects do not arrive\nLook for subscription acceptance or a specific rejection. Confirm the publisher is producing the requested track and the relay has an upstream source. Discovery of a publication is not proof that every expected track is available.\nCheck filters, cancellation, and request lifetime. An accidentally closed subscription can look like a stalled network. If objects are requested from history, verify they remain retained; live availability does not imply old-object availability.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#objects-arrive-but-media-does-not-play",
+    "href": "docs/10-debugging/index.html#objects-arrive-but-media-does-not-play",
+    "title": "10  Debugging",
+    "section": "Objects arrive, but media does not play",
+    "text": "Objects arrive, but media does not play\nInspect the catalog, selected codec, decoder configuration, and the first usable decoding point. Starting with a predicted frame whose references are missing can fail even when delivery is perfect.\nThen inspect decoding and presentation separately. Are decoded frames being produced? Is audio blocked by playback policy? Is the renderer waiting on a timestamp far in the future? Does a hidden tab change the scheduling behavior?\nUse a known supported fixture to narrow the problem. If that works while one live source fails, examine the encoder and packaging before changing transport settings.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#playback-works-but-keeps-falling-behind",
+    "href": "docs/10-debugging/index.html#playback-works-but-keeps-falling-behind",
+    "title": "10  Debugging",
+    "section": "Playback works, but keeps falling behind",
+    "text": "Playback works, but keeps falling behind\nMeasure age and queue depth over time. Compare the source bitrate with achieved throughput. If the publisher persistently produces more than the path can carry, identify the adaptation or abandonment decision that should reduce the backlog.\nA single average bitrate can hide bursts. A large keyframe can create a temporary queue even when the long-term average fits. Observe the time series and the recovery, not only the final average.\nThe player may also retain stale decoded frames after the transport has recovered. Measure network arrival time and actual display time independently where possible.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#collect-evidence-that-connects-the-layers",
+    "href": "docs/10-debugging/index.html#collect-evidence-that-connects-the-layers",
+    "title": "10  Debugging",
+    "section": "Collect evidence that connects the layers",
+    "text": "Collect evidence that connects the layers\nFor a useful bug report, record the client and relay versions, actual transport, publication and track identifiers, codec, error code, and the time of the failure. Include the smallest repeatable sequence that triggers it.\nQUIC packet captures do not normally expose encrypted application payloads. Structured application logs and transport telemetry such as qlog can provide information that packet timing alone cannot. Redact credentials and private publication names before sharing evidence.\nOne final habit helps: change one thing at a time. If you replace the codec, relay, browser, and network together, a successful run will leave you with four possible explanations.",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/10-debugging/index.html#sources",
+    "href": "docs/10-debugging/index.html#sources",
+    "title": "10  Debugging",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: errors\nMOQT draft-21: transport considerations\nmoq.dev: development and Rust logging\nW3C WebCodecs: decoder behavior",
+    "crumbs": [
+      "In practice",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Debugging</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html",
+    "href": "docs/11-faq/index.html",
+    "title": "11  Frequently Asked Questions",
+    "section": "",
+    "text": "Is MoQ a finished standard?\nThe questions that tend to arrive just after the first explanation.\nSome questions cross chapter boundaries. This is a place to bring the pieces back together without turning every answer into a protocol promise.\nThe baseline for this edition is draft-ietf-moq-transport-21, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current IETF document status before implementing them.\nThis book is a dated explanation, not an automatically synchronized mirror of the specification. Links to the pinned draft preserve what the edition describes. Links to project documentation can change after publication.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#does-moq-replace-webrtc",
+    "href": "docs/11-faq/index.html#does-moq-replace-webrtc",
+    "title": "11  Frequently Asked Questions",
+    "section": "Does MoQ replace WebRTC?",
+    "text": "Does MoQ replace WebRTC?\nFor a side-by-side introduction, start with How does MoQ compare with WebRTC?.\nIt can serve some overlapping use cases, but choosing a transport is not the same as choosing a complete media system. WebRTC supplies a mature collection of media and connectivity machinery. A MoQ application still needs its chosen capture, codec, playback, routing, and access components.\nCompare the requirements of your actual product: interactive delay, audience size, target devices, network constraints, and operational experience. This book explains a design, not a universal winner.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#does-it-replace-hls-or-dash",
+    "href": "docs/11-faq/index.html#does-it-replace-hls-or-dash",
+    "title": "11  Frequently Asked Questions",
+    "section": "Does it replace HLS or DASH?",
+    "text": "Does it replace HLS or DASH?\nMoQ offers another delivery model, especially interesting for live interaction and relay-based distribution. HTTP-based playback remains relevant where existing players, caches, workflows, and device reach matter.\nA service can use more than one delivery path. The moq.dev project includes gateways for established formats and protocols. A gateway is a concrete integration to test, not evidence that every arbitrary MoQ publication is playable by an HLS player.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#is-all-moq-traffic-unreliable",
+    "href": "docs/11-faq/index.html#is-all-moq-traffic-unreliable",
+    "title": "11  Frequently Asked Questions",
+    "section": "Is all MoQ traffic unreliable?",
+    "text": "Is all MoQ traffic unreliable?\nNo. QUIC streams provide reliable, ordered bytes within each stream. MoQ can abandon stale stream work according to its rules and policy. Datagram delivery is another option with different properties. Distinguish reliable delivery of an active stream from a promise to preserve all media forever.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#can-i-send-chat-or-game-state",
+    "href": "docs/11-faq/index.html#can-i-send-chat-or-game-state",
+    "title": "11  Frequently Asked Questions",
+    "section": "Can I send chat or game state?",
+    "text": "Can I send chat or game state?\nThe payload model is not limited to media. But your data still needs a design that matches loss, ordering, and late joining. A fresh state snapshot can replace an old one. An isolated “increment score” event often cannot.\nFor an illustrative game, put a full state snapshot at a restart boundary and define how later updates relate to it. If you need an authoritative event history, provide persistence and recovery deliberately rather than assuming a live track is a database.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#is-moq-peer-to-peer",
+    "href": "docs/11-faq/index.html#is-moq-peer-to-peer",
+    "title": "11  Frequently Asked Questions",
+    "section": "Is MoQ peer-to-peer?",
+    "text": "Is MoQ peer-to-peer?\nMOQT can operate between endpoints or through relays. It does not by itself supply every rendezvous and NAT traversal mechanism needed for arbitrary browser-to-browser connectivity. The common browser deployment connects outward to a server through WebTransport.\nSome native stacks add their own peer connectivity. Those are implementation capabilities to investigate separately from the core object and subscription model.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#is-moq-lite-the-same-as-moqt",
+    "href": "docs/11-faq/index.html#is-moq-lite-the-same-as-moqt",
+    "title": "11  Frequently Asked Questions",
+    "section": "Is moq-lite the same as MOQT?",
+    "text": "Is moq-lite the same as MOQT?\nNo. moq-lite uses a simpler model, and the moq.dev stack implements compatibility paths for specified MOQT versions. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#can-i-use-this-book-as-a-specification",
+    "href": "docs/11-faq/index.html#can-i-use-this-book-as-a-specification",
+    "title": "11  Frequently Asked Questions",
+    "section": "Can I use this book as a specification?",
+    "text": "Can I use this book as a specification?\nUse it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.\nThe prose, diagrams, and examples were written independently for this guide. WebRTC for the Curious inspired the accessible book structure. Neither its authors, moq.dev, nor the IETF endorse this project.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/11-faq/index.html#sources",
+    "href": "docs/11-faq/index.html#sources",
+    "title": "11  Frequently Asked Questions",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT: current document status\nMOQT draft-21\nmoq.dev: implementation and integrations\nmoq-lite: compatibility boundaries",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Frequently Asked Questions</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html",
+    "href": "docs/12-glossary/index.html",
+    "title": "12  Glossary",
+    "section": "",
+    "text": "Broadcast and catalog\nA small vocabulary for reading the rest of the book.\nThe same word can have different meanings at different layers. These definitions describe how this guide uses it; the linked protocol draft supplies the exact normative definitions.\nBroadcast: in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.\nCatalog: media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#connection-and-session",
+    "href": "docs/12-glossary/index.html#connection-and-session",
+    "title": "12  Glossary",
+    "section": "Connection and session",
+    "text": "Connection and session\nConnection: the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.\nSession: the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#object-group-and-subgroup",
+    "href": "docs/12-glossary/index.html#object-group-and-subgroup",
+    "title": "12  Glossary",
+    "section": "Object, group, and subgroup",
+    "text": "Object, group, and subgroup\nObject: an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.\nGroup: a collection of objects providing a join point within a track. It should be independently useful; the application format decides how that maps to media dependencies.\nSubgroup: ordered objects within one group, normally sharing a transport stream. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#track-and-namespace",
+    "href": "docs/12-glossary/index.html#track-and-namespace",
+    "title": "12  Glossary",
+    "section": "Track and namespace",
+    "text": "Track and namespace\nTrack: the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.\nNamespace: the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#publisher-subscriber-and-relay",
+    "href": "docs/12-glossary/index.html#publisher-subscriber-and-relay",
+    "title": "12  Glossary",
+    "section": "Publisher, subscriber, and relay",
+    "text": "Publisher, subscriber, and relay\nPublisher: an endpoint that supplies requested objects. An original publisher first introduces the content.\nSubscriber: an endpoint requesting and receiving a track.\nRelay: an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#stream-and-datagram",
+    "href": "docs/12-glossary/index.html#stream-and-datagram",
+    "title": "12  Glossary",
+    "section": "Stream and datagram",
+    "text": "Stream and datagram\nStream: here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.\nDatagram: an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#keyframe-and-rendition",
+    "href": "docs/12-glossary/index.html#keyframe-and-rendition",
+    "title": "12  Glossary",
+    "section": "Keyframe and rendition",
+    "text": "Keyframe and rendition\nKeyframe: in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.\nRendition: an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#latency-jitter-and-congestion",
+    "href": "docs/12-glossary/index.html#latency-jitter-and-congestion",
+    "title": "12  Glossary",
+    "section": "Latency, jitter, and congestion",
+    "text": "Latency, jitter, and congestion\nLatency: delay between specified events. Always ask which events: packet send and receipt, capture and display, or another pair.\nJitter: variation in delay. A playback buffer can absorb some variation at the cost of additional latency.\nCongestion: a condition where demand exceeds available network capacity, causing queues or loss. Application queues can also grow when production outpaces delivery.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#moqt-moq-lite-and-hang",
+    "href": "docs/12-glossary/index.html#moqt-moq-lite-and-hang",
+    "title": "12  Glossary",
+    "section": "MOQT, moq-lite, and hang",
+    "text": "MOQT, moq-lite, and hang\nMOQT: Media over QUIC Transport, the IETF publish/subscribe protocol described by a versioned draft in this edition.\nmoq-lite: the smaller protocol model used by the moq.dev project, with implementation-specific compatibility support.\nhang: the moq.dev media layer providing catalog and container conventions above its generic transport model.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/12-glossary/index.html#sources",
+    "href": "docs/12-glossary/index.html#sources",
+    "title": "12  Glossary",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nMOQT draft-21: terminology\nmoq.dev: concepts\nmoq.dev: hang",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Glossary</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html",
+    "href": "docs/13-references/index.html",
+    "title": "13  References and Reading",
+    "section": "",
+    "text": "The protocol baseline\nGo from the explanation to the source, with the right version in hand.\nThis book separates three kinds of material: protocol specifications, implementation documentation, and original teaching examples. An example name, diagram, or latency budget is illustrative unless explicitly identified otherwise.\nThe IETF baseline is Media over QUIC Transport, draft-21, published September 8, 2026. Chapters link to relevant sections of that pinned version. Consult the current document status for later revisions and the MoQ working group for the broader standards effort.\nRead the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#the-transport-underneath",
+    "href": "docs/13-references/index.html#the-transport-underneath",
+    "title": "13  References and Reading",
+    "section": "The transport underneath",
+    "text": "The transport underneath\nRFC 9000 defines QUIC’s transport, including streams, flow control, and cancellation. RFC 9001 describes its use of TLS. RFC 9002 covers loss detection and congestion control.\nRFC 9221 defines the QUIC DATAGRAM extension. Read it when deciding whether a small payload should be retried or replaced, and when checking message-size constraints.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#browser-interfaces",
+    "href": "docs/13-references/index.html#browser-interfaces",
+    "title": "13  References and Reading",
+    "section": "Browser interfaces",
+    "text": "Browser interfaces\nThe W3C WebTransport specification describes the browser API for streams and datagrams. Its presence does not remove the need for a protocol library above it.\nThe W3C WebCodecs specification describes low-level codec interfaces. It is useful for understanding decoder configuration and frame ownership. It does not define a full media player.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#the-moq.dev-implementation",
+    "href": "docs/13-references/index.html#the-moq.dev-implementation",
+    "title": "13  References and Reading",
+    "section": "The moq.dev implementation",
+    "text": "The moq.dev implementation\nStart with moq.dev and the concepts guide. Then read the separate explanations of moq-lite, hang, and transport choices.\nFor experiments, use the setup and development documentation. For a reachable relay, read the production guide. These pages describe a particular project and can evolve independently of this book’s IETF baseline.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#editorial-approach-and-limitations",
+    "href": "docs/13-references/index.html#editorial-approach-and-limitations",
+    "title": "13  References and Reading",
+    "section": "Editorial approach and limitations",
+    "text": "Editorial approach and limitations\nResearch for this edition was checked on September 16, 2026. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.\nThis guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.\nWebRTC for the Curious inspired the concepts-first chapter structure and accessible tone. This site uses original prose and diagrams and is not an official extension of that book.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#keeping-an-edition-accurate",
+    "href": "docs/13-references/index.html#keeping-an-edition-accurate",
+    "title": "13  References and Reading",
+    "section": "Keeping an edition accurate",
+    "text": "Keeping an edition accurate\nWhen updating the book, record the new research date and protocol revision together. Review terminology, setup, subscription behavior, timeout semantics, and the media-format boundary before changing the edition badge.\nKeep examples identified as examples. If you add benchmarks, publish the workload, hardware, network conditions, implementation versions, and measurement points. If you add runnable SDK code, pin dependencies and verify it against the corresponding relay. An explanation is most useful when readers can tell exactly what it establishes.",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  },
+  {
+    "objectID": "docs/13-references/index.html#sources",
+    "href": "docs/13-references/index.html#sources",
+    "title": "13  References and Reading",
+    "section": "Sources and further reading",
+    "text": "Sources and further reading\n\nPinned MOQT draft-21\nIETF MoQ working group\nmoq.dev documentation\nWebRTC for the Curious",
+    "crumbs": [
+      "Keep exploring",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>References and Reading</span>"
+    ]
+  }
+]

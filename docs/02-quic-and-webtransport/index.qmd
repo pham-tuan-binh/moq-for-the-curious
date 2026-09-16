@@ -1,0 +1,54 @@
+# QUIC and WebTransport
+
+The connection underneath MoQ, explained one stream at a time.
+
+Before we discuss tracks, we need a connection that can carry them. A useful starting question is: when one part of a conversation is delayed, should every other part have to wait?
+
+## Why one ordered stream can hurt
+
+Imagine sending camera video and captions through a single ordered byte stream. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is **head-of-line blocking**.
+
+Ordering is often exactly what we want. The trouble is imposing one ordering on unrelated work. Captions may be useful even while an old video frame is being repaired.
+
+## Independent streams
+
+QUIC runs over UDP and provides multiple reliable, ordered byte streams within a connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.
+
+The independence is not unlimited. Streams still compete for connection bandwidth, and connection-level flow control can constrain them together. QUIC removes a particular delivery dependency; it does not give every stream a private network.
+
+MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.
+
+## Reliability can have an ending
+
+Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.
+
+Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.
+
+## Where datagrams fit
+
+QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.
+
+That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.
+
+A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.
+
+## WebTransport is the browser doorway
+
+Browser JavaScript does not generally get a raw QUIC socket. **WebTransport** exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.
+
+WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.
+
+## A fallback changes the tradeoffs
+
+The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: a TCP-based fallback has different loss and ordering characteristics.
+
+When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.
+
+For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [QUIC: streams and stream cancellation](https://www.rfc-editor.org/rfc/rfc9000.html#section-2)
+- [QUIC datagrams: RFC 9221](https://www.rfc-editor.org/rfc/rfc9221.html)
+- [W3C WebTransport](https://www.w3.org/TR/webtransport/)
+- [moq.dev: transport choices](https://doc.moq.dev/concept/transport)

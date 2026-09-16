@@ -1,0 +1,58 @@
+# Tracks, Groups and Objects
+
+Give the bytes a structure, and the network can make better choices.
+
+A relay should not need to understand a video codec to forward a lecture. It does, however, need to recognize which pieces belong together. The MoQ object model supplies those boundaries.
+
+## An object is a named piece of data
+
+An **object** is an addressable payload. In our lecture example, we might put one encoded video frame in one object. That is a format choice, not a universal rule: another format can package its bytes differently.
+
+In MOQT, an object’s identity includes its track namespace, track name, group ID, and object ID. Its payload is immutable. If two receivers request that identity, they must not receive different payload bytes simply because they connected at different times.
+
+This makes shared caching possible. An identity points to a particular piece of content, rather than an instruction to generate a personalized response.
+
+## A track is something you subscribe to
+
+A **track** is a sequence of groups. In our application, audio, low-resolution video, high-resolution video, and captions can each have a track. A subscriber chooses tracks instead of receiving a single inseparable bundle.
+
+The full track name combines a namespace and a track name. MOQT namespace fields and names are byte sequences; human-readable paths in this book are illustrations, not a statement that all implementations use URL strings on the wire.
+
+For example, we might describe a namespace as `lectures / networking / session-7` and a track as `video-low`. The application must define how those labels become the exact name bytes its peers compare.
+
+## Groups create places to join
+
+A new viewer should not have to receive a lecture from its beginning. A **group** creates a join point within a track. MOQT recommends that groups be independently useful, avoiding dependencies on objects in other groups.
+
+For a simple video format, start a group with a keyframe, followed by the frames that depend on it. A viewer can then start at that group instead of reconstructing all preceding video. Decoder configuration may still need to come from the media format’s metadata.
+
+```{=html}
+<figure class="group-figure"><div class="track-label">TRACK · video / low</div><div class="groups"><div><strong>Group 41</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div><div><strong>Group 42</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div></div><figcaption>Example media mapping: each group starts with a keyframe; later frames depend on earlier frames within that group. Δ means a predicted frame.</figcaption></figure>
+```
+
+The diagram is one possible media mapping. A group is not automatically a second of media, and its ID is not inherently a timestamp. The format and publisher decide those relationships.
+
+## Subgroups decide what shares a stream
+
+MOQT also has **subgroups** within a group. Objects in a subgroup are ordered by object ID and normally share a transport stream. This can express dependency and priority relationships more precisely than putting an entire group on one stream.
+
+For example, a layered codec may have a base layer and an enhancement layer. Keeping them separate lets a scheduler favor the base layer. A receiver still needs to understand the codec’s actual dependencies; putting data on a different stream does not make it independently decodable.
+
+Do not assume “one group equals one QUIC stream” for all MOQT implementations. That simpler model is useful for moq-lite, which omits MOQT subgroups.
+
+## A vocabulary translation
+
+The moq.dev model uses **broadcast** for a named collection of tracks and **frame** for the sized payload unit corresponding to an object. Its stream-based group is a sequence of frames on one stream. These words are convenient at the library level, but they can hide differences from the broader IETF model.
+
+When reading an example, first identify which vocabulary it uses. A “frame” in a generic data track need not be a decoded video image. A “stream” might mean a QUIC byte stream, a live broadcast, or a JavaScript stream. Ask which one the author means.
+
+## Restarting is a naming problem too
+
+Suppose the lecturer’s publisher crashes, then restarts its counters at group zero under the same track name. A relay may still have old objects with those identities. New payloads would collide with cached ones.
+
+A practical design gives a new publication a fresh namespace or preserves a non-conflicting sequence across restarts. Decide this before adding caching. Otherwise, a restart that seems harmless locally can produce confusing results elsewhere in the delivery network.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: object model and naming](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2)
+- [moq.dev: moq-lite terminology](https://doc.moq.dev/concept/moq-lite)

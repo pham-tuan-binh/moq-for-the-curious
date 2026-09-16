@@ -1,0 +1,58 @@
+# Frequently Asked Questions
+
+The questions that tend to arrive just after the first explanation.
+
+Some questions cross chapter boundaries. This is a place to bring the pieces back together without turning every answer into a protocol promise.
+
+## Is MoQ a finished standard?
+
+The baseline for this edition is **draft-ietf-moq-transport-21**, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current [IETF document status](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/) before implementing them.
+
+This book is a dated explanation, not an automatically synchronized mirror of the specification. Links to the pinned draft preserve what the edition describes. Links to project documentation can change after publication.
+
+## Does MoQ replace WebRTC?
+
+For a side-by-side introduction, start with [How does MoQ compare with WebRTC?](/docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc).
+
+It can serve some overlapping use cases, but choosing a transport is not the same as choosing a complete media system. WebRTC supplies a mature collection of media and connectivity machinery. A MoQ application still needs its chosen capture, codec, playback, routing, and access components.
+
+Compare the requirements of your actual product: interactive delay, audience size, target devices, network constraints, and operational experience. This book explains a design, not a universal winner.
+
+## Does it replace HLS or DASH?
+
+MoQ offers another delivery model, especially interesting for live interaction and relay-based distribution. HTTP-based playback remains relevant where existing players, caches, workflows, and device reach matter.
+
+A service can use more than one delivery path. The moq.dev project includes gateways for established formats and protocols. A gateway is a concrete integration to test, not evidence that every arbitrary MoQ publication is playable by an HLS player.
+
+## Is all MoQ traffic unreliable?
+
+No. QUIC streams provide reliable, ordered bytes within each stream. MoQ can abandon stale stream work according to its rules and policy. Datagram delivery is another option with different properties. Distinguish reliable delivery of an active stream from a promise to preserve all media forever.
+
+## Can I send chat or game state?
+
+The payload model is not limited to media. But your data still needs a design that matches loss, ordering, and late joining. A fresh state snapshot can replace an old one. An isolated “increment score” event often cannot.
+
+For an illustrative game, put a full state snapshot at a restart boundary and define how later updates relate to it. If you need an authoritative event history, provide persistence and recovery deliberately rather than assuming a live track is a database.
+
+## Is MoQ peer-to-peer?
+
+MOQT can operate between endpoints or through relays. It does not by itself supply every rendezvous and NAT traversal mechanism needed for arbitrary browser-to-browser connectivity. The common browser deployment connects outward to a server through WebTransport.
+
+Some native stacks add their own peer connectivity. Those are implementation capabilities to investigate separately from the core object and subscription model.
+
+## Is moq-lite the same as MOQT?
+
+No. moq-lite uses a simpler model, and the moq.dev stack implements compatibility paths for specified MOQT versions. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.
+
+## Can I use this book as a specification?
+
+Use it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.
+
+The prose, diagrams, and examples were written independently for this guide. WebRTC for the Curious inspired the accessible book structure. Neither its authors, moq.dev, nor the IETF endorse this project.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT: current document status](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/)
+- [MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21)
+- [moq.dev: implementation and integrations](https://doc.moq.dev/)
+- [moq-lite: compatibility boundaries](https://doc.moq.dev/concept/moq-lite)

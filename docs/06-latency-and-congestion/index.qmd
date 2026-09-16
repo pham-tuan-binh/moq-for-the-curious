@@ -1,0 +1,59 @@
+# Latency and Congestion
+
+When the network cannot carry everything, decide what is still useful.
+
+A player can be receiving data continuously and still be getting worse. If the data arrives slower than it is produced, its picture becomes steadily older. The problem is not necessarily a disconnected network. It may be a growing queue.
+
+## Latency has several owners
+
+End-to-end delay includes capture, encoding, network transit, buffering, decoding, and presentation. Relays and operating systems can introduce additional queues. Improving one stage does not erase the others.
+
+```{=html}
+<figure class="latency"><div class="latency-bar"><span>Capture<br><b>20 ms</b></span><span>Encode<br><b>35 ms</b></span><span>Network<br><b>45 ms</b></span><span>Buffer<br><b>80 ms</b></span><span>Render<br><b>20 ms</b></span></div><figcaption>Illustrative budget: 200 ms from capture to display. These are teaching values, not a MoQ benchmark.</figcaption></figure>
+```
+
+The numbers above are an invented teaching example. If this player spends 80 milliseconds buffering, shaving five milliseconds off network transit will not create a five-millisecond experience. Measure the whole path you care about.
+
+A lecture viewer might prefer a little extra buffering to avoid interruptions. A person talking back to the lecturer may prefer lower delay, accepting occasional missing video. The best policy depends on the interaction.
+
+## Congestion control versus media adaptation
+
+Congestion control governs how much the transport can send without overwhelming the path. Media adaptation decides what content to produce or request within that budget. They cooperate, but they solve different problems.
+
+If the encoder continually produces more data than the connection can carry, a careful congestion controller will slow the sender. Unless the application also adapts, data accumulates above it. Respecting the network is necessary; keeping the media fresh takes another decision.
+
+One response is to request a lower-bitrate rendition. Another is to reduce future encoding quality. A third is to abandon stale content. These choices can be combined, but none makes bandwidth unlimited.
+
+## Priority is a preference under scarcity
+
+For the lecture, audio may deserve service before high-resolution video. If bandwidth becomes scarce, hearing the lecturer while the picture pauses can be better than losing both.
+
+A scheduler needs that preference in a form it can use. Priority is not a reserved pipe or a promise that every important byte will arrive by a deadline. It only helps choose among work competing for available capacity.
+
+Numeric priority conventions vary between APIs and protocol fields. Do not copy a number from a moq-lite example into an unrelated MOQT implementation without checking its ordering rules.
+
+## Give old work a stopping point
+
+Suppose group 41 is incomplete and group 42 can independently restart decoding. Finishing 41 might preserve a moment the viewer has already missed. Sending 42 may bring the viewer closer to live.
+
+MOQT delivery timeouts and stream cancellation provide mechanisms for giving up on work. Their precise timer start points and behavior are draft-specific. A per-hop delivery timeout is not a universal guarantee about capture-to-display delay.
+
+The player also needs a policy for already received data. A network can deliver fresh objects quickly while the player continues displaying an old queue. Observe both transport backlog and playback backlog.
+
+## A simple queue calculation
+
+Imagine a publisher generating four megabits each second over a path carrying two. In five seconds, ten megabits of extra work accumulate, ignoring overhead. At two megabits per second, that backlog alone takes five seconds to transmit after production stops.
+
+This simplified arithmetic explains why “wait and catch up” is not a policy when the mismatch continues. Reduce the rate, discard safely, or accept an increasing delay. A different protocol cannot repeal that relationship.
+
+## Test recovery, not just steady playback
+
+A good experiment briefly restricts bandwidth, then restores it. Watch whether playback returns near the live edge, remains far behind, or repeatedly switches quality. Record gaps as well as averages.
+
+Use a repeatable recorded source before involving a camera. You want to distinguish a network response from changes in scene complexity or encoder load. Later, repeat on real devices and real networks; a tidy simulation cannot cover every queue in the path.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: priorities and delivery timeouts](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5)
+- [MOQT draft-21: transport considerations](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-14)
+- [QUIC loss detection and congestion control: RFC 9002](https://www.rfc-editor.org/rfc/rfc9002.html)

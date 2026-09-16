@@ -1,0 +1,95 @@
+# What, Why and How
+
+A video is only live if it arrives in time. Let’s start there.
+
+Imagine watching a concert with a friend. You are both looking at the same stage, but your friend cheers before you see the singer appear. The picture on your screen may be sharp. Every byte may have arrived correctly. Yet something important has been lost: the shared moment.
+
+Delivering live media is about more than moving bytes. It is about deciding which bytes are still worth moving. Media over QUIC, usually shortened to **MoQ**, gives us a way to make those decisions while distributing content through a network of relays.
+
+## What is MoQ?
+
+MoQ is a family of work around delivering media over QUIC. At its center is **MoQ Transport**, or **MOQT**: a publish/subscribe protocol. A publisher makes named content available. A subscriber asks for the content it wants. A relay can sit between them, forwarding that content to many subscribers.
+
+```{=html}
+<figure class="flow"><div class="flow-nodes"><div><span class="node-icon">01</span><strong>Publisher</strong><span>Creates objects</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">02</span><strong>Relay</strong><span>Forwards &amp; caches</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">03</span><strong>Subscribers</strong><span>Choose their tracks</span></div></div><figcaption>One publisher. A shared relay. Each viewer receives the tracks they request.</figcaption></figure>
+```
+
+Think of a live lecture. The lecturer produces audio, camera video, and slides. A listener on a weak connection might request audio and slides. Another might request high-quality video too. Giving the pieces separate names lets the delivery system treat them separately.
+
+The word “media” is useful context, not a restriction on the payload. An object can carry encoded audio, a video frame, or application data. The transport moves bytes; a format above it tells the receiver what those bytes mean.
+
+## How does MoQ compare with WebRTC?
+
+If you already know WebRTC, MoQ can sound familiar: both can carry live audio, video, and data. The useful question is what each gives the application to work with. **WebRTC brings an integrated real-time media stack. MoQ Transport organizes delivery around named content that receivers request.**
+
+Imagine our lecture becoming a conversation. A student turns on a microphone and asks a question. With WebRTC, the browser provides `RTCPeerConnection` to negotiate and exchange media with another endpoint. The application still supplies signaling—the channel used to exchange setup information—and decides who joins the room. Encoding, media transport, and receiving media are integrated into the browser’s WebRTC machinery. See the [WebRTC API specification](https://www.w3.org/TR/webrtc/).
+
+With MoQ, the lecturer and student can each publish tracks and subscribe to one another. The transport knows how to deliver their objects, but a media layer still has to describe codecs and timestamps, and a player has to turn received content into sound and pictures. A library can provide those pieces; they are not all supplied by MOQT itself. This separation is part of the [MOQT design](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1).
+
+::: {.book-table-scroll role="region" aria-label="WebRTC and MoQ comparison" tabindex="0"}
+
+| Question | WebRTC | MoQ Transport |
+| --- | --- | --- |
+| What does the application work with? | A negotiated connection carrying media tracks and data channels. | Named tracks of grouped objects, delivered through publication and subscription. |
+| How does it connect? | ICE finds a usable path, with STUN and TURN support for connectivity and relaying. | Native QUIC or WebTransport; the usual browser path connects to a server. |
+| What carries the content? | Secure RTP for media; SCTP over DTLS for data channels. | QUIC streams or datagrams, directly or through WebTransport. |
+| How does a larger audience receive it? | A media server can selectively forward streams to participants. | Relays forward requested objects and can cache them for reuse. |
+| Who supplies media playback? | The browser’s WebRTC media stack handles much of the pipeline. | The chosen media library and application supply the pipeline above MOQT. |
+
+: WebRTC and MoQ at a glance
+
+:::
+
+
+The table compares the core models, not every feature a product can add. The WebRTC connectivity and transport details come from [RFC 8835](https://www.rfc-editor.org/rfc/rfc8835.html); MoQ’s delivery model is described in [draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21).
+
+**Both can use servers.** A WebRTC conference can use a selective forwarding unit, or **SFU**: a server that receives media and forwards selected streams to participants. It does not require a separate direct connection between every pair of people. A TURN server has a different job: relaying traffic when a direct network path is unavailable. Neither should be casually equated with a MoQ relay’s named-object publication, subscription, and optional caching. See the [RTP topology guide](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7).
+
+**Both must make choices when the network is slow.** WebRTC has media feedback and adaptation mechanisms; MoQ uses its object structure, scheduling, and delivery rules alongside QUIC’s congestion control. Neither name guarantees lower latency. Encoding, routing, buffering, and the particular implementation all affect the result. We will work through those decisions in [Latency and Congestion](/docs/06-latency-and-congestion/).
+
+For a browser conversation, WebRTC gives you many of the media pieces together. For an application built around publishing content once and distributing it through reusable relay infrastructure, MoQ is worth understanding. That is a starting point for evaluation, not a rule that WebRTC cannot broadcast or MoQ cannot conference. Test the actual devices, network paths, and libraries you plan to use. In this edition, also remember that MOQT is still a versioned draft.
+
+## Why another protocol?
+
+Suppose your connection can carry two megabits per second, but the publisher produces four. Waiting longer cannot make that mismatch disappear. If you keep every byte in a queue, you fall further behind. If you throw away bytes carelessly, the decoder may lose the reference frames it needs.
+
+We need a more informed choice: preserve useful data, stop spending time on data that has become stale, and keep enough structure for the receiver to continue. MoQ combines named pieces of content with the independent streams available in QUIC. Relays can use that structure without becoming video decoders.
+
+This is especially interesting when one live experience needs both immediacy and distribution. Think of an interactive class with a handful of speakers and thousands of listeners. The speakers and listeners need not make exactly the same tradeoff between delay and completeness.
+
+## A few pieces, working together
+
+It helps to separate four responsibilities. Your application decides what the user can watch. A media format describes the content. MoQ handles publication and delivery. QUIC provides the underlying connection.
+
+```{=html}
+<figure class="layers"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>Each layer solves a different problem. A working connection is only the beginning.</figcaption></figure>
+```
+
+These boundaries matter when something goes wrong. A successful connection does not prove that you requested the right track. Receiving a track does not prove that your decoder understands its codec. We will visit each layer separately, then put them together.
+
+## The protocol and the project
+
+**The IETF MoQ effort and moq.dev are related, but they are not the same thing.** The IETF develops the transport specification through public drafts. The moq.dev project provides applications and libraries, including a smaller protocol model called **moq-lite** and a media format called **hang**.
+
+::: {.callout-note title="About this edition"}
+This book uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It is an Internet-Draft, not a finished RFC. moq.dev examples describe its documentation as reviewed on September 16, 2026. Check negotiated versions before assuming two implementations interoperate.
+:::
+
+You will see those names again. For now, remember that learning the ideas and choosing a particular library are different steps. You can understand subscriptions without memorizing message numbers or installing an SDK.
+
+## How to read this book
+
+Start with the next chapter if QUIC is new to you. Continue through tracks, subscriptions, relays, and media to build a picture of the whole system. The later chapters cover security, a practical first experiment, and debugging. The glossary is there whenever an unfamiliar word interrupts your reading.
+
+We assume you know what a client and a server are. You do not need to know how video compression works or have read a networking RFC. Examples use a fictional live lecture throughout; numbers and names in those examples are teaching choices, not protocol defaults.
+
+This is an independently written guide inspired by the chapter-based, concepts-first approach of WebRTC for the Curious. Its explanations and examples are original. When you need exact wire behavior, use the linked specification for your version.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: introduction](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1)
+- [moq.dev: concepts](https://doc.moq.dev/concept/)
+- [WebRTC for the Curious: the inspiration](https://webrtcforthecurious.com/docs/01-what-why-and-how/)
+- [W3C: WebRTC browser API](https://www.w3.org/TR/webrtc/)
+- [RFC 8835: WebRTC connectivity and transports](https://www.rfc-editor.org/rfc/rfc8835.html)
+- [RFC 7667: selective forwarding topology](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7)

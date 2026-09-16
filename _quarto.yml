@@ -1,0 +1,62 @@
+project:
+  type: book
+  output-dir: dist
+  post-render:
+    - python3 scripts/post-render.py
+
+book:
+  title: "MoQ for the Curious"
+  subtitle: "An approachable guide to Media over QUIC"
+  favicon: assets/favicon.svg
+  search: true
+  page-navigation: true
+  sidebar:
+    style: docked
+    collapse-level: 2
+  page-footer:
+    left: "Independent guide · Research edition: September 16, 2026"
+    right: "Built with [Quarto](https://quarto.org/)"
+  chapters:
+    - index.qmd
+    - part: "The fundamentals"
+      chapters:
+        - docs/01-what-why-and-how/index.qmd
+        - docs/02-quic-and-webtransport/index.qmd
+        - docs/03-tracks-groups-and-objects/index.qmd
+        - docs/04-publishing-and-subscribing/index.qmd
+        - docs/05-relays-and-distribution/index.qmd
+        - docs/06-latency-and-congestion/index.qmd
+        - docs/07-media-and-the-browser/index.qmd
+    - part: "In practice"
+      chapters:
+        - docs/08-security-and-access/index.qmd
+        - docs/09-your-first-moq-system/index.qmd
+        - docs/10-debugging/index.qmd
+    - part: "Keep exploring"
+      chapters:
+        - docs/11-faq/index.qmd
+        - docs/12-glossary/index.qmd
+        - docs/13-references/index.qmd
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    grid:
+      body-width: 760px
+      sidebar-width: 240px
+      margin-width: 200px
+    css: assets/book.css
+    toc: true
+    toc-depth: 2
+    number-depth: 1
+    code-copy: true
+    link-external-newwindow: false
+    include-before-body: assets/skip.html
+    include-after-body: assets/navigation-fallback.html
+    html-math-method: plain
+    smooth-scroll: false
+
+execute:
+  enabled: false

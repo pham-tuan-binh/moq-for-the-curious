@@ -1,0 +1,55 @@
+# Media and the Browser
+
+Receiving bytes is not the same as hearing sound or seeing a picture.
+
+The relay says objects are arriving. The player remains black. That can happen without any transport bug: a media application needs more information than the payload bytes alone.
+
+## The format supplies meaning
+
+A receiver needs to know which track contains audio, which codec was used, how to configure the decoder, and when to present each decoded frame. The media format provides the agreement between publisher and receiver.
+
+MOQT is deliberately content agnostic. It does not require every application to use one codec or interpret one object as one video frame. Two endpoints can speak the same transport and still disagree about what its payload means.
+
+## A catalog describes the choices
+
+In the moq.dev ecosystem, **hang** supplies a media catalog and frame packaging above moq-lite. The catalog describes media renditions and their decoder configuration. This lets a player discover available choices instead of guessing from track names.
+
+A lecture might offer one audio track and several video renditions. The player must select a rendition it can decode and afford to receive. “Highest resolution” is not necessarily the right initial choice on an unknown connection.
+
+Catalogs can change during a publication. A player needs to handle a track appearing, disappearing, or becoming unusable. Treat metadata as part of the live system rather than a permanent fact learned only at startup.
+
+## Keyframes and dependencies
+
+Many video frames describe changes from other pictures. A **keyframe**, in the simple model used here, supplies a fresh decoding starting point. Later predicted frames depend on the decoder having the appropriate reference pictures.
+
+That is why our example aligns group boundaries with independent video sequences. Arbitrarily cutting a byte stream every second does not necessarily produce safe join points. The encoder and packager must agree on the boundary.
+
+Switching video quality has the same concern. A low-resolution frame and a high-resolution frame are not automatically interchangeable decoder state. Switch at a valid point with the correct configuration for the new rendition.
+
+## WebCodecs handles codec work
+
+WebCodecs exposes low-level encoding and decoding interfaces. It can turn encoded chunks into decoded frames, but it does not implement a complete MoQ player. The application still needs transport, demultiplexing or parsing, buffering, synchronization, and rendering.
+
+A decoder configuration must be supported on the actual device. Detect support rather than assuming that an API being present means every codec, profile, resolution, or acceleration path is available.
+
+Decoded video frames also consume resources. Release frames when finished with them, and bound queues so that a background tab or slow renderer does not accumulate unlimited work.
+
+## Timestamps are not arrival times
+
+Packets take variable amounts of time to travel. If a player displays each frame immediately upon arrival, network jitter becomes presentation jitter. Media timestamps let it schedule content according to the intended timeline.
+
+Audio and video need a shared synchronization strategy. Their object arrival order is not enough. The player may have to buffer, wait, skip, or correct its presentation clock.
+
+Group and object IDs are positions in the transport model, not substitutes for media timestamps. Keep those concepts separate even when an implementation happens to relate them.
+
+## Build around the whole browser
+
+A working media page must also handle capture permission, autoplay policy, device changes, tab lifecycle, and cleanup. Start playback from a user action when required, and make failures understandable.
+
+The moq.dev stack provides higher-level player and publisher packages that handle much of this integration. For a first application, learn the lower layers conceptually while using the existing player. Reimplementing capture, clocks, and rendering at once makes transport debugging unnecessarily difficult.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [moq.dev: hang catalog and containers](https://doc.moq.dev/concept/hang)
+- [W3C WebCodecs](https://www.w3.org/TR/webcodecs/)
+- [moq.dev: browser libraries](https://doc.moq.dev/)

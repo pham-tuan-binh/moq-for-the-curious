@@ -1,0 +1,73 @@
+# Glossary
+
+A small vocabulary for reading the rest of the book.
+
+The same word can have different meanings at different layers. These definitions describe how this guide uses it; the linked protocol draft supplies the exact normative definitions.
+
+## Broadcast and catalog
+
+**Broadcast:** in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.
+
+**Catalog:** media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.
+
+## Connection and session
+
+**Connection:** the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.
+
+**Session:** the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.
+
+## Object, group, and subgroup
+
+**Object:** an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.
+
+**Group:** a collection of objects providing a join point within a track. It should be independently useful; the application format decides how that maps to media dependencies.
+
+**Subgroup:** ordered objects within one group, normally sharing a transport stream. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
+
+## Track and namespace
+
+**Track:** the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.
+
+**Namespace:** the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.
+
+## Publisher, subscriber, and relay
+
+**Publisher:** an endpoint that supplies requested objects. An original publisher first introduces the content.
+
+**Subscriber:** an endpoint requesting and receiving a track.
+
+**Relay:** an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.
+
+## Stream and datagram
+
+**Stream:** here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.
+
+**Datagram:** an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.
+
+## Keyframe and rendition
+
+**Keyframe:** in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.
+
+**Rendition:** an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.
+
+## Latency, jitter, and congestion
+
+**Latency:** delay between specified events. Always ask which events: packet send and receipt, capture and display, or another pair.
+
+**Jitter:** variation in delay. A playback buffer can absorb some variation at the cost of additional latency.
+
+**Congestion:** a condition where demand exceeds available network capacity, causing queues or loss. Application queues can also grow when production outpaces delivery.
+
+## MOQT, moq-lite, and hang
+
+**MOQT:** Media over QUIC Transport, the IETF publish/subscribe protocol described by a versioned draft in this edition.
+
+**moq-lite:** the smaller protocol model used by the moq.dev project, with implementation-specific compatibility support.
+
+**hang:** the moq.dev media layer providing catalog and container conventions above its generic transport model.
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: terminology](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3)
+- [moq.dev: concepts](https://doc.moq.dev/concept/)
+- [moq.dev: hang](https://doc.moq.dev/concept/hang)
