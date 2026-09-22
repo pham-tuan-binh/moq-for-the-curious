@@ -1,8 +1,10 @@
 # Your First MoQ System
 
-You now know enough to make an experiment understandable. Keep the first system small: one publisher, one relay, one viewer, and a known media source. The goal is to see each layer working, not to reproduce a global distribution network on your first afternoon.
+This walkthrough follows one publisher, one relay, and one viewer using the moq.dev local demo. The goal is to observe a complete media path and understand what each observation proves.
 
-## Choose the implementation deliberately
+We will choose and record the implementation, review the path one frame takes, and start the demo with its supplied test content. Once playback works, we will add a second viewer, constrain the network, and consider what changes beyond localhost. The commands are upstream recipes, not a demo executed for this book.
+
+## Choose and record the implementation {#choose-the-implementation-deliberately}
 
 This walkthrough uses the **moq.dev project**, including its moq-lite and hang stack. It is not a minimal implementation of every feature in MOQT draft-21. The project’s current documentation is the authority for installation and command changes.
 
@@ -17,6 +19,18 @@ A **terminal** lets you start programs by typing commands. Your **working direct
 The demo runs several **processes**: running programs with separate jobs. A **listener** accepts traffic at an address and port. `localhost` refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.
 
 Keep the terminal running while using the demo. A process printing that it started is evidence about that process; it does not yet prove the browser can receive or play media.
+
+## Understand the path of one frame {#trace-one-frame-conceptually}
+
+A source produces media. An encoder compresses it. The media layer supplies timing and configuration, and maps the encoded data into named tracks and groups. The publisher makes that content available through the relay.
+
+The viewer chooses tracks, receives objects, interprets the media format, and decodes and presents the content. At each stage, ask what information is added and what can fail.
+
+```{=html}
+<figure class="layers"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>Each layer solves a different problem. A working connection is only the beginning.</figcaption></figure>
+```
+
+Once the demo is running, the observation table below will help you record the publication, transport, rendition, and codec.
 
 ## Start with the local demo
 
@@ -66,25 +80,13 @@ The upstream [quick start](https://doc.moq.dev/setup/#what-starts), rechecked on
 
 A loaded web page does not prove that its media connection succeeded. Likewise, silent audio is not enough to diagnose packet loss: check the player's mute control and whether playback needs a click. Browser playback restrictions are explained in [MDN's autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay).
 
-## Trace one frame conceptually
-
-A source produces media. An encoder compresses it. The media layer supplies timing and configuration, and maps the encoded data into named tracks and groups. The publisher makes that content available through the relay.
-
-The viewer chooses tracks, receives objects, interprets the media format, and decodes and presents the content. At each stage, ask what information is added and what can fail.
-
-```{=html}
-<figure class="layers"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>Each layer solves a different problem. A working connection is only the beginning.</figcaption></figure>
-```
-
-Write down the publication name, selected track, negotiated transport, and codec. These four observations are much more useful than a screenshot of a playing video when you later compare runs.
-
 ## Add a second viewer
 
 Open another viewer for the same publication. The relay now has more downstream work, while the original publication can be shared upstream. Inspect the relay’s metrics or logs instead of assuming the bandwidth pattern from the diagram alone.
 
 Then close one viewer. Confirm that the other continues. Close both and observe whether the chosen publisher stops producing or transmitting the unused track. Demand-aware behavior depends on the application path and other subscribers, so record what actually happens.
 
-## Make the network inconvenient
+## Test a constrained network {#make-the-network-inconvenient}
 
 Use a network test setup to constrain bandwidth or introduce delay. Start with one change at a time. Watch the selected rendition, playback age, audio continuity, and recovery after the constraint is removed.
 

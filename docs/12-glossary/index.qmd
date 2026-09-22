@@ -1,14 +1,34 @@
 # Glossary
 
-A small vocabulary for reading the rest of the book.
+Use this chapter to look up a term while reading. Related terms are grouped together, and the groups are ordered alphabetically by their headings. Each group links to the chapter that explains how the ideas work together.
 
-The same word can have different meanings at different layers. These definitions describe how this guide uses it; the linked protocol draft supplies the exact normative definitions.
+These definitions describe this book's usage. The same word can mean different things at different layers; the linked specification supplies the exact protocol definition.
+
+## Authentication and authorization
+
+**Authentication:** establishing which identity an endpoint or user has.
+
+**Authorization:** deciding what that identity may do, such as publishing a lecture or subscribing to it.
+
+**End-to-end encryption:** content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.
+
+Read more in [Security and Access](../08-security-and-access/index.qmd).
 
 ## Broadcast and catalog
 
 **Broadcast:** in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.
 
 **Catalog:** media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.
+
+Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
+
+## Codec, container, and timestamp
+
+**Codec:** a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.
+
+**Container:** a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.
+
+**Timestamp:** a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.
 
 Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 
@@ -20,41 +40,23 @@ Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 
 Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
-## Object, group, and subgroup
+## IP, TCP, UDP, and QUIC
 
-**Object:** an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.
+**IP:** the Internet Protocol, which addresses packets and supports forwarding between networks.
 
-**Group:** a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.
+**TCP:** a transport providing a reliable, ordered byte stream in each direction of a connection.
 
-**Subgroup:** a delivery grouping of objects within one group, sent in ascending object-ID order on its subgroup stream. Stream-based subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
+**UDP:** a transport carrying separate datagrams without built-in retransmission or ordering.
 
-Read more in [Tracks, Groups, and Objects](../03-tracks-groups-and-objects/index.qmd).
+**QUIC:** a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.
 
-## Track and namespace
+**Packet:** a network transmission unit. Packet boundaries do not define MoQ object boundaries.
 
-**Track:** the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.
+**ACK:** an acknowledgment of transport reception, not proof of decoding or playback.
 
-**Namespace:** the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.
+**RTT:** round-trip time, a measure of network delay to a peer and back.
 
-Read more in [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd).
-
-## Publisher, subscriber, and relay
-
-**Publisher:** an endpoint that supplies requested objects. An original publisher first introduces the content.
-
-**Subscriber:** an endpoint requesting and receiving a track.
-
-**Relay:** an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.
-
-Read more in [Relays and Distribution](../05-relays-and-distribution/index.qmd).
-
-## Stream and datagram
-
-**Stream:** here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.
-
-**Datagram:** an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.
-
-Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
+Read the [networking introduction and comparison tables](../02-quic-and-webtransport/index.qmd#a-short-introduction-to-tcpip).
 
 ## Keyframe and rendition
 
@@ -84,43 +86,41 @@ Read more in [Latency and Congestion](../06-latency-and-congestion/index.qmd).
 
 Read more in [What, Why, and How](../01-what-why-and-how/index.qmd).
 
-## Codec, container, and timestamp
+## Object, group, and subgroup
 
-**Codec:** a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.
+**Object:** an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.
 
-**Container:** a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.
+**Group:** a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.
 
-**Timestamp:** a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.
+**Subgroup:** a delivery grouping of objects within one group, sent in ascending object-ID order on its subgroup stream. Stream-based subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
 
-Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
+Read more in [Tracks, Groups, and Objects](../03-tracks-groups-and-objects/index.qmd).
 
-## Authentication and authorization
+## Publisher, subscriber, and relay
 
-**Authentication:** establishing which identity an endpoint or user has.
+**Publisher:** an endpoint that supplies requested objects. An original publisher first introduces the content.
 
-**Authorization:** deciding what that identity may do, such as publishing a lecture or subscribing to it.
+**Subscriber:** an endpoint requesting and receiving a track.
 
-**End-to-end encryption:** content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.
+**Relay:** an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.
 
-Read more in [Security and Access](../08-security-and-access/index.qmd).
+Read more in [Relays and Distribution](../05-relays-and-distribution/index.qmd).
 
-## IP, TCP, UDP, and QUIC
+## Stream and datagram
 
-**IP:** the Internet Protocol, which addresses packets and supports forwarding between networks.
+**Stream:** here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.
 
-**TCP:** a transport providing a reliable, ordered byte stream in each direction of a connection.
+**Datagram:** an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.
 
-**UDP:** a transport carrying separate datagrams without built-in retransmission or ordering.
+Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
-**QUIC:** a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.
+## Track and namespace
 
-**Packet:** a network transmission unit. Packet boundaries do not define MoQ object boundaries.
+**Track:** the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.
 
-**ACK:** an acknowledgment of transport reception, not proof of decoding or playback.
+**Namespace:** the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.
 
-**RTT:** round-trip time, a measure of network delay to a peer and back.
-
-Read the [networking introduction and comparison tables](../02-quic-and-webtransport/index.qmd#a-short-introduction-to-tcpip).
+Read more in [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd).
 
 ## Sources and further reading {.unnumbered #sources}
 

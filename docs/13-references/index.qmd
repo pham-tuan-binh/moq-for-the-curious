@@ -1,8 +1,20 @@
 # References and Reading
 
-Go from the explanation to the source, with the right version in hand.
+Use this chapter to choose a source for the question you are trying to answer. Protocol specifications define behavior, implementation documentation explains particular software, and this book supplies teaching examples. Example names, diagrams, and latency budgets are illustrative unless identified otherwise.
 
-This book separates three kinds of material: protocol specifications, implementation documentation, and original teaching examples. An example name, diagram, or latency budget is illustrative unless explicitly identified otherwise.
+Start with the question table below. The following sections identify the pinned MOQT draft, give a route through it, and link the transport, browser, WebRTC, and moq.dev sources. The final sections explain the edition's limits and how to keep an update accurate.
+
+## Choose a source by the question
+
+You do not need to read every specification before experimenting. Use a tutorial to build a model, implementation documentation to operate software, and a pinned specification to settle a protocol detail.
+
+| You want to… | Start here | Keep in mind |
+|---|---|---|
+| Understand the transport promises | [TCP specification](https://www.rfc-editor.org/rfc/rfc9293.html) and [QUIC overview](https://www.rfc-editor.org/rfc/rfc9000.html#section-1) | TCP bytes, QUIC streams, and MoQ objects are different units |
+| Start a local player | [moq.dev quick start](https://doc.moq.dev/setup/) | Its implementation model is not identical to the pinned MOQT draft |
+| Explain blocked audio | [MDN autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay) | Browser policy can prevent playback after successful delivery |
+| Inspect a QUIC trace visually | [qvis](https://qvis.quictools.info/) | Your implementation must export a compatible trace |
+| Resolve a request or stream rule | [Draft-21 stream usage](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4) | Read the version used by your implementation |
 
 ## The protocol baseline
 
@@ -31,18 +43,6 @@ Read the explanatory sections first, then use [control messages (§9)](https://d
 [RFC 9000](https://www.rfc-editor.org/rfc/rfc9000.html) defines QUIC’s transport, including streams, flow control, and cancellation. [RFC 9001](https://www.rfc-editor.org/rfc/rfc9001.html) describes its use of TLS. [RFC 9002](https://www.rfc-editor.org/rfc/rfc9002.html) covers loss detection and congestion control.
 
 [RFC 9221](https://www.rfc-editor.org/rfc/rfc9221.html) defines the QUIC DATAGRAM extension. Read it when deciding whether a small payload should be retried or replaced, and when checking message-size constraints.
-
-## Choose a source by the question
-
-You do not need to read every specification before experimenting. Use a tutorial to build a model, implementation documentation to operate software, and a pinned specification to settle a protocol detail.
-
-| You want to… | Start here | Keep in mind |
-|---|---|---|
-| Understand the transport promises | [TCP specification](https://www.rfc-editor.org/rfc/rfc9293.html) and [QUIC overview](https://www.rfc-editor.org/rfc/rfc9000.html#section-1) | TCP bytes, QUIC streams, and MoQ objects are different units |
-| Start a local player | [moq.dev quick start](https://doc.moq.dev/setup/) | Its implementation model is not identical to the pinned MOQT draft |
-| Explain blocked audio | [MDN autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay) | Browser policy can prevent playback after successful delivery |
-| Inspect a QUIC trace visually | [qvis](https://qvis.quictools.info/) | Your implementation must export a compatible trace |
-| Resolve a request or stream rule | [Draft-21 stream usage](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4) | Read the version used by your implementation |
 
 ## Browser interfaces
 

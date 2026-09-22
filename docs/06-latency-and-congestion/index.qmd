@@ -1,10 +1,10 @@
 # Latency and Congestion
 
-Alice can hear the lecture clearly, but her video is several seconds behind the lecturer. Objects are still arriving, and the connection has not failed. The player is receiving old work more slowly than the publisher creates new work.
+**Playback latency** is the time between capturing media and presenting it to a viewer. Some of that time is spent processing and moving data; some is spent waiting in queues. A connection can keep delivering objects while the viewer falls seconds behind.
 
-To understand how this happens, we need to follow the delay through the system. Some delay is unavoidable: capturing, encoding, and transporting a picture all take time. Other delay comes from waiting in queues. Those queues can continue growing even while every part of the system appears busy.
+We will first establish the units and account for that delay. Then we will follow a growing queue, distinguish congestion control from media adaptation, and examine priorities and delivery timeouts. Finally, we will look at the player's own queue and how it returns to live playback. The numerical examples are teaching values, not benchmarks.
 
-## Units before arithmetic
+## Which rates and delays are we measuring? {#units-before-arithmetic}
 
 A **bit** is a binary digit; a **byte** contains eight bits. Network rates commonly use bits per second, while file sizes commonly use bytes. Here, the prefixes are decimal: one megabit is one million bits.
 
@@ -19,7 +19,7 @@ A **bit** is a binary digit; a **byte** contains eight bits. Network rates commo
 
 A connection can have high capacity and a long delay. “Fast” is ambiguous; use the rate or time that explains the problem. Transport overhead also consumes capacity, so media bitrate and network bitrate are not identical.
 
-## Where the time goes
+## Where does playback delay come from? {#where-the-time-goes}
 
 Capture-to-display latency includes capture, encoding, network transit, buffering, decoding, and presentation. A relay or operating system can add another queue along the way. Measuring only the network leaves much of the path unexplained.
 
@@ -38,7 +38,7 @@ Reducing network time by five milliseconds takes this example from 200 ms to 195
 
 The appropriate balance depends on the interaction. Someone listening to a lecture may accept additional buffering to avoid interruptions. Someone speaking with the lecturer needs responses quickly and may prefer occasional missing video to a growing conversational delay.
 
-## How a queue grows
+## Why does the queue keep growing? {#how-a-queue-grows}
 
 Suppose the publisher produces four megabits each second while Alice's path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.
 
@@ -46,7 +46,7 @@ If production continues at the same rate, waiting longer makes the problem worse
 
 **Congestion control** limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
 
-The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing future production prevents further growth; it does not automatically remove an existing backlog. To return near the live edge, the system may also need to skip old content.
+The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing production below the rate the path can carry stops further queue growth. Existing queued data still has to be delivered or abandoned. To return near the live edge, the system may also need to skip old content.
 
 ### Congestion control, flow control, and adaptation
 
@@ -60,7 +60,7 @@ Three mechanisms influence how much data is sent. They solve different problems:
 
 Flow control protects the receiver with limits on individual streams and the connection as a whole. It does not measure whether a frame is still worth displaying. See [RFC 9000 §4](https://www.rfc-editor.org/rfc/rfc9000.html#section-4). A player can therefore receive data reliably and within its allowed limits while still falling behind the lecture.
 
-## Choosing which content to send
+## How do priorities choose what to send? {#choosing-which-content-to-send}
 
 Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.
 
@@ -68,7 +68,7 @@ MOQT represents these preferences through priorities and group ordering. In draf
 
 Priority changes which work waits. It does not reserve bandwidth or guarantee arrival by a deadline. If urgent audio consumes the available capacity, less urgent video may remain queued. That is why scheduling preferences need to be paired with limits on how long old work remains useful. Check the conventions of the API you use: moq-lite and MOQT fields are not interchangeable merely because both are called priorities.
 
-## Abandoning old content safely
+## When should delivery stop? {#abandoning-old-content-safely}
 
 Suppose video group 41 remains incomplete while group 42 provides a fresh decoding starting point. Finishing group 41 would preserve older pictures, but sending group 42 may bring Alice closer to the lecturer. Independent groups make that choice possible without requiring every preceding picture.
 
@@ -112,7 +112,7 @@ The transport must reach what the specification calls “all data committed” b
 
 For datagrams, the subgroup timeout instead uses the same age check as the object timeout; if both are nonzero, the smaller value applies. Zero disables the corresponding timeout. These rules describe a single hop's delivery decisions. They do not create a capture-to-display deadline across the whole relay network.
 
-## Returning to live playback
+## How does the player return to live? {#returning-to-live-playback}
 
 After the network recovers, Alice may still be watching frames that reached her earlier. A fresh transport queue does not empty the player's playback queue. The player needs its own policy for skipping stale decoded frames or moving its presentation clock forward, while respecting audio synchronization and decoding dependencies.
 

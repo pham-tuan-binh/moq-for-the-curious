@@ -1,7 +1,8 @@
 # Debugging
 
-A black player is a symptom shared by many unrelated failures. The fastest path to an explanation is to work from the connection toward presentation and stop at the first missing fact.
+Debugging a MoQ system means finding where progress stops between the publisher and the player. A black screen can result from a connection failure, a missing track, unusable media, or a presentation problem.
 
+Start at the top of the path below and check each boundary until you reach the first missing fact. The sections follow that order, then address playback that falls behind. A worked frozen-video example shows how to turn observations into a test, followed by the evidence to collect for a bug report.
 
 ```{mermaid}
 flowchart TD

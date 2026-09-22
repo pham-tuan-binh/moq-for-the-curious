@@ -23,19 +23,33 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/" aria-current="page"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 12</p><h1>Glossary</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#broadcast-and-catalog">Broadcast and catalog</a><a class="toc-level-2" href="#connection-and-session">Connection and session</a><a class="toc-level-2" href="#object-group-and-subgroup">Object, group, and subgroup</a><a class="toc-level-2" href="#track-and-namespace">Track and namespace</a><a class="toc-level-2" href="#publisher-subscriber-and-relay">Publisher, subscriber, and relay</a><a class="toc-level-2" href="#stream-and-datagram">Stream and datagram</a><a class="toc-level-2" href="#keyframe-and-rendition">Keyframe and rendition</a><a class="toc-level-2" href="#latency-jitter-and-congestion">Latency, jitter, and congestion</a><a class="toc-level-2" href="#moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</a><a class="toc-level-2" href="#codec-container-and-timestamp">Codec, container, and timestamp</a><a class="toc-level-2" href="#authentication-and-authorization">Authentication and authorization</a><a class="toc-level-2" href="#ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 12</p><h1>Glossary</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#authentication-and-authorization">Authentication and authorization</a><a class="toc-level-2" href="#broadcast-and-catalog">Broadcast and catalog</a><a class="toc-level-2" href="#codec-container-and-timestamp">Codec, container, and timestamp</a><a class="toc-level-2" href="#connection-and-session">Connection and session</a><a class="toc-level-2" href="#ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</a><a class="toc-level-2" href="#keyframe-and-rendition">Keyframe and rendition</a><a class="toc-level-2" href="#latency-jitter-and-congestion">Latency, jitter, and congestion</a><a class="toc-level-2" href="#moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</a><a class="toc-level-2" href="#object-group-and-subgroup">Object, group, and subgroup</a><a class="toc-level-2" href="#publisher-subscriber-and-relay">Publisher, subscriber, and relay</a><a class="toc-level-2" href="#stream-and-datagram">Stream and datagram</a><a class="toc-level-2" href="#track-and-namespace">Track and namespace</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>A small vocabulary for reading the rest of the book.</p>
-<p>The same word can have different meanings at different layers. These definitions describe how this guide uses it; the linked protocol draft supplies the exact normative definitions.</p>
+<p>Use this chapter to look up a term while reading. Related terms are grouped together, and the groups are ordered alphabetically by their headings. Each group links to the chapter that explains how the ideas work together.</p>
+<p>These definitions describe this book’s usage. The same word can mean different things at different layers; the linked specification supplies the exact protocol definition.</p>
+<section id="authentication-and-authorization" class="level2">
+<h2 class="anchored" data-anchor-id="authentication-and-authorization">Authentication and authorization</h2>
+<p><strong>Authentication:</strong> establishing which identity an endpoint or user has.</p>
+<p><strong>Authorization:</strong> deciding what that identity may do, such as publishing a lecture or subscribing to it.</p>
+<p><strong>End-to-end encryption:</strong> content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.</p>
+<p>Read more in <a href="../../docs/08-security-and-access/index.html">Security and Access</a>.</p>
+</section>
 <section id="broadcast-and-catalog" class="level2">
 <h2 class="anchored" data-anchor-id="broadcast-and-catalog">Broadcast and catalog</h2>
 <p><strong>Broadcast:</strong> in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.</p>
 <p><strong>Catalog:</strong> media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.</p>
+<p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
+</section>
+<section id="codec-container-and-timestamp" class="level2">
+<h2 class="anchored" data-anchor-id="codec-container-and-timestamp">Codec, container, and timestamp</h2>
+<p><strong>Codec:</strong> a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.</p>
+<p><strong>Container:</strong> a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.</p>
+<p><strong>Timestamp:</strong> a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.</p>
 <p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
 </section>
 <section id="connection-and-session" class="level2">
@@ -44,31 +58,16 @@
 <p><strong>Session:</strong> the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.</p>
 <p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
 </section>
-<section id="object-group-and-subgroup" class="level2">
-<h2 class="anchored" data-anchor-id="object-group-and-subgroup">Object, group, and subgroup</h2>
-<p><strong>Object:</strong> an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.</p>
-<p><strong>Group:</strong> a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.</p>
-<p><strong>Subgroup:</strong> a delivery grouping of objects within one group, sent in ascending object-ID order on its subgroup stream. Stream-based subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.</p>
-<p>Read more in <a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups, and Objects</a>.</p>
-</section>
-<section id="track-and-namespace" class="level2">
-<h2 class="anchored" data-anchor-id="track-and-namespace">Track and namespace</h2>
-<p><strong>Track:</strong> the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.</p>
-<p><strong>Namespace:</strong> the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.</p>
-<p>Read more in <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a>.</p>
-</section>
-<section id="publisher-subscriber-and-relay" class="level2">
-<h2 class="anchored" data-anchor-id="publisher-subscriber-and-relay">Publisher, subscriber, and relay</h2>
-<p><strong>Publisher:</strong> an endpoint that supplies requested objects. An original publisher first introduces the content.</p>
-<p><strong>Subscriber:</strong> an endpoint requesting and receiving a track.</p>
-<p><strong>Relay:</strong> an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.</p>
-<p>Read more in <a href="../../docs/05-relays-and-distribution/index.html">Relays and Distribution</a>.</p>
-</section>
-<section id="stream-and-datagram" class="level2">
-<h2 class="anchored" data-anchor-id="stream-and-datagram">Stream and datagram</h2>
-<p><strong>Stream:</strong> here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.</p>
-<p><strong>Datagram:</strong> an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.</p>
-<p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
+<section id="ip-tcp-udp-and-quic" class="level2">
+<h2 class="anchored" data-anchor-id="ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</h2>
+<p><strong>IP:</strong> the Internet Protocol, which addresses packets and supports forwarding between networks.</p>
+<p><strong>TCP:</strong> a transport providing a reliable, ordered byte stream in each direction of a connection.</p>
+<p><strong>UDP:</strong> a transport carrying separate datagrams without built-in retransmission or ordering.</p>
+<p><strong>QUIC:</strong> a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.</p>
+<p><strong>Packet:</strong> a network transmission unit. Packet boundaries do not define MoQ object boundaries.</p>
+<p><strong>ACK:</strong> an acknowledgment of transport reception, not proof of decoding or playback.</p>
+<p><strong>RTT:</strong> round-trip time, a measure of network delay to a peer and back.</p>
+<p>Read the <a href="../../docs/02-quic-and-webtransport/index.html#a-short-introduction-to-tcpip">networking introduction and comparison tables</a>.</p>
 </section>
 <section id="keyframe-and-rendition" class="level2">
 <h2 class="anchored" data-anchor-id="keyframe-and-rendition">Keyframe and rendition</h2>
@@ -90,30 +89,31 @@
 <p><strong>hang:</strong> the moq.dev media layer providing catalog and container conventions above its generic transport model.</p>
 <p>Read more in <a href="../../docs/01-what-why-and-how/index.html">What, Why, and How</a>.</p>
 </section>
-<section id="codec-container-and-timestamp" class="level2">
-<h2 class="anchored" data-anchor-id="codec-container-and-timestamp">Codec, container, and timestamp</h2>
-<p><strong>Codec:</strong> a method for encoding and decoding media. The codec compresses pictures or sound; the transport delivers the resulting bytes.</p>
-<p><strong>Container:</strong> a framing format that packages encoded media with information needed to interpret it, such as timestamps. It is distinct from the codec.</p>
-<p><strong>Timestamp:</strong> a position on a media timeline. It is not automatically a wall-clock time or a measurement of network delay.</p>
-<p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
+<section id="object-group-and-subgroup" class="level2">
+<h2 class="anchored" data-anchor-id="object-group-and-subgroup">Object, group, and subgroup</h2>
+<p><strong>Object:</strong> an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.</p>
+<p><strong>Group:</strong> a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.</p>
+<p><strong>Subgroup:</strong> a delivery grouping of objects within one group, sent in ascending object-ID order on its subgroup stream. Stream-based subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.</p>
+<p>Read more in <a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups, and Objects</a>.</p>
 </section>
-<section id="authentication-and-authorization" class="level2">
-<h2 class="anchored" data-anchor-id="authentication-and-authorization">Authentication and authorization</h2>
-<p><strong>Authentication:</strong> establishing which identity an endpoint or user has.</p>
-<p><strong>Authorization:</strong> deciding what that identity may do, such as publishing a lecture or subscribing to it.</p>
-<p><strong>End-to-end encryption:</strong> content protection whose keys are held by the intended content endpoints, so an intermediate relay cannot read the protected payload. Routing metadata can remain visible.</p>
-<p>Read more in <a href="../../docs/08-security-and-access/index.html">Security and Access</a>.</p>
+<section id="publisher-subscriber-and-relay" class="level2">
+<h2 class="anchored" data-anchor-id="publisher-subscriber-and-relay">Publisher, subscriber, and relay</h2>
+<p><strong>Publisher:</strong> an endpoint that supplies requested objects. An original publisher first introduces the content.</p>
+<p><strong>Subscriber:</strong> an endpoint requesting and receiving a track.</p>
+<p><strong>Relay:</strong> an intermediary acting as subscriber upstream and publisher downstream. It forwards content and may cache objects.</p>
+<p>Read more in <a href="../../docs/05-relays-and-distribution/index.html">Relays and Distribution</a>.</p>
 </section>
-<section id="ip-tcp-udp-and-quic" class="level2">
-<h2 class="anchored" data-anchor-id="ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</h2>
-<p><strong>IP:</strong> the Internet Protocol, which addresses packets and supports forwarding between networks.</p>
-<p><strong>TCP:</strong> a transport providing a reliable, ordered byte stream in each direction of a connection.</p>
-<p><strong>UDP:</strong> a transport carrying separate datagrams without built-in retransmission or ordering.</p>
-<p><strong>QUIC:</strong> a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.</p>
-<p><strong>Packet:</strong> a network transmission unit. Packet boundaries do not define MoQ object boundaries.</p>
-<p><strong>ACK:</strong> an acknowledgment of transport reception, not proof of decoding or playback.</p>
-<p><strong>RTT:</strong> round-trip time, a measure of network delay to a peer and back.</p>
-<p>Read the <a href="../../docs/02-quic-and-webtransport/index.html#a-short-introduction-to-tcpip">networking introduction and comparison tables</a>.</p>
+<section id="stream-and-datagram" class="level2">
+<h2 class="anchored" data-anchor-id="stream-and-datagram">Stream and datagram</h2>
+<p><strong>Stream:</strong> here, usually a reliable ordered QUIC or WebTransport byte stream. A “live stream” in everyday speech is a different concept.</p>
+<p><strong>Datagram:</strong> an independently delivered message without QUIC retransmission on loss. It does not promise arrival or order and has a size limit.</p>
+<p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
+</section>
+<section id="track-and-namespace" class="level2">
+<h2 class="anchored" data-anchor-id="track-and-namespace">Track and namespace</h2>
+<p><strong>Track:</strong> the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.</p>
+<p><strong>Namespace:</strong> the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.</p>
+<p>Read more in <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a>.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
@@ -127,6 +127,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/11-faq/"><small>Previous chapter</small><span>Frequently Asked Questions</span></a><a href="../../docs/13-references/"><small>Next chapter</small><span>References and Reading</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#broadcast-and-catalog">Broadcast and catalog</a><a class="toc-level-2" href="#connection-and-session">Connection and session</a><a class="toc-level-2" href="#object-group-and-subgroup">Object, group, and subgroup</a><a class="toc-level-2" href="#track-and-namespace">Track and namespace</a><a class="toc-level-2" href="#publisher-subscriber-and-relay">Publisher, subscriber, and relay</a><a class="toc-level-2" href="#stream-and-datagram">Stream and datagram</a><a class="toc-level-2" href="#keyframe-and-rendition">Keyframe and rendition</a><a class="toc-level-2" href="#latency-jitter-and-congestion">Latency, jitter, and congestion</a><a class="toc-level-2" href="#moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</a><a class="toc-level-2" href="#codec-container-and-timestamp">Codec, container, and timestamp</a><a class="toc-level-2" href="#authentication-and-authorization">Authentication and authorization</a><a class="toc-level-2" href="#ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#authentication-and-authorization">Authentication and authorization</a><a class="toc-level-2" href="#broadcast-and-catalog">Broadcast and catalog</a><a class="toc-level-2" href="#codec-container-and-timestamp">Codec, container, and timestamp</a><a class="toc-level-2" href="#connection-and-session">Connection and session</a><a class="toc-level-2" href="#ip-tcp-udp-and-quic">IP, TCP, UDP, and QUIC</a><a class="toc-level-2" href="#keyframe-and-rendition">Keyframe and rendition</a><a class="toc-level-2" href="#latency-jitter-and-congestion">Latency, jitter, and congestion</a><a class="toc-level-2" href="#moqt-moq-lite-and-hang">MOQT, moq-lite, and hang</a><a class="toc-level-2" href="#object-group-and-subgroup">Object, group, and subgroup</a><a class="toc-level-2" href="#publisher-subscriber-and-relay">Publisher, subscriber, and relay</a><a class="toc-level-2" href="#stream-and-datagram">Stream and datagram</a><a class="toc-level-2" href="#track-and-namespace">Track and namespace</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

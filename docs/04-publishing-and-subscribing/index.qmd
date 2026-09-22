@@ -1,8 +1,8 @@
 # Publishing and Subscribing
 
-Alice opens the lecture page while the lecturer is already speaking. Her browser connects to a relay, but the relay cannot yet know which lecture she wants. Even after it learns that, it still needs to know whether she wants audio, video, or both.
+A **subscription** asks another endpoint to deliver objects from a named track. It connects the content model from the previous chapter to the actual exchange between a publisher and a subscriber.
 
-A subscription supplies that information. It asks another endpoint to deliver objects from a named track. In this chapter we will follow Alice's request from the first connection through playback, then see what changes when another viewer joins.
+We will follow Alice, a student joining the lecture, through five parts of that exchange: establishing a session, finding the lecture, requesting audio, joining video in the middle, and ending a subscription. The examples show which endpoint sends each message and what its response establishes. Setup and delivery can overlap; the order of the explanation is not a requirement to wait after every step.
 
 ## Establishing a session
 
@@ -45,7 +45,7 @@ Discovery and delivery can have different access rules. A private lecture might 
 
 ## Asking for audio
 
-Alice's player sends `SUBSCRIBE`, naming the lecture's audio track and specifying its delivery choices. The relay answers with `SUBSCRIBE_OK` if it accepts, or `REQUEST_ERROR` if it rejects the request. Acceptance establishes the subscription; the audio itself arrives as objects on the data path.
+Alice's player sends `SUBSCRIBE`, naming the lecture's audio track and specifying its delivery choices. The relay answers with `SUBSCRIBE_OK` if it accepts, or `REQUEST_ERROR` if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.
 
 Suppose the relay is not yet receiving this lecture. The service has associated the publication with an upstream publisher through registration, routing configuration, or implementation-specific discovery. The relay uses that information to make an upstream subscription of its own; a track name is not an Internet-wide lookup service. The following example begins after setup and shows one possible sequence. Both subscriptions request compatible delivery settings.
 

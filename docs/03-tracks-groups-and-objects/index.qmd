@@ -1,12 +1,12 @@
 # Tracks, Groups and Objects
 
-A student joins our lecture ten minutes after it begins. They want the lecturer’s voice and a small video that fits their connection. They do not need the earlier ten minutes, the high-resolution video, or anyone else’s captions.
+MoQ names content so that a viewer can request just the pieces it needs. In our lecture, a student joining late might want audio and low-resolution video without downloading the earlier ten minutes.
 
-To make that choice possible, the publisher has to give its data some structure. MoQ uses **tracks** to separate things a viewer can request, **groups** to organize portions of a track, and **objects** to identify individual pieces of data. We will build that structure from the viewer’s request down to one encoded picture.
+The content model has three levels: a **track** is a named sequence of groups, a **group** contains objects, and an **object** identifies one piece of data. We will work through those levels in order, then explain how **subgroups** organize delivery on streams. Finally, we will see why names must remain consistent after a publisher restarts and how moq-lite's vocabulary differs.
 
-## A track is something you subscribe to
+## What is a track? {#a-track-is-something-you-subscribe-to}
 
-Our lecture has an audio track, a low-resolution video track, and a high-resolution video track. A **track** is a named sequence of groups. Subscribing to `video-low` asks for that sequence; it does not also request `video-high`.
+A **track** is a named sequence of groups that a subscriber can request. Our lecture has separate tracks for audio, low-resolution video, and high-resolution video. Subscribing to `video-low` asks for that sequence; it does not also request `video-high`.
 
 Tracks belong to a **namespace**, which lets the application organize related names. For this lecture, we use the namespace `lectures / session-7`. Together, the namespace and track name identify the full track.
 
@@ -23,9 +23,9 @@ flowchart TD
 
 These readable labels are examples. On the wire, MOQT represents namespace components and track names as byte sequences. Both ends must agree on those bytes; writing the same-looking path in a user interface is not enough. See [track naming in draft-21 §2.4.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1).
 
-## Groups create places to join
+## How do groups provide starting points? {#groups-create-places-to-join}
 
-Choosing a video track leaves another question: where should the student start?
+A **group** organizes objects within a track. A video format can use each group as a place to begin decoding. That answers the late-arriving student’s next question: where should playback start?
 
 Many compressed pictures describe changes from earlier pictures. Receiving one of these **predicted frames** without its reference pictures is like receiving “move it two pixels to the left” without knowing what “it” is. A **keyframe** provides a picture from which decoding can restart.
 
@@ -51,7 +51,7 @@ Each arrow runs from a reference picture to a picture that needs it. These are d
 
 Group IDs order groups within the track. Group 42 does not mean “42 seconds,” and groups need not have equal duration. The media format carries timing information for playback.
 
-## An object is a named piece of data
+## What identifies an object? {#an-object-is-a-named-piece-of-data}
 
 Inside each group are **objects**. Each object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently.
 
@@ -68,11 +68,11 @@ The identity applies within an agreed **scope**: the set of servers that treat a
 
 This property is called **immutability**. Once published, an object’s payload does not change. If Alice and Bob request the same object, a relay can serve the same stored bytes to both. A corrected payload needs a new identity; otherwise the relay would have no way to know which version the name means.
 
-## Subgroups decide what shares a stream
+## How do subgroups map objects to streams? {#subgroups-decide-what-shares-a-stream}
 
-We have described what the content is. We also need to decide which objects should travel together.
+A **subgroup** organizes objects from one group for delivery. It lets the publisher put related objects on the same stream while separating other work.
 
-For subscription delivery, MOQT can divide a group into **subgroups**, normally carrying each on one subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams. A subgroup can use another stream if an earlier stream was reset prematurely or upstream conditions forced objects out of order; different subgroups must not share a subscription stream.
+For subscription delivery, MOQT normally carries each subgroup on one subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams. A subgroup can use another stream if an earlier stream was reset prematurely or upstream conditions forced objects out of order; different subgroups must not share a subscription stream.
 
 For example, a layered video codec might produce a base layer that gives a usable picture and an enhancement layer that adds detail. Putting them in separate subgroups lets a scheduler favor the base layer when capacity is scarce. The enhancement still depends on the base; a separate stream does not remove that media dependency.
 
@@ -91,7 +91,7 @@ A track describes content. A stream carries bytes. Their lifetimes need not matc
 
 Separating these questions avoids a common mistake: opening a new transport stream does not create a new video track or a new decoding starting point.
 
-## Restarting is a naming problem too
+## What happens to names after a restart? {#restarting-is-a-naming-problem-too}
 
 Suppose the lecturer’s publisher crashes. When it restarts, it reuses `video-low`, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.
 
@@ -99,7 +99,7 @@ One solution is to give the restarted publication a fresh namespace, such as `le
 
 The same naming rules that make caching useful make this restart decision necessary. In the next chapter, we will follow a request for one of these named tracks from the student to the publisher.
 
-## A vocabulary translation
+## How does moq-lite name these concepts? {#a-vocabulary-translation}
 
 When working with the moq-lite implementation, you will encounter **broadcast** for a named collection of tracks and **frame** for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and uses a simpler group-per-stream model. Keep that distinction in mind when moving between [its documentation](https://doc.moq.dev/concept/moq-lite) and the IETF specification.
 

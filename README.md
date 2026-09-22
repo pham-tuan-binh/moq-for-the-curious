@@ -4,7 +4,7 @@ A free online book about **Media over QUIC**: how live media gets from a publish
 
 **[Read the book →](https://moqforthecurious.com)**
 
-The book starts with a comparison to WebRTC and an introduction to TCP/IP and QUIC. It then follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
+The book starts with what MoQ does, why it is useful, and how its parts fit together, followed by a comparison with WebRTC. It then introduces TCP/IP and QUIC. It then follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
 
 ## Contribute
 
@@ -54,6 +54,8 @@ The checks validate local links, section anchors, assets, reading landmarks, and
 Generated output is currently tracked. Include the rebuilt `dist/` files with source changes.
 
 ## Writing and visual standards
+
+Open each teaching chapter with its subject, purpose, and a short route through the explanation. Follow that route in the body: define the idea, explain the mechanism, work through an example, then cover limitations and failure. Use headings that name the subject or answer a reader’s question. Give readers links to skip familiar prerequisites or return to optional detail. Reference chapters should favor quick lookup over a forced lesson sequence.
 
 Explain the mechanism before its edge cases. Define terms when first needed, use concrete examples, and distinguish protocol requirements from implementation choices. Link the source near the claim it supports.
 

@@ -23,18 +23,18 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/" aria-current="page"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 03</p><h1>Tracks, Groups and Objects</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-track-is-something-you-subscribe-to">A track is something you subscribe to</a><a class="toc-level-2" href="#groups-create-places-to-join">Groups create places to join</a><a class="toc-level-2" href="#an-object-is-a-named-piece-of-data">An object is a named piece of data</a><a class="toc-level-2" href="#subgroups-decide-what-shares-a-stream">Subgroups decide what shares a stream</a><a class="toc-level-3" href="#keep-the-two-kinds-of-structure-separate">Keep the two kinds of structure separate</a><a class="toc-level-2" href="#restarting-is-a-naming-problem-too">Restarting is a naming problem too</a><a class="toc-level-2" href="#a-vocabulary-translation">A vocabulary translation</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 03</p><h1>Tracks, Groups and Objects</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-track-is-something-you-subscribe-to">What is a track?</a><a class="toc-level-2" href="#groups-create-places-to-join">How do groups provide starting points?</a><a class="toc-level-2" href="#an-object-is-a-named-piece-of-data">What identifies an object?</a><a class="toc-level-2" href="#subgroups-decide-what-shares-a-stream">How do subgroups map objects to streams?</a><a class="toc-level-3" href="#keep-the-two-kinds-of-structure-separate">Keep the two kinds of structure separate</a><a class="toc-level-2" href="#restarting-is-a-naming-problem-too">What happens to names after a restart?</a><a class="toc-level-2" href="#a-vocabulary-translation">How does moq-lite name these concepts?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>A student joins our lecture ten minutes after it begins. They want the lecturer’s voice and a small video that fits their connection. They do not need the earlier ten minutes, the high-resolution video, or anyone else’s captions.</p>
-<p>To make that choice possible, the publisher has to give its data some structure. MoQ uses <strong>tracks</strong> to separate things a viewer can request, <strong>groups</strong> to organize portions of a track, and <strong>objects</strong> to identify individual pieces of data. We will build that structure from the viewer’s request down to one encoded picture.</p>
+<p>MoQ names content so that a viewer can request just the pieces it needs. In our lecture, a student joining late might want audio and low-resolution video without downloading the earlier ten minutes.</p>
+<p>The content model has three levels: a <strong>track</strong> is a named sequence of groups, a <strong>group</strong> contains objects, and an <strong>object</strong> identifies one piece of data. We will work through those levels in order, then explain how <strong>subgroups</strong> organize delivery on streams. Finally, we will see why names must remain consistent after a publisher restarts and how moq-lite’s vocabulary differs.</p>
 <section id="a-track-is-something-you-subscribe-to" class="level2">
-<h2 class="anchored" data-anchor-id="a-track-is-something-you-subscribe-to">A track is something you subscribe to</h2>
-<p>Our lecture has an audio track, a low-resolution video track, and a high-resolution video track. A <strong>track</strong> is a named sequence of groups. Subscribing to <code>video-low</code> asks for that sequence; it does not also request <code>video-high</code>.</p>
+<h2 class="anchored" data-anchor-id="a-track-is-something-you-subscribe-to">What is a track?</h2>
+<p>A <strong>track</strong> is a named sequence of groups that a subscriber can request. Our lecture has separate tracks for audio, low-resolution video, and high-resolution video. Subscribing to <code>video-low</code> asks for that sequence; it does not also request <code>video-high</code>.</p>
 <p>Tracks belong to a <strong>namespace</strong>, which lets the application organize related names. For this lecture, we use the namespace <code>lectures / session-7</code>. Together, the namespace and track name identify the full track.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -58,8 +58,8 @@
 <p>These readable labels are examples. On the wire, MOQT represents namespace components and track names as byte sequences. Both ends must agree on those bytes; writing the same-looking path in a user interface is not enough. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">track naming in draft-21 §2.4.1</a>.</p>
 </section>
 <section id="groups-create-places-to-join" class="level2">
-<h2 class="anchored" data-anchor-id="groups-create-places-to-join">Groups create places to join</h2>
-<p>Choosing a video track leaves another question: where should the student start?</p>
+<h2 class="anchored" data-anchor-id="groups-create-places-to-join">How do groups provide starting points?</h2>
+<p>A <strong>group</strong> organizes objects within a track. A video format can use each group as a place to begin decoding. That answers the late-arriving student’s next question: where should playback start?</p>
 <p>Many compressed pictures describe changes from earlier pictures. Receiving one of these <strong>predicted frames</strong> without its reference pictures is like receiving “move it two pixels to the left” without knowing what “it” is. A <strong>keyframe</strong> provides a picture from which decoding can restart.</p>
 <p>For our video format, the publisher begins each group with a keyframe, then puts the frames that depend on it in the same group. The student can start with a recent group instead of reconstructing the entire lecture. The player also needs the codec configuration, which the media format supplies separately.</p>
 <div class="cell" data-layout-align="default">
@@ -90,7 +90,7 @@
 <p>Group IDs order groups within the track. Group 42 does not mean “42 seconds,” and groups need not have equal duration. The media format carries timing information for playback.</p>
 </section>
 <section id="an-object-is-a-named-piece-of-data" class="level2">
-<h2 class="anchored" data-anchor-id="an-object-is-a-named-piece-of-data">An object is a named piece of data</h2>
+<h2 class="anchored" data-anchor-id="an-object-is-a-named-piece-of-data">What identifies an object?</h2>
 <p>Inside each group are <strong>objects</strong>. Each object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently.</p>
 <p>We can now give a complete address for one picture:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
@@ -128,9 +128,9 @@
 <p>This property is called <strong>immutability</strong>. Once published, an object’s payload does not change. If Alice and Bob request the same object, a relay can serve the same stored bytes to both. A corrected payload needs a new identity; otherwise the relay would have no way to know which version the name means.</p>
 </section>
 <section id="subgroups-decide-what-shares-a-stream" class="level2">
-<h2 class="anchored" data-anchor-id="subgroups-decide-what-shares-a-stream">Subgroups decide what shares a stream</h2>
-<p>We have described what the content is. We also need to decide which objects should travel together.</p>
-<p>For subscription delivery, MOQT can divide a group into <strong>subgroups</strong>, normally carrying each on one subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams. A subgroup can use another stream if an earlier stream was reset prematurely or upstream conditions forced objects out of order; different subgroups must not share a subscription stream.</p>
+<h2 class="anchored" data-anchor-id="subgroups-decide-what-shares-a-stream">How do subgroups map objects to streams?</h2>
+<p>A <strong>subgroup</strong> organizes objects from one group for delivery. It lets the publisher put related objects on the same stream while separating other work.</p>
+<p>For subscription delivery, MOQT normally carries each subgroup on one subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams. A subgroup can use another stream if an earlier stream was reset prematurely or upstream conditions forced objects out of order; different subgroups must not share a subscription stream.</p>
 <p>For example, a layered video codec might produce a base layer that gives a usable picture and an enhancement layer that adds detail. Putting them in separate subgroups lets a scheduler favor the base layer when capacity is scarce. The enhancement still depends on the base; a separate stream does not remove that media dependency.</p>
 <p>A subgroup organizes delivery; its ID is not an extra component of the object address in the table above. Objects delivered as datagrams do not belong to subgroups, and fetched objects have their own stream representation. These distinctions are defined in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">draft-21 §2.2</a>.</p>
 <section id="keep-the-two-kinds-of-structure-separate" class="level3">
@@ -176,13 +176,13 @@
 </section>
 </section>
 <section id="restarting-is-a-naming-problem-too" class="level2">
-<h2 class="anchored" data-anchor-id="restarting-is-a-naming-problem-too">Restarting is a naming problem too</h2>
+<h2 class="anchored" data-anchor-id="restarting-is-a-naming-problem-too">What happens to names after a restart?</h2>
 <p>Suppose the lecturer’s publisher crashes. When it restarts, it reuses <code>video-low</code>, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.</p>
 <p>One solution is to give the restarted publication a fresh namespace, such as <code>lectures / session-8</code>. Another is to preserve a non-conflicting sequence of group IDs. The application must choose a strategy that keeps old and new identities distinct throughout its scope.</p>
 <p>The same naming rules that make caching useful make this restart decision necessary. In the next chapter, we will follow a request for one of these named tracks from the student to the publisher.</p>
 </section>
 <section id="a-vocabulary-translation" class="level2">
-<h2 class="anchored" data-anchor-id="a-vocabulary-translation">A vocabulary translation</h2>
+<h2 class="anchored" data-anchor-id="a-vocabulary-translation">How does moq-lite name these concepts?</h2>
 <p>When working with the moq-lite implementation, you will encounter <strong>broadcast</strong> for a named collection of tracks and <strong>frame</strong> for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and uses a simpler group-per-stream model. Keep that distinction in mind when moving between <a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">its documentation</a> and the IETF specification.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
@@ -196,6 +196,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/02-quic-and-webtransport/"><small>Previous chapter</small><span>QUIC and WebTransport</span></a><a href="../../docs/04-publishing-and-subscribing/"><small>Next chapter</small><span>Publishing and Subscribing</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-track-is-something-you-subscribe-to">A track is something you subscribe to</a><a class="toc-level-2" href="#groups-create-places-to-join">Groups create places to join</a><a class="toc-level-2" href="#an-object-is-a-named-piece-of-data">An object is a named piece of data</a><a class="toc-level-2" href="#subgroups-decide-what-shares-a-stream">Subgroups decide what shares a stream</a><a class="toc-level-3" href="#keep-the-two-kinds-of-structure-separate">Keep the two kinds of structure separate</a><a class="toc-level-2" href="#restarting-is-a-naming-problem-too">Restarting is a naming problem too</a><a class="toc-level-2" href="#a-vocabulary-translation">A vocabulary translation</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-track-is-something-you-subscribe-to">What is a track?</a><a class="toc-level-2" href="#groups-create-places-to-join">How do groups provide starting points?</a><a class="toc-level-2" href="#an-object-is-a-named-piece-of-data">What identifies an object?</a><a class="toc-level-2" href="#subgroups-decide-what-shares-a-stream">How do subgroups map objects to streams?</a><a class="toc-level-3" href="#keep-the-two-kinds-of-structure-separate">Keep the two kinds of structure separate</a><a class="toc-level-2" href="#restarting-is-a-naming-problem-too">What happens to names after a restart?</a><a class="toc-level-2" href="#a-vocabulary-translation">How does moq-lite name these concepts?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

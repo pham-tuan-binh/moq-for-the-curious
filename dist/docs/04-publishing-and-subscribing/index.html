@@ -30,8 +30,8 @@
 
 
 
-<p>Alice opens the lecture page while the lecturer is already speaking. Her browser connects to a relay, but the relay cannot yet know which lecture she wants. Even after it learns that, it still needs to know whether she wants audio, video, or both.</p>
-<p>A subscription supplies that information. It asks another endpoint to deliver objects from a named track. In this chapter we will follow Alice’s request from the first connection through playback, then see what changes when another viewer joins.</p>
+<p>A <strong>subscription</strong> asks another endpoint to deliver objects from a named track. It connects the content model from the previous chapter to the actual exchange between a publisher and a subscriber.</p>
+<p>We will follow Alice, a student joining the lecture, through five parts of that exchange: establishing a session, finding the lecture, requesting audio, joining video in the middle, and ending a subscription. The examples show which endpoint sends each message and what its response establishes. Setup and delivery can overlap; the order of the explanation is not a requirement to wait after every step.</p>
 <section id="establishing-a-session" class="level2">
 <h2 class="anchored" data-anchor-id="establishing-a-session">Establishing a session</h2>
 <p>Before Alice and the relay can exchange requests, they need a compatible MoQ session. A session is the protocol relationship in which the endpoints exchange requests and content. The transport carries that conversation, but it does not interpret its messages.</p>
@@ -75,7 +75,7 @@
 </section>
 <section id="asking-for-audio" class="level2">
 <h2 class="anchored" data-anchor-id="asking-for-audio">Asking for audio</h2>
-<p>Alice’s player sends <code>SUBSCRIBE</code>, naming the lecture’s audio track and specifying its delivery choices. The relay answers with <code>SUBSCRIBE_OK</code> if it accepts, or <code>REQUEST_ERROR</code> if it rejects the request. Acceptance establishes the subscription; the audio itself arrives as objects on the data path.</p>
+<p>Alice’s player sends <code>SUBSCRIBE</code>, naming the lecture’s audio track and specifying its delivery choices. The relay answers with <code>SUBSCRIBE_OK</code> if it accepts, or <code>REQUEST_ERROR</code> if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.</p>
 <p>Suppose the relay is not yet receiving this lecture. The service has associated the publication with an upstream publisher through registration, routing configuration, or implementation-specific discovery. The relay uses that information to make an upstream subscription of its own; a track name is not an Internet-wide lookup service. The following example begins after setup and shows one possible sequence. Both subscriptions request compatible delivery settings.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">

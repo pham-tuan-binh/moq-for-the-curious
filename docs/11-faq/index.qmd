@@ -1,8 +1,8 @@
 # Frequently Asked Questions
 
-The questions that tend to arrive just after the first explanation.
+These questions connect ideas from several chapters: which applications MoQ suits, how it relates to other protocols, and what its reliability and compatibility claims mean. Each answer gives the main point first and links to a fuller explanation where useful.
 
-Some questions cross chapter boundaries. Here we bring those pieces back together.
+You can read this chapter in any order. For a term rather than a design question, use the [glossary](../12-glossary/index.qmd).
 
 ## Is MoQ a finished standard?
 
@@ -12,7 +12,7 @@ This book is a dated explanation, not an automatically synchronized mirror of th
 
 ## Does MoQ replace WebRTC?
 
-For a side-by-side introduction, start with [How does MoQ compare with WebRTC?](/docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc).
+MoQ is an alternative for some applications, rather than a universal replacement for WebRTC. For a side-by-side introduction, see [How does MoQ compare with WebRTC?](/docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc).
 
 The two can serve some of the same applications. Consider our lecture: a conversation between the lecturer and a student, and delivery to a large listening audience, are different parts of the same experience. Either technology may be used in a larger system that supports both.
 

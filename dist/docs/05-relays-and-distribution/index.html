@@ -23,16 +23,17 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/" aria-current="page"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 05</p><h1>Relays and Distribution</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-relay-plays-both-roles">A relay plays both roles</a><a class="toc-level-2" href="#caching-helps-but-has-limits">Caching helps, but has limits</a><a class="toc-level-2" href="#each-hop-has-its-own-conditions">Each hop has its own conditions</a><a class="toc-level-2" href="#relays-need-structure-not-codec-knowledge">Relays need structure, not codec knowledge</a><a class="toc-level-2" href="#what-a-relay-does-not-automatically-do">What a relay does not automatically do</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 05</p><h1>Relays and Distribution</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-relay-plays-both-roles">How does a relay share content?</a><a class="toc-level-2" href="#relays-need-structure-not-codec-knowledge">What does a relay need to know?</a><a class="toc-level-2" href="#caching-helps-but-has-limits">How does caching help new viewers?</a><a class="toc-level-2" href="#each-hop-has-its-own-conditions">How does delivery differ between viewers?</a><a class="toc-level-2" href="#what-a-relay-does-not-automatically-do">Which jobs belong to the wider service?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>If every viewer needs a separate copy directly from the lecturer, the lecturer’s upload becomes the audience limit. A relay moves the copying work into the distribution network.</p>
+<p>A <strong>relay</strong> receives content from a publisher and forwards it to subscribers. It moves the copying work off the publisher’s connection, allowing the same publication to reach more viewers.</p>
+<p>This chapter follows that work in four parts: sharing upstream content, interpreting the metadata needed to forward it, caching objects for later requests, and adapting delivery to each downstream connection. We will finish by separating those jobs from transcoding and deployment choices. You will be able to trace where copies, stored objects, and queues exist in a distribution path.</p>
 <section id="a-relay-plays-both-roles" class="level2">
-<h2 class="anchored" data-anchor-id="a-relay-plays-both-roles">A relay plays both roles</h2>
+<h2 class="anchored" data-anchor-id="a-relay-plays-both-roles">How does a relay share content?</h2>
 <p>A relay is a subscriber toward an upstream source and a publisher toward downstream subscribers. It terminates transport connections and handles MoQ metadata. It is more than a router forwarding encrypted IP packets.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -80,25 +81,25 @@
 </table></div>
 <p>The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.</p>
 </section>
+<section id="relays-need-structure-not-codec-knowledge" class="level2">
+<h2 class="anchored" data-anchor-id="relays-need-structure-not-codec-knowledge">What does a relay need to know?</h2>
+<p>A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.</p>
+<p>The publisher must therefore align the group boundaries with the media. If a group advertised as a starting point depends on an earlier group, forwarding it will not give the new viewer enough information to decode. Format design and encoder behavior must agree.</p>
+</section>
 <section id="caching-helps-but-has-limits" class="level2">
-<h2 class="anchored" data-anchor-id="caching-helps-but-has-limits">Caching helps, but has limits</h2>
+<h2 class="anchored" data-anchor-id="caching-helps-but-has-limits">How does caching help new viewers?</h2>
 <p>A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. An object is identified by its full track name, group ID, and object ID within a scope. Its payload cannot change, allowing different viewers to reuse the same cached bytes. Some object properties can change under their own rules; immutability does not apply to every cached field.</p>
 <p><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT permits caching</a>; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.</p>
 <p>For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.</p>
 </section>
 <section id="each-hop-has-its-own-conditions" class="level2">
-<h2 class="anchored" data-anchor-id="each-hop-has-its-own-conditions">Each hop has its own conditions</h2>
+<h2 class="anchored" data-anchor-id="each-hop-has-its-own-conditions">How does delivery differ between viewers?</h2>
 <p>The lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.</p>
 <p>Alice’s connection may deliver each new group immediately, while Bob’s connection builds a queue. Their playback delay differs even though both request the same publication. The relay can choose delivery settings for each subscription according to that viewer’s path.</p>
 <p>Measure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.</p>
 </section>
-<section id="relays-need-structure-not-codec-knowledge" class="level2">
-<h2 class="anchored" data-anchor-id="relays-need-structure-not-codec-knowledge">Relays need structure, not codec knowledge</h2>
-<p>A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.</p>
-<p>It also means the publisher must describe content honestly. If a supposed join point actually depends on an earlier group, the relay cannot repair the mistake by looking at a label. Format design and encoder behavior must agree.</p>
-</section>
 <section id="what-a-relay-does-not-automatically-do" class="level2">
-<h2 class="anchored" data-anchor-id="what-a-relay-does-not-automatically-do">What a relay does not automatically do</h2>
+<h2 class="anchored" data-anchor-id="what-a-relay-does-not-automatically-do">Which jobs belong to the wider service?</h2>
 <p>Forwarding a high-resolution track does not create a low-resolution version. A <strong>transcoder</strong> decodes and re-encodes media; a relay distributes the objects it receives. A service can run both roles, but they are different jobs.</p>
 <p>Likewise, DNS routing, selecting a nearby relay, arranging redundancy, and recovering application state are deployment choices. The moq.dev project supplies clustering features; they should not be mistaken for a universal, automatic global MoQ network.</p>
 <p>Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked. That small drawing often reveals more than a single “CDN” box.</p>
@@ -114,6 +115,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/04-publishing-and-subscribing/"><small>Previous chapter</small><span>Publishing and Subscribing</span></a><a href="../../docs/06-latency-and-congestion/"><small>Next chapter</small><span>Latency and Congestion</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-relay-plays-both-roles">A relay plays both roles</a><a class="toc-level-2" href="#caching-helps-but-has-limits">Caching helps, but has limits</a><a class="toc-level-2" href="#each-hop-has-its-own-conditions">Each hop has its own conditions</a><a class="toc-level-2" href="#relays-need-structure-not-codec-knowledge">Relays need structure, not codec knowledge</a><a class="toc-level-2" href="#what-a-relay-does-not-automatically-do">What a relay does not automatically do</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-relay-plays-both-roles">How does a relay share content?</a><a class="toc-level-2" href="#relays-need-structure-not-codec-knowledge">What does a relay need to know?</a><a class="toc-level-2" href="#caching-helps-but-has-limits">How does caching help new viewers?</a><a class="toc-level-2" href="#each-hop-has-its-own-conditions">How does delivery differ between viewers?</a><a class="toc-level-2" href="#what-a-relay-does-not-automatically-do">Which jobs belong to the wider service?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

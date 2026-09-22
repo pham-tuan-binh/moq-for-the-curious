@@ -30,7 +30,8 @@
 
 
 
-<p>Before following a subscription, we need to understand what carries it. This chapter explains the transport promises a MoQ application uses, then looks inside the packets that carry them. You do not need to memorize packet headers; you need to know which layer is responsible when something is delayed or lost.</p>
+<p>QUIC carries application data over a secure connection with multiple independent byte streams. WebTransport gives browser applications access to streams and datagrams. Understanding these tools explains what MOQT can ask the transport to do when data is delayed or lost.</p>
+<p>We will start with the TCP/IP basics, then examine stream ordering, loss, cancellation, and datagrams. Next we will connect those ideas to security and the browser’s WebTransport interface. The final section looks inside QUIC packets and the handshake; you can return to that detail after learning the content model. You do not need to memorize packet headers to follow the book.</p>
 <section id="a-short-introduction-to-tcpip" class="level2">
 <h2 class="anchored" data-anchor-id="a-short-introduction-to-tcpip">A short introduction to TCP/IP</h2>
 <p>If you are already familiar with TCP/IP, TCP, and UDP, skip ahead to <a href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a>.</p>

@@ -1,8 +1,10 @@
 # Media and the Browser
 
-A student joins our lecture halfway through a sentence. The relay accepts the subscription and begins sending objects. To play that sentence, the browser still has to identify the audio, decode it, and match it to the lecturer's picture. This chapter follows those steps from the media description to the screen and speakers.
+A player turns received objects into sound and pictures. MOQT delivers the objects; the media format and player tell the browser how to interpret, decode, and present them.
 
-## Discovering the media
+We will follow that path in order: read the media description, find a decodable starting point, submit encoded data to a decoder, and schedule the result for playback. The final section covers browser permissions and resource cleanup. Our examples use the moq.dev **hang** media layer and the browser's **WebCodecs** API, both of which we will introduce below.
+
+## How does the player interpret a track? {#discovering-the-media}
 
 The lecture offers an audio track and two video tracks, one at a lower resolution for slower connections. Track names let the player request them, but names alone do not explain how to use their bytes. The player also needs the codec, decoder configuration, and timing information. A **codec** defines how pictures or sound are encoded and decoded. A **container** packages the encoded data with information needed to interpret it, such as timestamps.
 
@@ -34,9 +36,9 @@ The catalog remains useful after playback starts. The lecturer might add screen 
 | MoQ object | An addressed unit delivered by the transport | A payload identified by its track, group, and object IDs |
 | Decoded frame | A picture the decoder has reconstructed | A `VideoFrame` the player can render |
 
-The media format defines how encoded chunks fit into objects. MOQT itself does not require one object to equal one video frame. Keeping that boundary clear helps locate failures: receiving an object proves delivery, while displaying a picture also requires parsing, decoding, and scheduling.
+An **encoded chunk** is a unit of compressed media submitted to a decoder. The media format defines how these chunks fit into objects. MOQT itself does not require one object to equal one video frame. Keeping that boundary clear helps locate failures: receiving an object proves delivery, while displaying a picture also requires parsing, decoding, and scheduling.
 
-## Starting with a decodable picture
+## Where can decoding begin? {#starting-with-a-decodable-picture}
 
 Video compression often describes how one picture differs from earlier pictures. Such a predicted frame is useful only when the decoder has the reference pictures it needs. A **keyframe** supplies a fresh decoding starting point in the video model we are using.
 
@@ -46,7 +48,7 @@ The encoder and packager must agree on those boundaries. Cutting a stream every 
 
 The same issue appears when the student switches to higher resolution. The new rendition has its own decoder state. The player changes configuration as needed and starts at a valid decoding point; it cannot simply feed an arbitrary high-resolution predicted frame into the old sequence.
 
-## Decoding in the browser
+## How does WebCodecs decode the media? {#decoding-in-the-browser}
 
 WebCodecs gives JavaScript access to media encoders and decoders. For video, the player checks a configuration with `VideoDecoder.isConfigSupported()`, applies it with `configure()`, and submits encoded chunks with `decode()`. Support depends on the actual codec configuration and device, so the presence of the API alone is insufficient.
 
@@ -54,7 +56,7 @@ The decoder produces `VideoFrame` objects through an output callback. Those are 
 
 Each decoded frame holds resources. After rendering or discarding a frame, the player calls `VideoFrame.close()` when it no longer needs that frame. Waiting for garbage collection can retain scarce resources and stall decoding. Bounded queues are equally important: if rendering slows down, receiving more frames must not cause unlimited memory growth. See the [WebCodecs memory model](https://www.w3.org/TR/webcodecs/#raw-media-memory-model).
 
-## Choosing when to play
+## When should a frame be presented? {#choosing-when-to-play}
 
 Frames do not necessarily arrive at the spacing at which they were captured. Variable network delay produces **jitter**. If the player displayed pictures on arrival, that uneven timing would become visible movement on the screen.
 
@@ -89,7 +91,7 @@ Audio follows the same presentation timeline. An audio sample and a picture inte
 
 Group and object IDs locate content; the media timestamps tell the player when to present it. Neither this table nor those IDs measure capture-to-display latency by themselves. That measurement also requires a relationship between the source's capture clock and the receiver's clock.
 
-## Completing the player
+## What else does a browser player need? {#completing-the-player}
 
 A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the [media capture permission rules](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia). Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
 

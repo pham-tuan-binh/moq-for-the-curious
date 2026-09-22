@@ -23,48 +23,93 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/" aria-current="page"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 01</p><h1>What, Why and How</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#what-is-moq">What is MoQ?</a><a class="toc-level-2" href="#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a><a class="toc-level-3" href="#what-the-browser-does-for-you">What the browser does for you</a><a class="toc-level-3" href="#how-content-reaches-people">How content reaches people</a><a class="toc-level-3" href="#they-can-work-together">They can work together</a><a class="toc-level-2" href="#why-another-protocol">Why another protocol?</a><a class="toc-level-2" href="#from-opening-a-page-to-hearing-the-lecturer">From opening a page to hearing the lecturer</a><a class="toc-level-2" href="#a-few-pieces-working-together">A few pieces, working together</a><a class="toc-level-2" href="#the-protocol-and-the-project">The protocol and the project</a><a class="toc-level-2" href="#how-to-read-this-book">How to read this book</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 01</p><h1>What, Why and How</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#what-is-moq">What is MoQ?</a><a class="toc-level-2" href="#why-another-protocol">Why use MoQ?</a><a class="toc-level-2" href="#from-opening-a-page-to-hearing-the-lecturer">How does MoQ work?</a><a class="toc-level-3" href="#connect-establish-a-session">Connect: establish a session</a><a class="toc-level-3" href="#discover-find-the-content">Discover: find the content</a><a class="toc-level-3" href="#request-choose-what-to-receive">Request: choose what to receive</a><a class="toc-level-3" href="#deliver-forward-useful-objects">Deliver: forward useful objects</a><a class="toc-level-3" href="#present-turn-objects-into-sound-and-pictures">Present: turn objects into sound and pictures</a><a class="toc-level-2" href="#a-few-pieces-working-together">How do the layers fit together?</a><a class="toc-level-2" href="#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a><a class="toc-level-3" href="#what-the-browser-does-for-you">What the browser does for you</a><a class="toc-level-3" href="#how-content-reaches-people">How content reaches people</a><a class="toc-level-3" href="#they-can-work-together">They can work together</a><a class="toc-level-2" href="#the-protocol-and-the-project">The protocol and the project</a><a class="toc-level-2" href="#how-to-read-this-book">How to read this book</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>Imagine joining a live lecture from home. You hear the lecturer explain a new slide while the screen still shows the previous one. All the media may eventually arrive, yet the conversation is difficult to follow.</p>
-<p>A live media system has to do more than deliver a file correctly. It has to keep the different parts of an experience close enough together, decide what to do when a connection slows down, and serve people who join at different times. Media over QUIC, or <strong>MoQ</strong>, is an approach to those problems. Throughout this book, we will use the lecture to understand how it works.</p>
+<p>This chapter explains what MoQ does, why it is useful, and how its parts fit together. We will follow a publication from its publisher to a player, then compare that model with WebRTC and map it to the rest of the book.</p>
+<section id="what-is-moq" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
+<p><strong>Media over QUIC (MoQ)</strong> lets applications publish live content that other applications can subscribe to. A publisher can send content directly to subscribers or distribute it through relays. <strong>MoQ Transport (MOQT)</strong> is the protocol that defines how content is named, requested, and delivered. It runs over <strong>QUIC</strong>, a secure transport with multiple independent byte streams, either directly or through WebTransport.</p>
+<p>This is a <strong>publish/subscribe</strong> model: one endpoint makes content available, and another asks to receive it. We will use a live lecture to follow that exchange throughout the book.</p>
+<p>In our lecture, the lecturer is a <strong>publisher</strong>. Each viewer is a <strong>subscriber</strong>. The lecturer could send directly to every viewer, but that would make the lecturer’s upload connection carry another copy for each person who joins. Instead, the publisher can send to a <strong>relay</strong>, a server that forwards the content to interested viewers.</p>
 <figure class="editorial-illustration figure">
 <img src="../../assets/illustrations/lecture-distribution.svg" width="960" height="440" loading="lazy" decoding="async" alt="A publisher sends audio and video to a relay. Viewer A receives both tracks; viewer B receives only audio." class="figure-img">
 <figcaption>The relay receives the publication once and forwards the tracks each viewer requests. Blue is audio; purple is video. Requests and transport acknowledgments are omitted.</figcaption>
 </figure>
-<section id="what-is-moq" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
-<p>MoQ is a family of work around delivering media over <strong>QUIC</strong>, a secure network transport that can carry several independent sequences of bytes over one connection. At its center is <strong>MoQ Transport</strong>, usually written <strong>MOQT</strong>. It defines how one endpoint makes content available and another asks to receive it. This arrangement is called <strong>publish/subscribe</strong>.</p>
-<p>In our lecture, the lecturer is a <strong>publisher</strong>. Each viewer is a <strong>subscriber</strong>. The lecturer could send directly to every viewer, but that would make the lecturer’s upload connection carry another copy for each person who joins. Instead, the publisher can send to a <strong>relay</strong>, a server that forwards the content to interested viewers.</p>
+<p>An endpoint can be both a publisher and a subscriber: a student can receive the lecture and publish microphone audio over the same session. A relay receives content upstream and publishes it downstream. See the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">role definitions</a>.</p>
+<p>To let the viewers make different choices, the publisher gives the pieces separate names. The lecturer’s audio can be one <strong>track</strong>, camera video another, and slides a third. A track contains individually identifiable pieces of data called <strong>objects</strong>. For example, a media format might place one compressed video frame in each object. The phone viewer requests the audio track; the laptop viewer requests audio and video.</p>
+<p>A relay can also <strong>cache</strong> objects: keep copies so it can answer later requests. Someone joining the lecture may need content published a moment earlier to begin playback. If the relay has kept that content, it can supply it without asking the lecturer to send another copy.</p>
+<p>Although media motivates this design, an object’s payload can also be application data. The transport handles names and delivery. The application and its media format agree on what the delivered bytes mean.</p>
+</section>
+<section id="why-another-protocol" class="level2">
+<h2 class="anchored" data-anchor-id="why-another-protocol">Why use MoQ?</h2>
+<p>Live delivery has to balance three needs: reaching many viewers, starting playback for people who join late, and keeping slow connections from falling further behind. MoQ brings named content, relays, and delivery choices into one protocol.</p>
+<p>Suppose the lecturer produces four megabits of media each second, but one viewer’s connection can carry only two. Each second adds more work to the queue. Waiting for every byte makes that viewer fall further behind the lecture.</p>
+<p>Discarding arbitrary bytes is not a good solution either. Compressed video often describes how a picture differs from earlier pictures. If the <strong>decoder</strong>, the component reconstructing pictures, never receives one of those earlier pictures, later data may be unusable. To catch up, the receiver needs a place from which it can resume decoding.</p>
+<p>MoQ gives content a structure that the distribution network can use. Objects belong to groups, and a media format can arrange those groups around useful starting points. A relay can recognize the boundaries, reuse objects requested by several viewers, and choose which work to send on each viewer’s connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated content need not all wait behind the same missing bytes. These are central ideas in the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">motivation</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">relay model</a>.</p>
+<p>These delivery decisions can serve different audiences through the same distribution system. Our lecture might have a few people speaking and thousands listening. Speakers may need very little delay to take turns, while listeners may accept a little more buffering to avoid interruptions. The same publication can serve both, with delivery decisions made along their different paths.</p>
+</section>
+<section id="from-opening-a-page-to-hearing-the-lecturer" class="level2">
+<h2 class="anchored" data-anchor-id="from-opening-a-page-to-hearing-the-lecturer">How does MoQ work?</h2>
+<p>We can follow a publication through five activities:</p>
+<ol type="1">
+<li><strong>Connect:</strong> establish a compatible session.</li>
+<li><strong>Discover:</strong> find the publication and its tracks.</li>
+<li><strong>Request:</strong> choose the content to receive.</li>
+<li><strong>Deliver:</strong> move objects to the subscriber.</li>
+<li><strong>Present:</strong> decode and play the media.</li>
+</ol>
+<p>These activities give us a way to study the system. Some can overlap, and discovery may be unnecessary when names are already known. Each has a different job.</p>
+<section id="connect-establish-a-session" class="level3">
+<h3 class="anchored" data-anchor-id="connect-establish-a-session">Connect: establish a session</h3>
+<p>The viewer connects to a server using QUIC or, in the browser path covered here, WebTransport. The endpoints agree on a MOQT version and exchange session settings. They now have a conversation in which they can make requests. <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a> explains the transport; <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a> explains the session.</p>
+</section>
+<section id="discover-find-the-content" class="level3">
+<h3 class="anchored" data-anchor-id="discover-find-the-content">Discover: find the content</h3>
+<p>The application turns the viewer’s choice of lecture into names. It may already know the publication or use discovery to find it. A media description then tells the player which tracks contain audio and video and how to interpret them. <a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups and Objects</a> introduces names, and <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a> explains the media description.</p>
+</section>
+<section id="request-choose-what-to-receive" class="level3">
+<h3 class="anchored" data-anchor-id="request-choose-what-to-receive">Request: choose what to receive</h3>
+<p>The viewer subscribes to the tracks it wants, such as audio and low-resolution video. A late arrival may also need earlier objects before playback can begin. The receiver can request retained content while following new objects. <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a> follows acceptance, late joining, and cancellation.</p>
+</section>
+<section id="deliver-forward-useful-objects" class="level3">
+<h3 class="anchored" data-anchor-id="deliver-forward-useful-objects">Deliver: forward useful objects</h3>
+<p>A relay can receive content once and forward it to several viewers. Each viewer has a separate connection, so one may build a queue while another keeps up. Priorities and delivery timeouts help decide which work to send and which to abandon. <a href="../../docs/05-relays-and-distribution/index.html">Relays and Distribution</a> explains the paths; <a href="../../docs/06-latency-and-congestion/index.html">Latency and Congestion</a> explains what happens when they slow down.</p>
+</section>
+<section id="present-turn-objects-into-sound-and-pictures" class="level3">
+<h3 class="anchored" data-anchor-id="present-turn-objects-into-sound-and-pictures">Present: turn objects into sound and pictures</h3>
+<p>The player interprets the media format, decodes the content, and schedules playback. Receiving bytes is only part of that work: the player also needs a usable decoding starting point and timestamps. <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a> follows the path from received objects to the screen and speakers.</p>
+</section>
+</section>
+<section id="a-few-pieces-working-together" class="level2">
+<h2 class="anchored" data-anchor-id="a-few-pieces-working-together">How do the layers fit together?</h2>
+<p>These activities involve several layers of software. The application knows about the lecture and its viewers. The media format describes the audio and video. MOQT delivers named content, and the transport underneath carries the bytes.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">flowchart TD
-    accTitle: A lecture distributed through a relay
-    accDescr: The lecturer publishes audio and video to one relay. The relay forwards audio to one viewer and audio plus video to another, according to their subscriptions.
-    P[Lecturer] --&gt;|Audio and video| R[Relay]
-    R --&gt;|Audio| A[Viewer listening on a phone]
-    R --&gt;|Audio and video| B[Viewer watching on a laptop]
+    accTitle: The layers of a MoQ application
+    accDescr: The application uses a media format, the media format uses MoQ Transport, and MoQ Transport uses QUIC directly or through WebTransport.
+    A[Application: rooms and viewing choices] --&gt; M[Media format: codecs and timestamps]
+    M --&gt; Q[MoQ Transport: names and delivery]
+    Q --&gt; T[QUIC directly or through WebTransport]
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
-<p>Publisher and subscriber describe what an endpoint does with a track. They are not fixed kinds of device: a student can receive the lecture and publish microphone audio over the same session. A relay receives content upstream and publishes it downstream. See the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">role definitions</a>.</p>
-<p>To let the viewers make different choices, the publisher gives the pieces separate names. The lecturer’s audio can be one <strong>track</strong>, camera video another, and slides a third. A track contains individually identifiable pieces of data called <strong>objects</strong>. For example, a media format might place one compressed video frame in each object. The phone viewer requests the audio track; the laptop viewer requests audio and video.</p>
-<p>A relay can also <strong>cache</strong> objects: keep copies so it can answer later requests. Someone joining the lecture may need content published a moment earlier to begin playback. If the relay has kept that content, it can supply it without asking the lecturer to send another copy.</p>
-<p>Although media motivates this design, an object’s payload can also be application data. The transport handles names and delivery. The application and its media format agree on what the delivered bytes mean.</p>
+<p>Suppose the viewer connects successfully but sees no picture. The connection may be working while the application requests the wrong track. Or objects may arrive correctly while the player lacks the information to decode them. Each layer gives us a separate question to investigate. We will learn the layers individually, then follow content through the whole system.</p>
 </section>
 <section id="how-does-moq-compare-with-webrtc" class="level2">
 <h2 class="anchored" data-anchor-id="how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</h2>
-<p>WebRTC and MoQ can both carry a live conversation or a broadcast. They organize the work differently. WebRTC gives a browser an integrated media connection; MOQT gives applications a way to publish and request named content. Comparing them starts with what your application needs to build around that foundation.</p>
+<p>WebRTC and MoQ can both carry a live conversation or a broadcast. They organize the work differently. WebRTC gives a browser an integrated media connection; MOQT gives applications a way to publish and request named content. The practical difference is how much of the media system your chosen stack supplies.</p>
 <section id="what-the-browser-does-for-you" class="level3">
 <h3 class="anchored" data-anchor-id="what-the-browser-does-for-you">What the browser does for you</h3>
 <p>For a video call, the browser’s WebRTC stack handles encoding, media transport, receiving, and decoding. The application uses <code>RTCPeerConnection</code>, supplies <strong>signaling</strong> to exchange setup information, and decides who joins the room. Capturing a microphone and attaching received media to a player still require application code. See the <a href="https://www.w3.org/TR/webrtc/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">WebRTC API</a>.</p>
@@ -126,47 +171,6 @@
 <p>For a practical evaluation, start with one complete path: a speaker, a relay or media server, and a viewer on a constrained connection. Measure join time, conversational delay, stalls, and recovery. Then increase the audience. <a href="https://blog.cloudflare.com/moq/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Cloudflare’s account of its MoQ work</a> explains the distribution motivation from an operator’s perspective; the <a href="https://webrtchacks.com/webrtc-vs-moq-by-use-case/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">webrtcHacks use-case comparison</a> offers another author’s assessment of the tradeoffs. These are useful implementation perspectives, not performance guarantees from a standard.</p>
 </section>
 </section>
-<section id="why-another-protocol" class="level2">
-<h2 class="anchored" data-anchor-id="why-another-protocol">Why another protocol?</h2>
-<p>Now suppose the lecturer produces four megabits of media each second, but one viewer’s connection can carry only two. Each second adds more work to the queue. Waiting for every byte makes that viewer fall further behind the lecture.</p>
-<p>Discarding arbitrary bytes is not a good solution either. Compressed video often describes how a picture differs from earlier pictures. If the <strong>decoder</strong>, the component reconstructing pictures, never receives one of those earlier pictures, later data may be unusable. To catch up, the receiver needs a place from which it can resume decoding.</p>
-<p>MoQ gives content a structure that the distribution network can use. Objects belong to groups, and a media format can arrange those groups around useful starting points. A relay can recognize the boundaries, reuse objects requested by several viewers, and choose which work to send on each viewer’s connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated content need not all wait behind the same missing bytes. These are central ideas in the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">motivation</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">relay model</a>.</p>
-<p>WebRTC also handles congestion and media adaptation. MoQ explores how to combine those delivery decisions with reusable distribution infrastructure. Our lecture might have a few people speaking and thousands listening. Speakers may need very little delay to take turns, while listeners may accept a little more buffering to avoid interruptions. The same publication can serve both, with delivery decisions made along their different paths.</p>
-</section>
-<section id="from-opening-a-page-to-hearing-the-lecturer" class="level2">
-<h2 class="anchored" data-anchor-id="from-opening-a-page-to-hearing-the-lecturer">From opening a page to hearing the lecturer</h2>
-<p>When a viewer opens the lecture page, several things have to happen before sound comes out of the speakers. We will follow them through the book:</p>
-<ol type="1">
-<li><strong>Connect.</strong> Open a transport connection and initialize a compatible MoQ session.</li>
-<li><strong>Discover.</strong> Find the lecture and learn which tracks it offers, unless the application already knows their names.</li>
-<li><strong>Request.</strong> Ask for the audio and video the viewer wants.</li>
-<li><strong>Deliver.</strong> Move the requested objects from the publisher, through any relays, to the viewer.</li>
-<li><strong>Present.</strong> Interpret the media format, reconstruct sound and pictures, and present them at the right time.</li>
-</ol>
-<p>While the lecture continues, some of these activities repeat. The player may request a lower-quality video track when the connection slows, or discover a new track when the lecturer starts sharing a screen. Keeping these activities distinct helps us understand both normal playback and failures.</p>
-</section>
-<section id="a-few-pieces-working-together" class="level2">
-<h2 class="anchored" data-anchor-id="a-few-pieces-working-together">A few pieces, working together</h2>
-<p>These activities involve several layers of software. The application knows about the lecture and its viewers. The media format describes the audio and video. MOQT delivers named content, and the transport underneath carries the bytes.</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart TD
-    accTitle: The layers of a MoQ application
-    accDescr: The application uses a media format, the media format uses MoQ Transport, and MoQ Transport uses QUIC directly or through WebTransport.
-    A[Application: rooms and viewing choices] --&gt; M[Media format: codecs and timestamps]
-    M --&gt; Q[MoQ Transport: names and delivery]
-    Q --&gt; T[QUIC directly or through WebTransport]
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<p>Suppose the viewer connects successfully but sees no picture. The connection may be working while the application requests the wrong track. Or objects may arrive correctly while the player lacks the information to decode them. Each layer gives us a separate question to investigate. We will learn the layers individually, then follow content through the whole system.</p>
-</section>
 <section id="the-protocol-and-the-project" class="level2">
 <h2 class="anchored" data-anchor-id="the-protocol-and-the-project">The protocol and the project</h2>
 <p>You will encounter two related names as you read: the IETF MoQ work and the moq.dev project. The <strong>IETF</strong>, the Internet Engineering Task Force, develops the transport specification through public drafts. <strong>moq.dev</strong> provides applications and libraries, including a smaller protocol model called <strong>moq-lite</strong> and a media format called <strong>hang</strong>.</p>
@@ -174,8 +178,19 @@
 </section>
 <section id="how-to-read-this-book" class="level2">
 <h2 class="anchored" data-anchor-id="how-to-read-this-book">How to read this book</h2>
-<p>The next chapter explains QUIC and WebTransport. From there, we give content names and structure, request it, and follow it through relays to a player. The later chapters cover security, a guided experiment, and debugging.</p>
-<p>You only need to know what a client and server are to begin reading. The optional hands-on chapter additionally assumes familiarity with a terminal, Git, and a development environment. We will introduce the networking and media concepts along the way, using the lecture as our running example. The <a href="../../docs/12-glossary/">glossary</a> can help if a term interrupts your reading, and each chapter links to the specifications behind its explanations.</p>
+<p>You only need to know what a client and server are to begin. Read the chapters in order for a complete introduction, or use the chapter guide below to find a particular explanation. The TCP/IP introduction and packet layouts have guidance for readers who want to skip or return to them.</p>
+<ol type="1">
+<li><strong><a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</strong> How bytes travel, what loss holds up, and what the browser exposes.</li>
+<li><strong><a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups and Objects</a>.</strong> How content is named, grouped, and identified.</li>
+<li><strong><a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a>.</strong> How a viewer requests content, joins late, and leaves.</li>
+<li><strong><a href="../../docs/05-relays-and-distribution/index.html">Relays and Distribution</a>.</strong> How content is shared across viewers and what caching adds.</li>
+<li><strong><a href="../../docs/06-latency-and-congestion/index.html">Latency and Congestion</a>.</strong> Why queues grow and how delivery and playback recover.</li>
+<li><strong><a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</strong> How delivered objects become synchronized sound and pictures.</li>
+<li><strong><a href="../../docs/08-security-and-access/index.html">Security and Access</a>.</strong> What connections protect and which permissions the service must enforce.</li>
+<li><strong><a href="../../docs/09-your-first-moq-system/index.html">Your First MoQ System</a>.</strong> How to observe one publisher, relay, and player in an upstream demo.</li>
+<li><strong><a href="../../docs/10-debugging/index.html">Debugging</a>.</strong> How to locate the first failed part of the media path.</li>
+</ol>
+<p>The hands-on chapter assumes familiarity with a terminal, Git, and a development environment. The <a href="../../docs/11-faq/index.html">FAQ</a> answers broader questions, the <a href="../../docs/12-glossary/index.html">glossary</a> explains terms, and the <a href="../../docs/13-references/index.html">references</a> point to the specifications behind the explanations.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
@@ -191,6 +206,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../"><small>Previous chapter</small><span>Introduction</span></a><a href="../../docs/02-quic-and-webtransport/"><small>Next chapter</small><span>QUIC and WebTransport</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#what-is-moq">What is MoQ?</a><a class="toc-level-2" href="#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a><a class="toc-level-3" href="#what-the-browser-does-for-you">What the browser does for you</a><a class="toc-level-3" href="#how-content-reaches-people">How content reaches people</a><a class="toc-level-3" href="#they-can-work-together">They can work together</a><a class="toc-level-2" href="#why-another-protocol">Why another protocol?</a><a class="toc-level-2" href="#from-opening-a-page-to-hearing-the-lecturer">From opening a page to hearing the lecturer</a><a class="toc-level-2" href="#a-few-pieces-working-together">A few pieces, working together</a><a class="toc-level-2" href="#the-protocol-and-the-project">The protocol and the project</a><a class="toc-level-2" href="#how-to-read-this-book">How to read this book</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#what-is-moq">What is MoQ?</a><a class="toc-level-2" href="#why-another-protocol">Why use MoQ?</a><a class="toc-level-2" href="#from-opening-a-page-to-hearing-the-lecturer">How does MoQ work?</a><a class="toc-level-3" href="#connect-establish-a-session">Connect: establish a session</a><a class="toc-level-3" href="#discover-find-the-content">Discover: find the content</a><a class="toc-level-3" href="#request-choose-what-to-receive">Request: choose what to receive</a><a class="toc-level-3" href="#deliver-forward-useful-objects">Deliver: forward useful objects</a><a class="toc-level-3" href="#present-turn-objects-into-sound-and-pictures">Present: turn objects into sound and pictures</a><a class="toc-level-2" href="#a-few-pieces-working-together">How do the layers fit together?</a><a class="toc-level-2" href="#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a><a class="toc-level-3" href="#what-the-browser-does-for-you">What the browser does for you</a><a class="toc-level-3" href="#how-content-reaches-people">How content reaches people</a><a class="toc-level-3" href="#they-can-work-together">They can work together</a><a class="toc-level-2" href="#the-protocol-and-the-project">The protocol and the project</a><a class="toc-level-2" href="#how-to-read-this-book">How to read this book</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

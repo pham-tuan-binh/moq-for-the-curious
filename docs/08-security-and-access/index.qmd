@@ -1,8 +1,10 @@
 # Security and Access
 
-Our lecture is available only to enrolled students. The lecturer publishes through a relay, and students connect to that relay to watch. To make this private, we need to decide who can connect, who can publish or subscribe, and whether the relay itself may read the media. Each decision protects a different part of the system.
+A secure connection protects traffic between its endpoints. A private lecture also needs rules about who may discover, watch, or publish it, and whether the relay operator may read its content.
 
-## What the secure connection protects
+This chapter separates those decisions. We will examine connection protection, participant permissions, and end-to-end content encryption, then apply them to cached content and resource limits. We will finish with tests for the access policy. The aim is to identify which part of the system enforces each rule.
+
+## What does the connection protect? {#what-the-secure-connection-protects}
 
 QUIC uses TLS to establish packet-protection keys and authenticate the server. When a student's browser verifies the relay's certificate, it checks that it reached the expected relay under the applicable trust rules. That check does not identify the student to the relay. Client authentication is a separate choice, as explained in [RFC 9001 §4.4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4.4).
 
@@ -18,15 +20,11 @@ flowchart LR
 
 For a service that trusts its relay operator with the lecture, this may be the intended arrangement. The transport protects traffic between endpoints, while the relay enforces access rules. A certificate failure should be corrected through the deployment's trust configuration; disabling verification removes an essential check on which server receives the connection.
 
-## Giving each participant the right permissions
+## Who may discover, subscribe, or publish? {#giving-each-participant-the-right-permissions}
 
 **Authentication** establishes identity. **Authorization** decides what that identity may do. In our lecture, the lecturer may publish under the class namespace, while students may subscribe to it. A student should not gain publication rights merely because they can watch.
 
-The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token's presence alone establishes none of these facts. [RFC 8725](https://www.rfc-editor.org/rfc/rfc8725.html#section-3) explains JWT validation, including checking the issuer and intended audience.
-
-A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
-
-Write down the intended policy before encoding it in tokens. For example, this class might use:
+First, write down the intended access policy. For example, this class might use:
 
 | Participant | Discover the class | Subscribe to media | Publish media |
 | --- | --- | --- | --- |
@@ -38,7 +36,11 @@ These are application rules, not built-in MOQT roles. Checking this table agains
 
 Access decisions extend to discovery. Even if an outsider cannot receive the objects, revealing a private lecture's title may disclose information. The service should decide whether that outsider can discover the publication at all.
 
-## Keeping the relay from reading the lecture
+The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token's presence alone establishes none of these facts. [RFC 8725](https://www.rfc-editor.org/rfc/rfc8725.html#section-3) explains JWT validation, including checking the issuer and intended audience.
+
+A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
+
+## How can content stay private from the relay? {#keeping-the-relay-from-reading-the-lecture}
 
 Some services need a stricter boundary: only the lecturer and enrolled students may read the content, including when a relay operator is untrusted. The lecturer then encrypts the media before handing it to the transport. Students decrypt it after receiving it. This is **end-to-end content encryption**.
 
@@ -55,13 +57,13 @@ The service must distribute keys to authorized students, authenticate the conten
 
 The relay can still route encrypted payloads using visible metadata. Names, sizes, timing, and subscription relationships can reveal information even when the lecture itself is unreadable. The trust decision therefore includes both who holds the content keys and what the forwarding service can observe.
 
-## Protecting cached content
+## Who may publish under a cached name? {#protecting-cached-content}
 
 The relay may retain objects so that another student can join quickly. This works because an object identity refers to the same payload wherever it is served within the service's scope. If an attacker could publish different bytes under the lecturer's identity, those bytes might reach several students through the cache.
 
 Publication authorization must therefore establish ownership of the relevant names, as required by [draft-21 §15.3.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.3). The service also needs to handle legitimate restarts: a lecturer who reconnects must not reuse old object identities for new payloads. A fresh publication namespace or a continuing non-conflicting sequence prevents old cached objects from colliding with new ones.
 
-## Bounding the work a client can cause
+## How much work may a client request? {#bounding-the-work-a-client-can-cause}
 
 An enrolled student may be entitled to the lecture without being entitled to unlimited server resources. A client could subscribe to every rendition, repeatedly request discovery results, or leave streams stalled. Connections, subscriptions, queued bytes, and caches all consume resources that the service must bound.
 
@@ -69,7 +71,7 @@ Consider a low-priority video stream waiting while more urgent audio keeps arriv
 
 For the lecture service, a limit on concurrent track subscriptions can prevent one viewer from requesting every rendition while displaying only one. Monitoring those limits helps distinguish a slow student connection from an application that is creating more work than intended.
 
-## Testing the access policy
+## How do we test the access policy? {#testing-the-access-policy}
 
 A successful playback test checks only the enrolled student's path. Test the other roles too: a viewer attempting to publish, a student from another class attempting to subscribe, and a client beginning a request with an expired credential. Confirm that each fails at the intended boundary. Keep credentials out of copied logs and shared URLs wherever the integration permits.
 

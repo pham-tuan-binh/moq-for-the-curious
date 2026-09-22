@@ -1,8 +1,10 @@
 # Relays and Distribution
 
-If every viewer needs a separate copy directly from the lecturer, the lecturer’s upload becomes the audience limit. A relay moves the copying work into the distribution network.
+A **relay** receives content from a publisher and forwards it to subscribers. It moves the copying work off the publisher's connection, allowing the same publication to reach more viewers.
 
-## A relay plays both roles
+This chapter follows that work in four parts: sharing upstream content, interpreting the metadata needed to forward it, caching objects for later requests, and adapting delivery to each downstream connection. We will finish by separating those jobs from transcoding and deployment choices. You will be able to trace where copies, stored objects, and queues exist in a distribution path.
+
+## How does a relay share content? {#a-relay-plays-both-roles}
 
 A relay is a subscriber toward an upstream source and a publisher toward downstream subscribers. It terminates transport connections and handles MoQ metadata. It is more than a router forwarding encrypted IP packets.
 
@@ -28,7 +30,13 @@ Each downstream connection still needs its own bytes. For one 2 Mb/s track and 1
 
 The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.
 
-## Caching helps, but has limits
+## What does a relay need to know? {#relays-need-structure-not-codec-knowledge}
+
+A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.
+
+The publisher must therefore align the group boundaries with the media. If a group advertised as a starting point depends on an earlier group, forwarding it will not give the new viewer enough information to decode. Format design and encoder behavior must agree.
+
+## How does caching help new viewers? {#caching-helps-but-has-limits}
 
 A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. An object is identified by its full track name, group ID, and object ID within a scope. Its payload cannot change, allowing different viewers to reuse the same cached bytes. Some object properties can change under their own rules; immutability does not apply to every cached field.
 
@@ -36,7 +44,7 @@ A caching relay can hold recently received objects. A new viewer may obtain a us
 
 For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.
 
-## Each hop has its own conditions
+## How does delivery differ between viewers? {#each-hop-has-its-own-conditions}
 
 The lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.
 
@@ -44,13 +52,7 @@ Alice’s connection may deliver each new group immediately, while Bob’s conne
 
 Measure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.
 
-## Relays need structure, not codec knowledge
-
-A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.
-
-It also means the publisher must describe content honestly. If a supposed join point actually depends on an earlier group, the relay cannot repair the mistake by looking at a label. Format design and encoder behavior must agree.
-
-## What a relay does not automatically do
+## Which jobs belong to the wider service? {#what-a-relay-does-not-automatically-do}
 
 Forwarding a high-resolution track does not create a low-resolution version. A **transcoder** decodes and re-encodes media; a relay distributes the objects it receives. A service can run both roles, but they are different jobs.
 
