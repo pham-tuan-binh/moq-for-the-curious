@@ -30,11 +30,11 @@
 
 
 
-<p>Use this chapter to choose a source for the question you are trying to answer. Protocol specifications define behavior, implementation documentation explains particular software, and this book supplies teaching examples. Example names, diagrams, and latency budgets are illustrative unless identified otherwise.</p>
-<p>Start with the question table below. The following sections identify the pinned MOQT draft, give a route through it, and link the transport, browser, WebRTC, and moq.dev sources. The final sections explain the edition’s limits and how to keep an update accurate.</p>
+<p>Want to dig into a topic? Start with a question in the table below. You’ll find protocol specifications, moq.dev guides, and articles that expand on the chapters.</p>
+<p>The rest of the chapter groups sources by topic and gives a reading route through MOQT draft-21. At the end, we list the research dates and what to check when updating the book.</p>
 <section id="choose-a-source-by-the-question" class="level2">
 <h2 class="anchored" data-anchor-id="choose-a-source-by-the-question">Choose a source by the question</h2>
-<p>You do not need to read every specification before experimenting. Use a tutorial to build a model, implementation documentation to operate software, and a pinned specification to settle a protocol detail.</p>
+<p>You don’t need to read the whole specification before trying the demo. Use the project guide to get it running, then look up protocol details as questions come up.</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <thead>
 <tr class="header">
@@ -74,7 +74,7 @@
 </section>
 <section id="the-protocol-baseline" class="level2">
 <h2 class="anchored" data-anchor-id="the-protocol-baseline">The protocol baseline</h2>
-<p>The IETF baseline is <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Media over QUIC Transport, draft-21</a>, published September 8, 2026. Chapters link to relevant sections of that pinned version. Consult the <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">current document status</a> for later revisions and the <a href="https://datatracker.ietf.org/wg/moq/about/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ working group</a> for the broader standards effort.</p>
+<p>This edition follows <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Media over QUIC Transport, draft-21</a>, published September 8, 2026. The chapter links use that version. You can find newer revisions on the <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">document status page</a> and follow the wider work through the <a href="https://datatracker.ietf.org/wg/moq/about/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ working group</a>.</p>
 <p>Read the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.</p>
 </section>
 <section id="a-route-through-the-moqt-specification" class="level2">
@@ -134,7 +134,7 @@
 <h2 class="anchored" data-anchor-id="the-webrtc-comparison">The WebRTC comparison</h2>
 <p>The early comparison uses the <a href="https://www.w3.org/TR/webrtc/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">W3C WebRTC specification</a> for the browser interface. The network behavior comes from IETF documents: <a href="https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 8835, section 3.4</a> covers connection establishment with ICE and relay support, while <a href="https://www.rfc-editor.org/rfc/rfc8835.html#section-3.5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">section 3.5</a> identifies the media and data transports.</p>
 <p>For media, WebRTC uses <strong>SRTP</strong>, the secure form of the Real-time Transport Protocol. Data channels use <strong>SCTP</strong>, the Stream Control Transmission Protocol, carried inside <strong>DTLS</strong>, Datagram Transport Layer Security. You do not need to learn these packet formats to understand the comparison; the distinction is that WebRTC specifies how these pieces fit together for real-time communication.</p>
-<p><a href="https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 7667, section 3.7</a> explains selective-forwarding media servers. It supports the important point that a WebRTC conference can distribute media through a server; it need not connect every participant directly to every other participant.</p>
+<p><a href="https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 7667, section 3.7</a> explains how a media server can forward selected streams in a WebRTC conference. This is useful when comparing an SFU with a MoQ relay.</p>
 </section>
 <section id="the-moq.dev-implementation" class="level2">
 <h2 class="anchored" data-anchor-id="the-moq.dev-implementation">The moq.dev implementation</h2>
@@ -142,7 +142,7 @@
 <p>For experiments, use the <a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">setup</a> and <a href="https://doc.moq.dev/setup/dev" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">development</a> documentation. For a reachable relay, read the <a href="https://doc.moq.dev/setup/prod" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">production guide</a>. These pages describe a particular project and can evolve independently of this book’s IETF baseline.</p>
 <section id="read-moq.dev-with-a-specific-question" class="level3">
 <h3 class="anchored" data-anchor-id="read-moq.dev-with-a-specific-question">Read moq.dev with a specific question</h3>
-<p>The following route connects the project’s explanations to the chapters they help illuminate. The blog posts explain design choices; the guides describe evolving software.</p>
+<p>These moq.dev articles and guides are useful companions to the chapters:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <thead>
 <tr class="header">
@@ -170,7 +170,7 @@
 <tr class="even">
 <td>Why use cancellable streams for timely media?</td>
 <td><a href="https://moq.dev/blog/never-use-datagrams/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Never Use Datagrams</a> (2024)</td>
-<td>QUIC and WebTransport; the title is an argument, not a protocol prohibition</td>
+<td>QUIC and WebTransport</td>
 </tr>
 <tr class="odd">
 <td>Which age limit does this implementation apply?</td>
@@ -204,8 +204,8 @@
 </section>
 <section id="editorial-approach-and-limitations" class="level2">
 <h2 class="anchored" data-anchor-id="editorial-approach-and-limitations">Editorial approach and limitations</h2>
-<p>The protocol baseline was reviewed on <strong>September 16, 2026</strong>; the technical explanations and linked setup resources were checked on <strong>September 22, 2026</strong>. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.</p>
-<p>This guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.</p>
+<p>The initial protocol review was on <strong>September 16, 2026</strong>. Technical explanations and setup links were checked again on <strong>September 22, 2026</strong>. Protocol details refer to draft-21, and examples using moq.dev features say so.</p>
+<p>The latency numbers in this book are examples, not measurements. We haven’t run the upstream walkthrough or tested every browser. Try your chosen software on the devices and networks you plan to support.</p>
 </section>
 <section id="keeping-an-edition-accurate" class="level2">
 <h2 class="anchored" data-anchor-id="keeping-an-edition-accurate">Keeping an edition accurate</h2>

@@ -30,13 +30,14 @@
 
 
 
-<p>This chapter explains what MoQ does, why it is useful, and how its parts fit together. We will begin with a short comparison with WebRTC, then use an online lecture to explain the model. After following a publication from publisher to player, we will examine the comparison in more detail and map the ideas to the rest of the book.</p>
+<p>Imagine you’re building an app for a live lecture. The lecturer shares a camera and microphone, students join halfway through, and some of them have bad connections. How do we get useful audio and video to everyone?</p>
+<p>That’s the problem we’ll use to explore MoQ. We’ll start with what it does and how it compares with WebRTC, then follow the lecture from the publisher to a student’s player.</p>
 <section id="what-is-moq" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
 <p><strong>Media over QUIC (MoQ)</strong> lets applications publish live content that other applications can subscribe to. A publisher can send content directly to subscribers or distribute it through relays. <strong>MoQ Transport (MOQT)</strong> is the protocol that defines how content is named, requested, and delivered. It runs over <strong>QUIC</strong>, a secure transport with multiple independent byte streams, either directly or through WebTransport.</p>
 <section id="where-does-webrtc-fit" class="level3">
 <h3 class="anchored" data-anchor-id="where-does-webrtc-fit">Where does WebRTC fit?</h3>
-<p>If you know WebRTC, start with this distinction: WebRTC gives the browser an integrated system for exchanging live audio and video. MOQT supplies the delivery part of a media system. A MoQ library combines it with codecs, media descriptions, and playback logic. The <a href="#how-does-moq-compare-with-webrtc">detailed comparison below</a> explains what each approach supplies.</p>
+<p>If you’ve built a video call with WebRTC, you’ve used a browser stack that handles encoding, sending, receiving, and decoding media. With MoQ, those pieces are assembled by a media library around MOQT, the protocol that delivers the content. This gives the library more choices about how to package and play it. We’ll get into the <a href="#how-does-moq-compare-with-webrtc">details below</a>.</p>
 <p>Separating those pieces gives an application more control over playback. In a conversation, you want quick responses. When watching a broadcast, you might prefer a little extra buffering if it keeps the video from stalling. The moq.dev article <a href="https://moq.dev/blog/replacing-webrtc/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Replacing WebRTC</a> explores this tradeoff through the author’s experience with live broadcasting.</p>
 </section>
 <section id="a-lecture-as-an-example" class="level3">
@@ -56,11 +57,11 @@
 </section>
 <section id="why-another-protocol" class="level2">
 <h2 class="anchored" data-anchor-id="why-another-protocol">Why use MoQ?</h2>
-<p>Live delivery has to balance three needs: reaching many viewers, starting playback for people who join late, and keeping slow connections from falling further behind. MoQ brings named content, relays, and delivery choices into one protocol.</p>
+<p>The obvious way to send a lecture is to send every byte to every viewer. This works while everyone can keep up. But what happens when one student’s connection slows down?</p>
 <p>Suppose the lecturer produces four megabits of media each second, but one viewer’s connection can carry only two. Each second adds more work to the queue. Waiting for every byte makes that viewer fall further behind the lecture.</p>
-<p>Discarding arbitrary bytes is not a good solution either. Compressed video often describes how a picture differs from earlier pictures. If the <strong>decoder</strong>, the component reconstructing pictures, never receives one of those earlier pictures, later data may be unusable. To catch up, the receiver needs a place from which it can resume decoding.</p>
+<p>We could drop some old video to catch up, but we have to choose what to drop. Compressed video often stores changes from earlier pictures. The <strong>decoder</strong>, which turns compressed data back into pictures, needs those earlier pictures to apply the changes. If we drop one at random, we might also lose the pictures that depend on it.</p>
 <p>MoQ gives content a structure that the distribution network can use. Objects belong to groups, and a media format can arrange those groups around useful starting points. A relay can recognize the boundaries, reuse objects requested by several viewers, and choose which work to send on each viewer’s connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated content need not all wait behind the same missing bytes. These are central ideas in the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">motivation</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">relay model</a>.</p>
-<p>These delivery decisions can serve different audiences through the same distribution system. Our lecture might have a few people speaking and thousands listening. Speakers may need very little delay to take turns, while listeners may accept a little more buffering to avoid interruptions. The same publication can serve both, with delivery decisions made along their different paths.</p>
+<p>Now imagine a student asking the lecturer a question while a thousand others listen. The two people speaking need to hear each other quickly. The listeners might be happier with a little more buffering if it keeps the lecture smooth. We can serve the same publication to both and make different delivery choices along their paths.</p>
 </section>
 <section id="from-opening-a-page-to-hearing-the-lecturer" class="level2">
 <h2 class="anchored" data-anchor-id="from-opening-a-page-to-hearing-the-lecturer">How does MoQ work?</h2>
@@ -72,7 +73,7 @@
 <li><strong>Deliver:</strong> move objects to the subscriber.</li>
 <li><strong>Present:</strong> decode and play the media.</li>
 </ol>
-<p>These activities give us a way to study the system. Some can overlap, and discovery may be unnecessary when names are already known. Each has a different job.</p>
+<p>We’ll look at each activity in turn. In a running application, some can happen at the same time. If the player already knows the track names, it can skip discovery.</p>
 <section id="connect-establish-a-session" class="level3">
 <h3 class="anchored" data-anchor-id="connect-establish-a-session">Connect: establish a session</h3>
 <p>The viewer connects to a server using QUIC or, in the browser path covered here, WebTransport. The endpoints agree on a MOQT version and exchange session settings. They now have a conversation in which they can make requests. <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a> explains the transport; <a href="../../docs/04-publishing-and-subscribing/index.html">Publishing and Subscribing</a> explains the session.</p>
@@ -114,7 +115,7 @@
 </div>
 </div>
 </div>
-<p>Suppose the viewer connects successfully but sees no picture. The connection may be working while the application requests the wrong track. Or objects may arrive correctly while the player lacks the information to decode them. Each layer gives us a separate question to investigate. We will learn the layers individually, then follow content through the whole system.</p>
+<p>Suppose a student opens the lecture but sees a black screen. We can follow these layers to work out why: did the player connect, did it request the right track, and did it get what it needs to decode a picture? The next chapters walk through each part.</p>
 </section>
 <section id="how-does-moq-compare-with-webrtc" class="level2">
 <h2 class="anchored" data-anchor-id="how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</h2>
@@ -122,7 +123,7 @@
 <section id="what-the-browser-does-for-you" class="level3">
 <h3 class="anchored" data-anchor-id="what-the-browser-does-for-you">What the browser does for you</h3>
 <p>For a video call, the browser’s WebRTC stack handles encoding, media transport, receiving, and decoding. The application uses <code>RTCPeerConnection</code>, supplies <strong>signaling</strong> to exchange setup information, and decides who joins the room. Capturing a microphone and attaching received media to a player still require application code. See the <a href="https://www.w3.org/TR/webrtc/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">WebRTC API</a>.</p>
-<p>MOQT itself supplies no camera API, codec, or player. It delivers objects. A MoQ media library must describe those objects, encode and decode media, and arrange playback. The library can hide much of this work, but its capabilities are separate from what the transport specification guarantees. That separation lets a relay forward the same named content without understanding its codec. See the <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT object model</a>.</p>
+<p>With MoQ, a media library handles capture, encoding, decoding, and playback around MOQT’s object delivery. You can use a library that puts these together for you, or build the pieces your application needs. The relay can forward the objects without decoding their media. See the <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT object model</a>.</p>
 </section>
 <section id="how-content-reaches-people" class="level3">
 <h3 class="anchored" data-anchor-id="how-content-reaches-people">How content reaches people</h3>
@@ -172,7 +173,7 @@
 </tbody>
 </table></div>
 </div>
-<p>Neither protocol name tells you the final delay, operating cost, or audience limit. Those depend on the encoder, topology, buffering, available bandwidth, and software. QUIC’s streams help organize delivery, but they do not eliminate congestion. WebRTC’s integrated media stack does not restrict it to small calls. MoQ’s distribution model does not restrict it to broadcasts.</p>
+<p>To compare the two, look at the whole system: the encoder, servers, player, and network. A WebRTC service can reach a large audience, and a MoQ service can support a conversation. How well either works depends on how you build and run it.</p>
 </section>
 <section id="they-can-work-together" class="level3">
 <h3 class="anchored" data-anchor-id="they-can-work-together">They can work together</h3>

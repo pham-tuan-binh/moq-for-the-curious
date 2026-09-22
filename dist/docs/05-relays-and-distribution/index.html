@@ -31,10 +31,10 @@
 
 
 <p>A <strong>relay</strong> receives content from a publisher and forwards it to subscribers. It moves the copying work off the publisher’s connection, allowing the same publication to reach more viewers.</p>
-<p>This chapter follows that work in four parts: sharing upstream content, interpreting the metadata needed to forward it, caching objects for later requests, and adapting delivery to each downstream connection. We will finish by separating those jobs from transcoding and deployment choices. You will be able to trace where copies, stored objects, and queues exist in a distribution path.</p>
+<p>How does one copy from the lecturer become a copy for every student? We’ll follow the relay’s subscriptions, look at what it caches, and see how it handles viewers with different connection speeds. We’ll also look at which jobs need other parts of the service.</p>
 <section id="a-relay-plays-both-roles" class="level2">
 <h2 class="anchored" data-anchor-id="a-relay-plays-both-roles">How does a relay share content?</h2>
-<p>A relay is a subscriber toward an upstream source and a publisher toward downstream subscribers. It terminates transport connections and handles MoQ metadata. It is more than a router forwarding encrypted IP packets.</p>
+<p>The relay subscribes to the lecturer’s content, then publishes it to the students. It has a separate connection on each side and reads the MoQ messages to decide what to forward.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -79,23 +79,23 @@
 </tr>
 </tbody>
 </table></div>
-<p>The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.</p>
+<p>Here, the lecturer uploads 2 Mb/s and the relay sends 200 Mb/s across its viewer connections. With more relays, we can do the same calculation for each link.</p>
 <section id="can-subscriptions-reduce-encoding-work-too" class="level3">
 <h3 class="anchored" data-anchor-id="can-subscriptions-reduce-encoding-work-too">Can subscriptions reduce encoding work too?</h3>
 <p>Suppose the lecturer offers high- and low-resolution video, but every viewer chooses the lower resolution. Forwarding only that track saves network traffic. Avoiding the unused high-resolution encoding can also save work at the publisher.</p>
-<p>The moq.dev <a href="https://doc.moq.dev/concept/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">concepts guide</a> describes demand flowing back through shared subscriptions. Its publishing application can use that demand to start an encoder when the first subscriber arrives and stop it when the last leaves. A recorder also counts as a subscriber. This is application behavior enabled by the library, not a MOQT requirement that every encoder automatically stops.</p>
-<p>In our lecture, switching on an idle rendition would also need to produce decoder configuration and a usable starting picture. Saving work must not leave the first viewer waiting for references that were never sent.</p>
+<p>The moq.dev <a href="https://doc.moq.dev/concept/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">concepts guide</a> describes how subscriptions carry demand back to the publisher. An application using its library can start an encoder for the first subscriber and stop it after the last one leaves. A recorder counts too, so closing every player may still leave someone receiving the track. The application has to implement this behavior; MOQT doesn’t control the encoder.</p>
+<p>There’s a startup cost to consider. When the first viewer asks for an idle rendition, the publisher needs to start encoding and send the configuration and a picture the viewer can decode. Until then, that viewer has to wait.</p>
 </section>
 </section>
 <section id="relays-need-structure-not-codec-knowledge" class="level2">
 <h2 class="anchored" data-anchor-id="relays-need-structure-not-codec-knowledge">What does a relay need to know?</h2>
 <p>A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.</p>
-<p>The publisher must therefore align the group boundaries with the media. If a group advertised as a starting point depends on an earlier group, forwarding it will not give the new viewer enough information to decode. Format design and encoder behavior must agree.</p>
+<p>For this to work, the publisher needs to put the right media at each group boundary. Suppose the relay sends a new viewer a group that depends on pictures from the previous group. The relay has delivered what was requested, but the player still can’t show it.</p>
 </section>
 <section id="caching-helps-but-has-limits" class="level2">
 <h2 class="anchored" data-anchor-id="caching-helps-but-has-limits">How does caching help new viewers?</h2>
 <p>A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. An object is identified by its full track name, group ID, and object ID within a scope. Its payload cannot change, allowing different viewers to reuse the same cached bytes. Some object properties can change under their own rules; immutability does not apply to every cached field.</p>
-<p><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT permits caching</a>; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.</p>
+<p>How much history is available depends on the relay. <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT allows caching</a>, and each relay decides what to keep within its memory budget. A viewer joining late needs to find out whether the objects it wants are still there.</p>
 <p>For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.</p>
 </section>
 <section id="each-hop-has-its-own-conditions" class="level2">
@@ -106,8 +106,8 @@
 </section>
 <section id="what-a-relay-does-not-automatically-do" class="level2">
 <h2 class="anchored" data-anchor-id="what-a-relay-does-not-automatically-do">Which jobs belong to the wider service?</h2>
-<p>Forwarding a high-resolution track does not create a low-resolution version. A <strong>transcoder</strong> decodes and re-encodes media; a relay distributes the objects it receives. A service can run both roles, but they are different jobs.</p>
-<p>Likewise, DNS routing, selecting a nearby relay, arranging redundancy, and recovering application state are deployment choices. The moq.dev project supplies clustering features; they should not be mistaken for a universal, automatic global MoQ network.</p>
+<p>Suppose a student needs low-resolution video, but the publisher only sends high resolution. Someone has to create the smaller version. A <strong>transcoder</strong> does that by decoding and re-encoding the media. The service might run one alongside a relay, which then forwards the resulting objects.</p>
+<p>The service also has to choose nearby relays, connect them, and recover when one fails. The moq.dev project includes clustering features to help with this setup.</p>
 <p>Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked. That small drawing often reveals more than a single “CDN” box.</p>
 </section>
 <section id="sources" class="level2 unnumbered">

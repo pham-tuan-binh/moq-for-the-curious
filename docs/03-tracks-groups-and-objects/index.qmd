@@ -2,7 +2,7 @@
 
 MoQ names content so that a viewer can request just the pieces it needs. In our lecture, a student joining late might want audio and low-resolution video without downloading the earlier ten minutes.
 
-The content model has three levels: a **track** is a named sequence of groups, a **group** contains objects, and an **object** identifies one piece of data. We will work through those levels in order, then explain how **subgroups** organize delivery on streams. Finally, we will see why names must remain consistent after a publisher restarts and how moq-lite's vocabulary differs.
+We’ll build up the names one piece at a time: tracks, groups, then objects. After that, we’ll see how subgroups carry objects on streams and what happens to those names when a publisher restarts.
 
 ## What is a track? {#a-track-is-something-you-subscribe-to}
 
@@ -21,7 +21,7 @@ flowchart TD
   V --> S
 ```
 
-These readable labels are examples. On the wire, MOQT represents namespace components and track names as byte sequences. Both ends must agree on those bytes; writing the same-looking path in a user interface is not enough. See [track naming in draft-21 §2.4.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1).
+We’ve written the names as text to make the example easy to follow. MOQT sends namespace components and track names as bytes, so the publisher and subscriber need to use exactly the same bytes. See [track naming in draft-21 §2.4.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1).
 
 ## How do groups provide starting points? {#groups-create-places-to-join}
 
@@ -64,7 +64,7 @@ We can now give a complete address for one picture:
 | Group ID | `42` | One group in that track |
 | Object ID | `1` | One piece of data in that group |
 
-The identity applies within an agreed **scope**: the set of servers that treat a full track name as the same track. An unrelated service can use the same labels for different content. Within our lecture service’s scope, however, that complete identity must consistently refer to the same payload. See [objects (§2.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1) and [scope (§2.5)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5).
+Suppose another service also has a track called `video-low` under `lectures / session-7`. That’s fine as long as the services belong to different **scopes**. A scope is the set of servers that agree to treat a full track name as the same track. Within our lecture service’s scope, the full address above must always refer to the same payload. See [objects (§2.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1) and [scope (§2.5)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5).
 
 This property is called **immutability**. Once published, an object’s payload does not change. If Alice and Bob request the same object, a relay can serve the same stored bytes to both. A corrected payload needs a new identity; otherwise the relay would have no way to know which version the name means.
 
@@ -89,15 +89,15 @@ A track describes content. A stream carries bytes. Their lifetimes need not matc
 | What identifies one picture in this example? | Its track, group ID, and object ID | That identity survives forwarding through a relay |
 | Which bytes wait behind a loss? | Objects may depend on other objects for decoding | Bytes on the same stream share ordered delivery |
 
-Separating these questions avoids a common mistake: opening a new transport stream does not create a new video track or a new decoding starting point.
+The video track can last for the whole lecture while the streams carrying it open and close. To start decoding, the player still needs a group with a suitable starting picture.
 
 ## What happens to names after a restart? {#restarting-is-a-naming-problem-too}
 
 Suppose the lecturer’s publisher crashes. When it restarts, it reuses `video-low`, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.
 
-One solution is to give the restarted publication a fresh namespace, such as `lectures / session-8`. Another is to preserve a non-conflicting sequence of group IDs. The application must choose a strategy that keeps old and new identities distinct throughout its scope.
+We could put the restarted lecture under a fresh namespace, such as `lectures / session-8`. Or we could keep track of the group IDs and continue without reusing them. Either way, a new picture needs an address that won’t collide with an old one.
 
-The same naming rules that make caching useful make this restart decision necessary. In the next chapter, we will follow a request for one of these named tracks from the student to the publisher.
+With distinct names, a relay can tell the old publication from the new one. Next, we’ll follow a student’s request for one of these tracks.
 
 ## How does moq-lite name these concepts? {#a-vocabulary-translation}
 

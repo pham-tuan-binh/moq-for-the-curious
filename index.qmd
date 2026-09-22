@@ -2,7 +2,7 @@
 
 **MoQ for the Curious** explains how Media over QUIC delivers live content: how publishers name it, relays distribute it, and players keep it useful when the network slows.
 
-The book introduces networking and media concepts as they are needed. A live lecture provides a running example, from the first subscription to playback and debugging.
+We’ll introduce the networking and media concepts as we need them. To see how they fit together, we’ll follow an online lecture from the moment a student joins to the moment they hear the lecturer.
 
 This book is inspired by [WebRTC for the Curious](https://webrtcforthecurious.com/) and its approach to explaining how the pieces of a real-time communication system fit together.
 

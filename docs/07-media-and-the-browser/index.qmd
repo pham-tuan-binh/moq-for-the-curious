@@ -2,7 +2,7 @@
 
 A player turns received objects into sound and pictures. MOQT delivers the objects; the media format and player tell the browser how to interpret, decode, and present them.
 
-We will follow that path in order: read the media description, find a decodable starting point, submit encoded data to a decoder, and schedule the result for playback. The final section covers browser permissions and resource cleanup. Our examples use the moq.dev **hang** media layer and the browser's **WebCodecs** API, both of which we will introduce below.
+We’ll follow a picture from the media description to the screen: choose a track, find a starting picture, decode it, and decide when to display it. Our examples use moq.dev’s **hang** media format and the browser’s **WebCodecs** API. We’ll also cover playback permissions and cleaning up when the player stops.
 
 ## How does the player interpret a track? {#discovering-the-media}
 
@@ -29,7 +29,7 @@ The catalog remains useful after playback starts. The lecturer might add screen 
 
 ### What does container parsing actually do?
 
-Knowing the codec is not enough to pass a whole received payload to a decoder. In hang's `legacy` container, a frame begins with a variable-length timestamp in microseconds, followed by encoded media. The player reads that timestamp, removes the container header, and supplies the encoded portion to the decoder with the appropriate timing information. Other containers have different layouts. Use the catalog's container declaration, not a guess based on the codec. See the [hang container formats](https://doc.moq.dev/concept/hang#containers).
+Let’s look inside one payload. In hang’s `legacy` container, the first bytes encode a timestamp in microseconds as a variable-length integer. The encoded media comes after it. The player reads the timestamp, strips off that header, and passes the media to the decoder with its timing information. It chooses this parser from the container field in the catalog. See the [hang container formats](https://doc.moq.dev/concept/hang#containers).
 
 For example, mistaking timestamp bytes for H.264 data can produce a decoder failure even when delivery was perfect. This is why parsing has its own step in the diagram.
 
@@ -42,7 +42,7 @@ For example, mistaking timestamp bytes for H.264 data can produce a decoder fail
 | MoQ object | An addressed unit delivered by the transport | A payload identified by its track, group, and object IDs |
 | Decoded frame | A picture the decoder has reconstructed | A `VideoFrame` the player can render |
 
-An **encoded chunk** is a unit of compressed media submitted to a decoder. The media format defines how these chunks fit into objects. MOQT itself does not require one object to equal one video frame. Keeping that boundary clear helps locate failures: receiving an object proves delivery, while displaying a picture also requires parsing, decoding, and scheduling.
+An **encoded chunk** is compressed media ready to submit to a decoder. The media format tells the player how to extract chunks from MoQ objects. One object might contain one video frame, as in our example, but other formats can package them differently.
 
 ## Where can decoding begin? {#starting-with-a-decodable-picture}
 
@@ -50,7 +50,7 @@ Video compression often describes how one picture differs from earlier pictures.
 
 This explains the group boundaries from the object-model chapter. The publisher starts a video group with a keyframe, then places dependent frames after it. Our late-arriving student can retrieve the beginning of the current group or wait for the next group. Receiving only the middle of a group may leave the decoder without its references, even though every requested byte arrived correctly.
 
-The encoder and packager must agree on those boundaries. Cutting a stream every second does not itself create independent video sequences. The media format also has to supply the decoder configuration needed at the join point.
+We can’t create a starting point just by cutting the stream every second. The encoder needs to produce a picture that can start the new group, and the packager needs to put the boundary there. The player also needs the decoder configuration for that picture.
 
 The same issue appears when the student switches to higher resolution. The new rendition has its own decoder state. The player changes configuration as needed and starts at a valid decoding point; it cannot simply feed an arbitrary high-resolution predicted frame into the old sequence.
 
@@ -58,7 +58,7 @@ The same issue appears when the student switches to higher resolution. The new r
 
 WebCodecs gives JavaScript access to media encoders and decoders. For video, the player checks a configuration with `VideoDecoder.isConfigSupported()`, applies it with `configure()`, and submits encoded chunks with `decode()`. Support depends on the actual codec configuration and device, so the presence of the API alone is insufficient.
 
-The decoder produces `VideoFrame` objects through an output callback. Those are decoded pictures ready for the next stage, rather than instructions to display immediately. The player owns the queues, presentation timing, and rendering. It also parses the incoming container before submitting chunks. These responsibilities explain why WebCodecs is a component of a player rather than a complete player. The [VideoDecoder interface](https://www.w3.org/TR/webcodecs/#videodecoder-interface) describes the API.
+The decoder calls the player’s output callback with a `VideoFrame`. The player then holds that picture until it’s time to display it. Your player or media library handles this queue, the playback clock, and rendering. See the [VideoDecoder interface](https://www.w3.org/TR/webcodecs/#videodecoder-interface) for the API.
 
 Each decoded frame holds resources. After rendering or discarding a frame, the player calls `VideoFrame.close()` when it no longer needs that frame. Waiting for garbage collection can retain scarce resources and stall decoding. Bounded queues are equally important: if rendering slows down, receiving more frames must not cause unlimited memory growth. See the [WebCodecs memory model](https://www.w3.org/TR/webcodecs/#raw-media-memory-model).
 
@@ -89,13 +89,13 @@ flowchart LR
 
 Each arrow follows one frame through the playback buffer. The diagram uses the table's receiver clock; arrow lengths are not a time scale.
 
-The initial wait gives later frames some room to arrive. If B instead arrives at receiver time 205, it misses its planned time of 193. The player must then apply its late-frame policy, perhaps skipping the picture or moving playback later. That is the buffering tradeoff: waiting longer can absorb more variation, at the cost of a later picture.
+That first 60 ms wait gives later frames some time to arrive. Now suppose B arrives at 205 ms, after its planned display time of 193 ms. The player can skip it or delay playback. Waiting longer at the start would have made room for B, but it would also have delayed every picture.
 
 ### Keeping audio and video together
 
 Audio follows the same presentation timeline. An audio sample and a picture intended for media time 67 ms can arrive separately; the player schedules them against a shared clock so the lecturer's voice stays aligned with their face. Over longer sessions it may also need to correct differences between clocks.
 
-Group and object IDs locate content; the media timestamps tell the player when to present it. Neither this table nor those IDs measure capture-to-display latency by themselves. That measurement also requires a relationship between the source's capture clock and the receiver's clock.
+To measure how far behind the lecture we are, we also need to relate the lecturer’s capture clock to the viewer’s clock. The playback timestamps above tell us how to space the frames, but don’t give us that relationship.
 
 ## What else does a browser player need? {#completing-the-player}
 

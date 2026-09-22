@@ -2,7 +2,7 @@
 
 Debugging a MoQ system means finding where progress stops between the publisher and the player. A black screen can result from a connection failure, a missing track, unusable media, or a presentation problem.
 
-Start at the top of the path below and check each boundary until you reach the first missing fact. The sections follow that order, then address playback that falls behind. A worked frozen-video example shows how to turn observations into a test, followed by the evidence to collect for a bug report.
+Follow the path below until you find the first step that isn’t working. We’ll go through the checks in that order, then investigate a player that falls behind or freezes and gather what we need for a bug report.
 
 ```{mermaid}
 flowchart TD
@@ -34,7 +34,7 @@ Check the exact name bytes when working close to MOQT. Similar-looking text is n
 
 Look for subscription acceptance or a specific rejection. Confirm the publisher is producing the requested track and the relay has an upstream source. Discovery of a publication is not proof that every expected track is available.
 
-Keep the scope of an error with its code. In MOQT draft-21, a session error closes the protocol relationship, a `REQUEST_ERROR` rejects a particular request, and a stream reset ends that stream. For example, a `DELIVERY_TIMEOUT` stream reset does not by itself say that every other track stopped. A numeric code without its message or stream context is ambiguous because the error tables are separate. See [draft-21 §12](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-12); moq-lite implementations may expose different errors.
+When you find an error, record where it came from as well as its code. A `REQUEST_ERROR` rejects one request, a stream reset ends one stream, and a session error closes the MoQ session. For example, a `DELIVERY_TIMEOUT` reset on video may leave audio running. These use separate error tables in [draft-21 §12](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-12), so the same number can mean different things depending on where it appears. moq-lite may expose different errors.
 
 Check filters, cancellation, and request lifetime. An accidentally closed subscription can look like a stalled network. If objects are requested from history, verify they remain retained; live availability does not imply old-object availability.
 
@@ -44,13 +44,13 @@ Inspect the catalog, selected codec, decoder configuration, and the first usable
 
 Then inspect decoding and presentation separately. Are decoded frames being produced? Is audio blocked by playback policy? Is the renderer waiting on a timestamp far in the future? Does a hidden tab change the scheduling behavior?
 
-Use a known supported fixture to narrow the problem. If that works while one live source fails, examine the encoder and packaging before changing transport settings.
+Try a media sample that you know works with this player. If it plays while the live source fails, compare their encoder settings and packaging before changing the transport.
 
 ## Playback works, but keeps falling behind
 
-Measure age and queue depth over time. Compare the source bitrate with achieved throughput. If the publisher persistently produces more than the path can carry, identify the adaptation or abandonment decision that should reduce the backlog.
+Watch the queues and playback delay over time, and compare the source bitrate with the rate arriving at the player. If the source keeps producing more than the connection can carry, check whether the player switches renditions or skips old content.
 
-A single average bitrate can hide bursts. A large keyframe can create a temporary queue even when the long-term average fits. Observe the time series and the recovery, not only the final average.
+Watch the spikes too. A large keyframe can briefly fill a queue even when the average bitrate fits. Check how long that queue takes to drain.
 
 The player may also retain stale decoded frames after the transport has recovered. Measure network arrival time and actual display time independently where possible.
 
@@ -64,7 +64,7 @@ Suppose the picture freezes while audio continues. Start by writing two facts: a
 | Are decoded video frames being produced? | Inspect presentation timing and rendering | Check configuration and missing reference pictures |
 | Does the displayed frame age keep increasing? | Inspect queued work and adaptation | Check whether the player is skipping or pausing instead |
 
-Take these observations over the same interval. A decoder counter from a minute ago cannot explain whether new objects are usable now. If your library exposes no counter for a stage, add a small log at that boundary rather than treating the missing measurement as zero.
+Check these counters over the same time interval. A decoder that produced frames a minute ago might have stopped since then. If a stage has no counter, add a log there so you can see whether data is getting through.
 
 ## Collect evidence that connects the layers
 

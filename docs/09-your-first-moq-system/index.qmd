@@ -1,14 +1,14 @@
 # Your First MoQ System
 
-This walkthrough follows one publisher, one relay, and one viewer using the moq.dev local demo. The goal is to observe a complete media path and understand what each observation proves.
+Let’s put a publisher, relay, and player together using the moq.dev local demo. We’ll start with its test video, add another viewer, then slow the network down to see what changes.
 
-We will choose and record the implementation, review the path one frame takes, and start the demo with its supplied test content. Once playback works, we will add a second viewer, constrain the network, and consider what changes beyond localhost. The commands are upstream recipes, not a demo executed for this book.
+Before running it, we’ll look at the path one frame takes. As you work through the demo, keep notes on the version you’re using and what you see in the player and logs.
 
 ## Choose and record the implementation {#choose-the-implementation-deliberately}
 
-This walkthrough uses the **moq.dev project**, including its moq-lite and hang stack. It is not a minimal implementation of every feature in MOQT draft-21. The project’s current documentation is the authority for installation and command changes.
+We’ll use the **moq.dev project** and its moq-lite and hang stack. The project’s documentation has the latest setup instructions; its [standards guide](https://doc.moq.dev/concept/standard) explains which MOQT features it supports.
 
-Use its [setup guide](https://doc.moq.dev/setup/) to install the prerequisites and obtain the project checkout. Record the checkout revision and library versions alongside your observations. A reproducible experiment needs more than the name “MoQ.”
+Use the [setup guide](https://doc.moq.dev/setup/) to install the prerequisites and download the project. Save the checkout revision and library versions with your notes so you can repeat the experiment later.
 
 The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.
 
@@ -18,7 +18,7 @@ A **terminal** lets you start programs by typing commands. Your **working direct
 
 The demo runs several **processes**: running programs with separate jobs. A **listener** accepts traffic at an address and port. `localhost` refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.
 
-Keep the terminal running while using the demo. A process printing that it started is evidence about that process; it does not yet prove the browser can receive or play media.
+Keep the terminal running while you use the demo. Once the programs have started, open the player to check that video and audio are coming through.
 
 ## Understand the path of one frame {#trace-one-frame-conceptually}
 
@@ -53,7 +53,7 @@ For more detailed Rust logging, stop the demo and rerun it with the project's [d
 RUST_LOG=debug nix develop --command just
 ```
 
-The exact log messages depend on the checkout. Use the player UI and available logs to fill in this notebook; write “not observed” when a value is not exposed rather than guessing.
+The logs will vary with the version you’re running. Fill in what you can find below, and leave “not observed” for anything the player or logs don’t show.
 
 | Observation | Your result |
 | --- | --- |
@@ -65,17 +65,17 @@ The exact log messages depend on the checkout. Use the player UI and available l
 | Codec and container, if exposed | |
 | Test video visible and audio audible | |
 
-Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”
+Watch the player alongside the relay logs. Follow the connection, discovery, and subscription messages through to the first picture and sound.
 
 The [moq.dev transport guide](https://doc.moq.dev/concept/transport) explains how its clients choose among transports. A browser exposing WebTransport does not prove the library selected it for this connection. Record what happened, including any fallback.
 
-Protocol agreement is another boundary. The project's [standards guide](https://doc.moq.dev/concept/standard) distinguishes its simpler model from supported IETF revisions. A negotiated version alone does not establish that both implementations support every request or media format your application needs. Test live subscription, late joining, and decoding separately when connecting different stacks.
+If you’re connecting different implementations, try a live subscription, a late join, and actual playback. Getting through version negotiation is just the first step; both sides also need the requests and media formats your app uses. The [standards guide](https://doc.moq.dev/concept/standard) lists the project’s support.
 
 ### Check each boundary
 
 The [quick start](https://doc.moq.dev/setup/#what-starts) lists a local relay at `localhost:4443` and a web demo at `localhost:5173`. If your checkout reports different addresses, use those.
 
-| Action | Look for | What that observation establishes |
+| Action | Look for | What you’ve checked |
 |---|---|---|
 | Start the recipe | The relay, publisher, and web demo start without fatal errors | The local processes launched |
 | Open the web demo address | The player interface loads | The web server can serve the page |
@@ -83,7 +83,7 @@ The [quick start](https://doc.moq.dev/setup/#what-starts) lists a local relay at
 | Start playback | Pictures change over time; audio is audible when enabled | At least one complete media path works |
 | Inspect available logs | Selected transport and accepted requests | Which transport and request path produced that result |
 
-A loaded web page does not prove that its media connection succeeded. Likewise, silent audio is not enough to diagnose packet loss: check the player's mute control and whether playback needs a click. Browser playback restrictions are explained in [MDN's autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay).
+If the page loads but nothing plays, check the media connection next. If the video works but audio is silent, check mute and try clicking Play before investigating packet loss. Browsers may need a user action before playing audio; see [MDN’s autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay).
 
 ## Add a second viewer
 
@@ -97,7 +97,7 @@ Use a network test setup to constrain bandwidth or introduce delay. Start with o
 
 Ordinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.
 
-You are looking for understandable behavior: a lower rendition, a skipped group, a brief pause, or a growing backlog. “It stuttered” is a starting observation, not a diagnosis.
+Watch what changes when the network slows down. Does the player choose a lower rendition, skip ahead, pause, or keep falling further behind? These observations give you somewhere to start debugging.
 
 ## Going beyond localhost
 

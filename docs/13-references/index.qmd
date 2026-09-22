@@ -1,12 +1,12 @@
 # References and Reading
 
-Use this chapter to choose a source for the question you are trying to answer. Protocol specifications define behavior, implementation documentation explains particular software, and this book supplies teaching examples. Example names, diagrams, and latency budgets are illustrative unless identified otherwise.
+Want to dig into a topic? Start with a question in the table below. You’ll find protocol specifications, moq.dev guides, and articles that expand on the chapters.
 
-Start with the question table below. The following sections identify the pinned MOQT draft, give a route through it, and link the transport, browser, WebRTC, and moq.dev sources. The final sections explain the edition's limits and how to keep an update accurate.
+The rest of the chapter groups sources by topic and gives a reading route through MOQT draft-21. At the end, we list the research dates and what to check when updating the book.
 
 ## Choose a source by the question
 
-You do not need to read every specification before experimenting. Use a tutorial to build a model, implementation documentation to operate software, and a pinned specification to settle a protocol detail.
+You don’t need to read the whole specification before trying the demo. Use the project guide to get it running, then look up protocol details as questions come up.
 
 | You want to… | Start here | Keep in mind |
 |---|---|---|
@@ -18,7 +18,7 @@ You do not need to read every specification before experimenting. Use a tutorial
 
 ## The protocol baseline
 
-The IETF baseline is [Media over QUIC Transport, draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21), published September 8, 2026. Chapters link to relevant sections of that pinned version. Consult the [current document status](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/) for later revisions and the [MoQ working group](https://datatracker.ietf.org/wg/moq/about/) for the broader standards effort.
+This edition follows [Media over QUIC Transport, draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21), published September 8, 2026. The chapter links use that version. You can find newer revisions on the [document status page](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/) and follow the wider work through the [MoQ working group](https://datatracker.ietf.org/wg/moq/about/).
 
 Read the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.
 
@@ -56,7 +56,7 @@ The early comparison uses the [W3C WebRTC specification](https://www.w3.org/TR/w
 
 For media, WebRTC uses **SRTP**, the secure form of the Real-time Transport Protocol. Data channels use **SCTP**, the Stream Control Transmission Protocol, carried inside **DTLS**, Datagram Transport Layer Security. You do not need to learn these packet formats to understand the comparison; the distinction is that WebRTC specifies how these pieces fit together for real-time communication.
 
-[RFC 7667, section 3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) explains selective-forwarding media servers. It supports the important point that a WebRTC conference can distribute media through a server; it need not connect every participant directly to every other participant.
+[RFC 7667, section 3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) explains how a media server can forward selected streams in a WebRTC conference. This is useful when comparing an SFU with a MoQ relay.
 
 ## The moq.dev implementation
 
@@ -66,14 +66,14 @@ For experiments, use the [setup](https://doc.moq.dev/setup/) and [development](h
 
 ### Read moq.dev with a specific question
 
-The following route connects the project's explanations to the chapters they help illuminate. The blog posts explain design choices; the guides describe evolving software.
+These moq.dev articles and guides are useful companions to the chapters:
 
 | Question | Material | Read alongside |
 | --- | --- | --- |
 | Why separate delivery from the browser's media stack? | [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) (2023) | The opening WebRTC comparison |
 | Can subscriber choices reduce publisher work? | [Concepts](https://doc.moq.dev/concept/) | Relays and Distribution |
 | How does a conference use publications? | [Conferencing](https://doc.moq.dev/concept/use-case/conferencing) | Publishing and Subscribing |
-| Why use cancellable streams for timely media? | [Never Use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | QUIC and WebTransport; the title is an argument, not a protocol prohibition |
+| Why use cancellable streams for timely media? | [Never Use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | QUIC and WebTransport |
 | Which age limit does this implementation apply? | [moq-lite subscriptions](https://doc.moq.dev/concept/moq-lite#subscriptions) | Latency and Congestion |
 | What is inside a delivered media payload? | [hang](https://doc.moq.dev/concept/hang) | Media and the Browser |
 | How do existing WebRTC tools connect? | [RTC gateways](https://doc.moq.dev/bin/rtc) | The detailed WebRTC comparison |
@@ -84,9 +84,9 @@ The older blog posts describe the software available at the time. This also appl
 
 ## Editorial approach and limitations
 
-The protocol baseline was reviewed on **September 16, 2026**; the technical explanations and linked setup resources were checked on **September 22, 2026**. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.
+The initial protocol review was on **September 16, 2026**. Technical explanations and setup links were checked again on **September 22, 2026**. Protocol details refer to draft-21, and examples using moq.dev features say so.
 
-This guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.
+The latency numbers in this book are examples, not measurements. We haven’t run the upstream walkthrough or tested every browser. Try your chosen software on the devices and networks you plan to support.
 
 
 ## Keeping an edition accurate

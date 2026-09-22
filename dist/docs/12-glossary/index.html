@@ -30,8 +30,8 @@
 
 
 
-<p>Use this chapter to look up a term while reading. Related terms are grouped together, and the groups are ordered alphabetically by their headings. Each group links to the chapter that explains how the ideas work together.</p>
-<p>These definitions describe this book’s usage. The same word can mean different things at different layers; the linked specification supplies the exact protocol definition.</p>
+<p>Looking for a term? Related terms are grouped under alphabetical headings, with links back to the chapters that explain them.</p>
+<p>Some words, such as “stream,” mean different things depending on whether we’re talking about media or transport. The definitions below follow how we use them in this book.</p>
 <section id="authentication-and-authorization" class="level2">
 <h2 class="anchored" data-anchor-id="authentication-and-authorization">Authentication and authorization</h2>
 <p><strong>Authentication:</strong> establishing which identity an endpoint or user has.</p>
@@ -41,7 +41,7 @@
 </section>
 <section id="broadcast-and-catalog" class="level2">
 <h2 class="anchored" data-anchor-id="broadcast-and-catalog">Broadcast and catalog</h2>
-<p><strong>Broadcast:</strong> in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.</p>
+<p><strong>Broadcast:</strong> moq.dev’s name for a collection of tracks in one publication, such as the lecture’s audio and video.</p>
 <p><strong>Catalog:</strong> media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.</p>
 <p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
 </section>
@@ -54,8 +54,8 @@
 </section>
 <section id="connection-and-session" class="level2">
 <h2 class="anchored" data-anchor-id="connection-and-session">Connection and session</h2>
-<p><strong>Connection:</strong> the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.</p>
-<p><strong>Session:</strong> the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.</p>
+<p><strong>Connection:</strong> the transport carrying data between two endpoints. In our lecture, the publisher connects to the relay, and the viewer has another connection to that relay.</p>
+<p><strong>Session:</strong> the MoQ exchange running over that transport. The endpoints agree on a protocol version and settings so they can send requests and content.</p>
 <p>Read more in <a href="../../docs/02-quic-and-webtransport/index.html">QUIC and WebTransport</a>.</p>
 </section>
 <section id="ip-tcp-udp-and-quic" class="level2">
@@ -65,14 +65,14 @@
 <p><strong>UDP:</strong> a transport carrying separate datagrams without built-in retransmission or ordering.</p>
 <p><strong>QUIC:</strong> a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.</p>
 <p><strong>Packet:</strong> a network transmission unit. Packet boundaries do not define MoQ object boundaries.</p>
-<p><strong>ACK:</strong> an acknowledgment of transport reception, not proof of decoding or playback.</p>
+<p><strong>ACK:</strong> an acknowledgment telling the sender which transport data arrived. The player handles decoding and playback separately.</p>
 <p><strong>RTT:</strong> round-trip time, a measure of network delay to a peer and back.</p>
 <p>Read the <a href="../../docs/02-quic-and-webtransport/index.html#a-short-introduction-to-tcpip">networking introduction and comparison tables</a>.</p>
 </section>
 <section id="keyframe-and-rendition" class="level2">
 <h2 class="anchored" data-anchor-id="keyframe-and-rendition">Keyframe and rendition</h2>
 <p><strong>Keyframe:</strong> in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.</p>
-<p><strong>Rendition:</strong> an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.</p>
+<p><strong>Rendition:</strong> another encoding of the same content, such as a lower-resolution video. Switching renditions may require new decoder configuration and a new starting picture.</p>
 <p>Read more in <a href="../../docs/07-media-and-the-browser/index.html">Media and the Browser</a>.</p>
 </section>
 <section id="latency-jitter-and-congestion" class="level2">

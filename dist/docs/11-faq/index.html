@@ -30,35 +30,35 @@
 
 
 
-<p>These questions connect ideas from several chapters: which applications MoQ suits, how it relates to other protocols, and what its reliability and compatibility claims mean. Each answer gives the main point first and links to a fuller explanation where useful.</p>
+<p>Here are some questions that come up when choosing or building a MoQ system. You can jump to whichever one you’re wondering about.</p>
 <p>You can read this chapter in any order. For a term rather than a design question, use the <a href="../../docs/12-glossary/index.html">glossary</a>.</p>
 <section id="is-moq-a-finished-standard" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-a-finished-standard">Is MoQ a finished standard?</h2>
-<p>The baseline for this edition is <strong>draft-ietf-moq-transport-21</strong>, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">IETF document status</a> before implementing them.</p>
+<p>Not yet. This book follows <strong>draft-ietf-moq-transport-21</strong>, dated September 8, 2026. Before implementing it, check the <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">IETF document status</a> for newer revisions.</p>
 <p>The draft links point to the version this book explains. Project documentation may have moved on since then.</p>
 </section>
 <section id="does-moq-replace-webrtc" class="level2">
 <h2 class="anchored" data-anchor-id="does-moq-replace-webrtc">Does MoQ replace WebRTC?</h2>
-<p>MoQ is an alternative for some applications, rather than a universal replacement for WebRTC. For a side-by-side introduction, see <a href="../../docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc">How does MoQ compare with WebRTC?</a>.</p>
-<p>The two can serve some of the same applications. Consider our lecture: a conversation between the lecturer and a student, and delivery to a large listening audience, are different parts of the same experience. Either technology may be used in a larger system that supports both.</p>
+<p>You can use MoQ for some of the same jobs. Whether you’d want to depends on what you’re building. Start with the <a href="../../docs/01-what-why-and-how/#how-does-moq-compare-with-webrtc">WebRTC comparison</a>.</p>
+<p>Our lecture has both a conversation and a broadcast: a student talks with the lecturer while everyone else listens. You could use WebRTC or MoQ as part of a system that handles both.</p>
 <p>In a browser, WebRTC provides much of the encoding, transmission, and receiving machinery together. A MoQ implementation supplies named-content delivery; its media library supplies the capture, codec, and playback pieces above it. Compare complete systems on the devices and network paths your audience uses. The protocol name alone does not tell you the delay or operating cost.</p>
 </section>
 <section id="does-it-replace-hls-or-dash" class="level2">
 <h2 class="anchored" data-anchor-id="does-it-replace-hls-or-dash">Does it replace HLS or DASH?</h2>
 <p><strong>HLS</strong> (HTTP Live Streaming) and <strong>DASH</strong> (Dynamic Adaptive Streaming over HTTP) describe ways for players to obtain media in pieces over HTTP, the protocol used for web requests. A description of the available media tells the player which pieces to request. This fits established web servers and caching infrastructure. The <a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">DASH Industry Forum’s architecture overview</a> describes DASH’s presentation description and segment model.</p>
 <p>MoQ instead lets a receiver subscribe to a named track and receive objects as they become available. Both approaches need media formats, players, and a policy for adapting to the network. Neither the use of HTTP nor subscription by itself fixes the final playback delay. HLS’s playlist-and-segment model is described in <a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 8216, section 2</a>; MoQ subscriptions are described in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">draft-21, section 3.1</a>.</p>
-<p>A service can use more than one delivery path. The moq.dev project includes gateways for established formats and protocols. A gateway is a concrete integration to test, not evidence that every arbitrary MoQ publication is playable by an HLS player.</p>
+<p>You can also connect delivery systems through a gateway. The moq.dev project includes gateways for other formats and protocols. Check that the one you choose supports the media you want to send.</p>
 </section>
 <section id="is-all-moq-traffic-unreliable" class="level2">
 <h2 class="anchored" data-anchor-id="is-all-moq-traffic-unreliable">Why would I cancel a reliable stream?</h2>
-<p>Reliability repairs missing bytes; it does not decide whether you still want them. Suppose the viewer has fallen behind and the player can restart from a newer, independently decodable group. Spending more time repairing an older group may prolong the delay. The delivery policy can stop that old work while retaining reliable delivery for work that is still useful.</p>
+<p>Because you might not want those bytes anymore. If the viewer is behind and a newer group gives them a fresh place to start, finishing the old group keeps them waiting. The sender can cancel that work and keep using reliable delivery for the content the viewer still needs.</p>
 <p>The receiver also needs to discard its stale playback queue and resume at a valid point. Cancellation alone cannot make a player catch up. <a href="../../docs/06-latency-and-congestion/">Latency and Congestion</a> follows those decisions.</p>
 <p>This also answers a common question: is all MoQ traffic unreliable? No.&nbsp;An active QUIC stream provides reliable, ordered bytes. Datagrams are a separate option: QUIC does not retransmit them when they are lost. <a href="../../docs/02-quic-and-webtransport/">QUIC and WebTransport</a> explains the distinction.</p>
 </section>
 <section id="can-i-send-chat-or-game-state" class="level2">
 <h2 class="anchored" data-anchor-id="can-i-send-chat-or-game-state">Can I send chat or game state?</h2>
-<p>The payload model is not limited to media. But your data still needs a design that matches loss, ordering, and late joining. A fresh state snapshot can replace an old one. An isolated “increment score” event often cannot.</p>
-<p>For an illustrative game, put a full state snapshot at a restart boundary and define how later updates relate to it. If you need an authoritative event history, provide persistence and recovery deliberately rather than assuming a live track is a database.</p>
+<p>Yes. Think about what a late arrival or a lost update means for your data. A new snapshot of the game state can replace an old one. An “increment score” event needs the earlier score to make sense.</p>
+<p>For example, a game could start each group with a full snapshot and follow it with updates. If you need to keep every event, you’ll also need storage and a way to recover anything missed.</p>
 </section>
 <section id="is-moq-peer-to-peer" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-peer-to-peer">Is MoQ peer-to-peer?</h2>
@@ -67,11 +67,11 @@
 </section>
 <section id="is-moq-lite-the-same-as-moqt" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-lite-the-same-as-moqt">Is moq-lite the same as MOQT?</h2>
-<p>No.&nbsp;moq-lite uses a simpler model, and the moq.dev stack documents <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">compatibility paths for specified MOQT versions</a>. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.</p>
+<p>No.&nbsp;moq-lite uses a simpler model. The moq.dev stack also supports <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">some MOQT versions and features</a>. To connect it to another implementation, check the version, features, and media format on both sides.</p>
 </section>
 <section id="can-i-use-this-book-as-a-specification" class="level2">
 <h2 class="anchored" data-anchor-id="can-i-use-this-book-as-a-specification">Can I use this book as a specification?</h2>
-<p>Use it to understand the problems and vocabulary. Use the exact applicable protocol draft for normative behavior, and the documentation for the library version you ship. The walkthrough commands are sourced examples, not a claim that every supported platform was tested.</p>
+<p>Use the book to learn how the pieces work. When implementing them, follow the protocol draft and the documentation for your library version. The <a href="../../docs/13-references/index.html">references</a> explain which versions this edition uses.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

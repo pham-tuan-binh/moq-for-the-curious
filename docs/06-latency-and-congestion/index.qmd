@@ -2,7 +2,7 @@
 
 **Playback latency** is the time between capturing media and presenting it to a viewer. Some of that time is spent processing and moving data; some is spent waiting in queues. A connection can keep delivering objects while the viewer falls seconds behind.
 
-We will first establish the units and account for that delay. Then we will follow a growing queue, distinguish congestion control from media adaptation, and examine priorities and delivery timeouts. Finally, we will look at the player's own queue and how it returns to live playback. The numerical examples are teaching values, not benchmarks.
+We’ll work out where the delay comes from, then follow a queue as it grows. That leads to the choices a sender can make: send less, favor some content, or stop sending old content. Finally, we’ll look at how the player catches up. The numbers are made up to keep the examples easy to calculate.
 
 ## Which rates and delays are we measuring? {#units-before-arithmetic}
 
@@ -17,7 +17,7 @@ A **bit** is a binary digit; a **byte** contains eight bits. Network rates commo
 | RTT, in milliseconds | Network round-trip time | A 40 ms RTT is not a 40 ms playback delay |
 | Playback latency | Delay from capture to presentation | Includes processing and buffering as well as transit |
 
-A connection can have high capacity and a long delay. “Fast” is ambiguous; use the rate or time that explains the problem. Transport overhead also consumes capacity, so media bitrate and network bitrate are not identical.
+A connection might carry plenty of video each second while taking a long time to deliver any one frame. That’s why we measure both capacity and delay. When comparing network capacity with media bitrate, leave room for packet headers and other transport overhead too.
 
 ## Where does playback delay come from? {#where-the-time-goes}
 
@@ -34,23 +34,23 @@ Suppose one frame spends its time like this:
 | Decode and display | 20 ms |
 | Total | 200 ms |
 
-Reducing network time by five milliseconds takes this example from 200 ms to 195 ms. Reducing the playback buffer has more room to help, but that buffer has a purpose: it absorbs variation in arrival time. Removing it may turn uneven network delivery into uneven playback.
+We could save five milliseconds on the network and bring the total down to 195 ms. The 80 ms playback buffer looks like a bigger opportunity. But if we shrink it, frames that arrive a little late are more likely to miss their playback time. That’s the tradeoff we’re making.
 
-The appropriate balance depends on the interaction. Someone listening to a lecture may accept additional buffering to avoid interruptions. Someone speaking with the lecturer needs responses quickly and may prefer occasional missing video to a growing conversational delay.
+For a student just listening, a slightly longer wait might be fine if it prevents interruptions. For a student asking a question, that same wait makes the conversation awkward. They may prefer a few skipped pictures so they can keep talking.
 
 ## Why does the queue keep growing? {#how-a-queue-grows}
 
 Suppose the publisher produces four megabits each second while Alice's path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.
 
-If production continues at the same rate, waiting longer makes the problem worse. The application must reduce future work, abandon some queued work, or accept increasing delay. This arithmetic applies whether the transport is MoQ, WebRTC, or something else.
+As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, it needs to produce less data, or the system needs to drop some of the data already waiting.
 
 **Congestion control** limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
 
-The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing production below the rate the path can carry stops further queue growth. Existing queued data still has to be delivered or abandoned. To return near the live edge, the system may also need to skip old content.
+One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink. If that would take too long, the system can also skip old content to get Alice back near live.
 
 ### Congestion control, flow control, and adaptation
 
-Three mechanisms influence how much data is sent. They solve different problems:
+The transport and application each have a part to play:
 
 | Mechanism | Question it answers | Example |
 | --- | --- | --- |
@@ -62,11 +62,11 @@ Flow control protects the receiver with limits on individual streams and the con
 
 ## How do priorities choose what to send? {#choosing-which-content-to-send}
 
-Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.
+Suppose Alice’s connection can no longer keep up with both audio and video. Sending audio first may let her keep following the lecture while the picture struggles. The **scheduler** chooses which pending data to send, so it needs to know that audio matters more here.
 
-MOQT represents these preferences through priorities and group ordering. In draft-21, a lower numeric priority means more urgent work. The recommended scheduler considers subscriber priority before publisher priority. Within the same subscription, group ordering helps choose among groups when those priorities are equal. This is a recommendation, not a guarantee of one scheduling algorithm in every implementation. The full scheduling rules are in [§5.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1).
+MOQT expresses these choices through priorities and group ordering. In draft-21, smaller priority numbers mean more urgent work. Its recommended scheduler checks subscriber priority first, then publisher priority. When priorities are equal within a subscription, group ordering helps decide which group goes first. Implementations can use other scheduling algorithms. See [§5.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1) for the full recommendation.
 
-Priority changes which work waits. It does not reserve bandwidth or guarantee arrival by a deadline. If urgent audio consumes the available capacity, less urgent video may remain queued. That is why scheduling preferences need to be paired with limits on how long old work remains useful. Check the conventions of the API you use: moq-lite and MOQT fields are not interchangeable merely because both are called priorities.
+If we send audio first and it uses all the available capacity, video still has to wait. Priority helps us choose who waits; a timeout lets us decide when waiting has gone on too long. When using a library, check its priority conventions, since moq-lite and MOQT use different rules.
 
 ## When should delivery stop? {#abandoning-old-content-safely}
 
@@ -74,7 +74,7 @@ Suppose video group 41 remains incomplete while group 42 provides a fresh decodi
 
 The sender still has to respect the stream's structure. A reliable byte stream cannot deliver later bytes past a missing section. To abandon a subgroup's remaining stream data, MOQT resets that stream. A receiver must then use the media format's dependencies to decide where decoding can resume.
 
-Draft-21 defines two optional delivery timeouts. Their different starting points address different places where data can wait. The following examples use a relay's local clock and a 100 ms timeout. They are separate examples, rather than two required stages for each object. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
+Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. We’ll look at each separately, using a relay’s clock and a 100 ms limit. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
 
 ### Waiting to enter the transport
 

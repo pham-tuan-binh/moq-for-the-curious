@@ -1,12 +1,12 @@
 # Publishing and Subscribing
 
-A **subscription** asks another endpoint to deliver objects from a named track. It connects the content model from the previous chapter to the actual exchange between a publisher and a subscriber.
+A **subscription** asks another endpoint to send objects from a named track. Alice wants to hear the lecture, so her player subscribes to its audio track.
 
-We will follow Alice, a student joining the lecture, through five parts of that exchange: establishing a session, finding the lecture, requesting audio, joining video in the middle, and ending a subscription. The examples show which endpoint sends each message and what its response establishes. Setup and delivery can overlap; the order of the explanation is not a requirement to wait after every step.
+We’ll follow Alice as she connects, finds the lecture, asks for audio, and joins the video partway through. Then we’ll see how she ends a subscription when she leaves.
 
 ## Establishing a session
 
-Before Alice and the relay can exchange requests, they need a compatible MoQ session. A session is the protocol relationship in which the endpoints exchange requests and content. The transport carries that conversation, but it does not interpret its messages.
+Alice’s player and the relay first agree on a MoQ session. This gives them a way to exchange requests and content over their transport connection.
 
 In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition's draft is `moqt-21`. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See [§6.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2).
 
@@ -33,7 +33,7 @@ sequenceDiagram
     R->>C: Another subgroup stream: more objects
 ```
 
-The picture shows one successful ordering, not mandatory waits between every arrow. Setup, requests, and data can overlap under the draft's initialization rules. Discovery is omitted because this client already knows the track name. `SUBSCRIBE_OK` accepts a request; it does not mean the first picture has been decoded. The separate streams are specified in [draft-21 §6.4](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4).
+This client already knows the track name, so it can subscribe without discovery. The diagram shows setup first to make it easier to follow; requests and data can also arrive during setup, as described above. The `SUBSCRIBE_OK` reply accepts the subscription, and the objects travel on separate data streams. See [draft-21 §6.4](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4).
 
 ## Finding the lecture
 
@@ -47,7 +47,7 @@ Discovery and delivery can have different access rules. A private lecture might 
 
 Alice's player sends `SUBSCRIBE`, naming the lecture's audio track and specifying its delivery choices. The relay answers with `SUBSCRIBE_OK` if it accepts, or `REQUEST_ERROR` if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.
 
-Suppose the relay is not yet receiving this lecture. The service has associated the publication with an upstream publisher through registration, routing configuration, or implementation-specific discovery. The relay uses that information to make an upstream subscription of its own; a track name is not an Internet-wide lookup service. The following example begins after setup and shows one possible sequence. Both subscriptions request compatible delivery settings.
+What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The service might give it that route through registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.
 
 ```{mermaid}
 sequenceDiagram
@@ -64,7 +64,7 @@ sequenceDiagram
     R->>A: Audio objects
 ```
 
-Alice's subscription and the relay's upstream subscription belong to different sessions. The relay receives objects as a subscriber, then supplies them to Alice as a publisher. It may already have an upstream subscription or cached content, so every new viewer need not cause this whole exchange.
+There are now two subscriptions: Alice’s request to the relay, and the relay’s request to the publisher. The relay receives the audio on one connection and forwards it on the other. If it was already receiving the lecture, it could reuse that content instead of asking the publisher again.
 
 Now Bob opens the same lecture and asks for the same audio. The relay can reuse its upstream content while maintaining a separate downstream subscription for Bob. If Alice leaves, Bob still needs that content. If both leave, and no recorder or other consumer remains, the relay can cancel its upstream request. This is how a relay combines demand without making every viewer share one connection. See [§7](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7).
 
@@ -76,7 +76,7 @@ Audio is arriving, and Alice's player also requests video. The publisher is half
 
 The player can retrieve the beginning of group 42 while following new objects, or wait for the next independent group. The first choice can start playback sooner if the missing content is available and quick to deliver. The second avoids catching up through the current group, but waits for a new decoding starting point.
 
-A **fetch** requests a bounded portion of a track. In draft-21, a standalone `FETCH` receives `FETCH_OK` or `REQUEST_ERROR`; fetched objects use a separate data stream. Successful delivery finishes when that data stream ends. Acceptance tells the requester that its request was accepted, rather than that every object has already arrived. See [§3.2.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1).
+A **fetch** asks for a bounded portion of a track. In draft-21, the publisher answers a standalone `FETCH` with `FETCH_OK` or `REQUEST_ERROR`. If it accepts, it sends the objects on a separate data stream and ends that stream when delivery is complete. See [§3.2.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1).
 
 For Alice's first choice, draft-21 also allows `FILL_PARAMETERS` on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. The ranges can overlap, so the player must handle duplicate objects; pairing a fill through the largest known object with a subscription starting at the next object avoids that overlap. For the second choice, a location filter can start delivery at the next group. A **location** is a group ID and object ID: a position in the track, rather than a clock reading. See [fill ranges (§3.4)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.4) and [location filters (§3.3.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.3.1).
 
@@ -92,7 +92,7 @@ flowchart TD
     K --> D
 ```
 
-Filling the current group uses retained data; starting with the next group waits for new data. Neither route can promise an immediate picture. Retained objects take time to transfer, and the next keyframe may not have been produced yet.
+Alice has a wait either way: time to download the start of group 42, or time for the publisher to produce group 43’s keyframe.
 
 Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?
 

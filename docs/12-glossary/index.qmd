@@ -1,8 +1,8 @@
 # Glossary
 
-Use this chapter to look up a term while reading. Related terms are grouped together, and the groups are ordered alphabetically by their headings. Each group links to the chapter that explains how the ideas work together.
+Looking for a term? Related terms are grouped under alphabetical headings, with links back to the chapters that explain them.
 
-These definitions describe this book's usage. The same word can mean different things at different layers; the linked specification supplies the exact protocol definition.
+Some words, such as “stream,” mean different things depending on whether we’re talking about media or transport. The definitions below follow how we use them in this book.
 
 ## Authentication and authorization
 
@@ -16,7 +16,7 @@ Read more in [Security and Access](../08-security-and-access/index.qmd).
 
 ## Broadcast and catalog
 
-**Broadcast:** in moq.dev terminology, a named collection of tracks belonging to a publication. Do not assume the word refers to network broadcast packets.
+**Broadcast:** moq.dev’s name for a collection of tracks in one publication, such as the lecture’s audio and video.
 
 **Catalog:** media metadata describing the available tracks or renditions and how to decode them. The format and schema depend on the media layer in use.
 
@@ -34,9 +34,9 @@ Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 
 ## Connection and session
 
-**Connection:** the underlying transport relationship between endpoints. With relays, a publisher and viewer generally do not share a single end-to-end QUIC connection.
+**Connection:** the transport carrying data between two endpoints. In our lecture, the publisher connects to the relay, and the viewer has another connection to that relay.
 
-**Session:** the MoQ protocol relationship operating over a transport. Successful transport setup does not imply successful protocol initialization or authorization.
+**Session:** the MoQ exchange running over that transport. The endpoints agree on a protocol version and settings so they can send requests and content.
 
 Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
@@ -52,7 +52,7 @@ Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
 **Packet:** a network transmission unit. Packet boundaries do not define MoQ object boundaries.
 
-**ACK:** an acknowledgment of transport reception, not proof of decoding or playback.
+**ACK:** an acknowledgment telling the sender which transport data arrived. The player handles decoding and playback separately.
 
 **RTT:** round-trip time, a measure of network delay to a peer and back.
 
@@ -62,7 +62,7 @@ Read the [networking introduction and comparison tables](../02-quic-and-webtrans
 
 **Keyframe:** in this guide’s simplified video examples, a picture providing a fresh decoding starting point. Exact random-access behavior depends on the codec and packaging.
 
-**Rendition:** an alternative encoding of content, such as a lower-resolution video. Receiving two renditions does not mean their decoder state is interchangeable.
+**Rendition:** another encoding of the same content, such as a lower-resolution video. Switching renditions may require new decoder configuration and a new starting picture.
 
 Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 

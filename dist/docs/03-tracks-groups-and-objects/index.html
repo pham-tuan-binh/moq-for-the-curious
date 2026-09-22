@@ -31,7 +31,7 @@
 
 
 <p>MoQ names content so that a viewer can request just the pieces it needs. In our lecture, a student joining late might want audio and low-resolution video without downloading the earlier ten minutes.</p>
-<p>The content model has three levels: a <strong>track</strong> is a named sequence of groups, a <strong>group</strong> contains objects, and an <strong>object</strong> identifies one piece of data. We will work through those levels in order, then explain how <strong>subgroups</strong> organize delivery on streams. Finally, we will see why names must remain consistent after a publisher restarts and how moq-lite’s vocabulary differs.</p>
+<p>We’ll build up the names one piece at a time: tracks, groups, then objects. After that, we’ll see how subgroups carry objects on streams and what happens to those names when a publisher restarts.</p>
 <section id="a-track-is-something-you-subscribe-to" class="level2">
 <h2 class="anchored" data-anchor-id="a-track-is-something-you-subscribe-to">What is a track?</h2>
 <p>A <strong>track</strong> is a named sequence of groups that a subscriber can request. Our lecture has separate tracks for audio, low-resolution video, and high-resolution video. Subscribing to <code>video-low</code> asks for that sequence; it does not also request <code>video-high</code>.</p>
@@ -55,7 +55,7 @@
 </div>
 </div>
 </div>
-<p>These readable labels are examples. On the wire, MOQT represents namespace components and track names as byte sequences. Both ends must agree on those bytes; writing the same-looking path in a user interface is not enough. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">track naming in draft-21 §2.4.1</a>.</p>
+<p>We’ve written the names as text to make the example easy to follow. MOQT sends namespace components and track names as bytes, so the publisher and subscriber need to use exactly the same bytes. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">track naming in draft-21 §2.4.1</a>.</p>
 </section>
 <section id="groups-create-places-to-join" class="level2">
 <h2 class="anchored" data-anchor-id="groups-create-places-to-join">How do groups provide starting points?</h2>
@@ -124,7 +124,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>The identity applies within an agreed <strong>scope</strong>: the set of servers that treat a full track name as the same track. An unrelated service can use the same labels for different content. Within our lecture service’s scope, however, that complete identity must consistently refer to the same payload. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">objects (§2.1)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">scope (§2.5)</a>.</p>
+<p>Suppose another service also has a track called <code>video-low</code> under <code>lectures / session-7</code>. That’s fine as long as the services belong to different <strong>scopes</strong>. A scope is the set of servers that agree to treat a full track name as the same track. Within our lecture service’s scope, the full address above must always refer to the same payload. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">objects (§2.1)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">scope (§2.5)</a>.</p>
 <p>This property is called <strong>immutability</strong>. Once published, an object’s payload does not change. If Alice and Bob request the same object, a relay can serve the same stored bytes to both. A corrected payload needs a new identity; otherwise the relay would have no way to know which version the name means.</p>
 </section>
 <section id="subgroups-decide-what-shares-a-stream" class="level2">
@@ -172,14 +172,14 @@
 </tr>
 </tbody>
 </table></div>
-<p>Separating these questions avoids a common mistake: opening a new transport stream does not create a new video track or a new decoding starting point.</p>
+<p>The video track can last for the whole lecture while the streams carrying it open and close. To start decoding, the player still needs a group with a suitable starting picture.</p>
 </section>
 </section>
 <section id="restarting-is-a-naming-problem-too" class="level2">
 <h2 class="anchored" data-anchor-id="restarting-is-a-naming-problem-too">What happens to names after a restart?</h2>
 <p>Suppose the lecturer’s publisher crashes. When it restarts, it reuses <code>video-low</code>, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.</p>
-<p>One solution is to give the restarted publication a fresh namespace, such as <code>lectures / session-8</code>. Another is to preserve a non-conflicting sequence of group IDs. The application must choose a strategy that keeps old and new identities distinct throughout its scope.</p>
-<p>The same naming rules that make caching useful make this restart decision necessary. In the next chapter, we will follow a request for one of these named tracks from the student to the publisher.</p>
+<p>We could put the restarted lecture under a fresh namespace, such as <code>lectures / session-8</code>. Or we could keep track of the group IDs and continue without reusing them. Either way, a new picture needs an address that won’t collide with an old one.</p>
+<p>With distinct names, a relay can tell the old publication from the new one. Next, we’ll follow a student’s request for one of these tracks.</p>
 </section>
 <section id="a-vocabulary-translation" class="level2">
 <h2 class="anchored" data-anchor-id="a-vocabulary-translation">How does moq-lite name these concepts?</h2>

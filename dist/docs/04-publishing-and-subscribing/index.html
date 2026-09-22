@@ -30,11 +30,11 @@
 
 
 
-<p>A <strong>subscription</strong> asks another endpoint to deliver objects from a named track. It connects the content model from the previous chapter to the actual exchange between a publisher and a subscriber.</p>
-<p>We will follow Alice, a student joining the lecture, through five parts of that exchange: establishing a session, finding the lecture, requesting audio, joining video in the middle, and ending a subscription. The examples show which endpoint sends each message and what its response establishes. Setup and delivery can overlap; the order of the explanation is not a requirement to wait after every step.</p>
+<p>A <strong>subscription</strong> asks another endpoint to send objects from a named track. Alice wants to hear the lecture, so her player subscribes to its audio track.</p>
+<p>We’ll follow Alice as she connects, finds the lecture, asks for audio, and joins the video partway through. Then we’ll see how she ends a subscription when she leaves.</p>
 <section id="establishing-a-session" class="level2">
 <h2 class="anchored" data-anchor-id="establishing-a-session">Establishing a session</h2>
-<p>Before Alice and the relay can exchange requests, they need a compatible MoQ session. A session is the protocol relationship in which the endpoints exchange requests and content. The transport carries that conversation, but it does not interpret its messages.</p>
+<p>Alice’s player and the relay first agree on a MoQ session. This gives them a way to exchange requests and content over their transport connection.</p>
 <p>In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition’s draft is <code>moqt-21</code>. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.2</a>.</p>
 <p>Each endpoint opens a control stream and starts it with <code>SETUP</code>, exchanging session options and supported extensions. Each control stream is <strong>unidirectional</strong>: only the endpoint that opened it sends on it. A request such as <code>SUBSCRIBE</code> uses a separate <strong>bidirectional</strong> stream, so the other endpoint can answer on that same stream. Objects travel separately from these request messages.</p>
 <p>The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.3</a>.</p>
@@ -64,7 +64,7 @@
 </div>
 </div>
 </div>
-<p>The picture shows one successful ordering, not mandatory waits between every arrow. Setup, requests, and data can overlap under the draft’s initialization rules. Discovery is omitted because this client already knows the track name. <code>SUBSCRIBE_OK</code> accepts a request; it does not mean the first picture has been decoded. The separate streams are specified in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">draft-21 §6.4</a>.</p>
+<p>This client already knows the track name, so it can subscribe without discovery. The diagram shows setup first to make it easier to follow; requests and data can also arrive during setup, as described above. The <code>SUBSCRIBE_OK</code> reply accepts the subscription, and the objects travel on separate data streams. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">draft-21 §6.4</a>.</p>
 </section>
 </section>
 <section id="finding-the-lecture" class="level2">
@@ -76,7 +76,7 @@
 <section id="asking-for-audio" class="level2">
 <h2 class="anchored" data-anchor-id="asking-for-audio">Asking for audio</h2>
 <p>Alice’s player sends <code>SUBSCRIBE</code>, naming the lecture’s audio track and specifying its delivery choices. The relay answers with <code>SUBSCRIBE_OK</code> if it accepts, or <code>REQUEST_ERROR</code> if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.</p>
-<p>Suppose the relay is not yet receiving this lecture. The service has associated the publication with an upstream publisher through registration, routing configuration, or implementation-specific discovery. The relay uses that information to make an upstream subscription of its own; a track name is not an Internet-wide lookup service. The following example begins after setup and shows one possible sequence. Both subscriptions request compatible delivery settings.</p>
+<p>What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The service might give it that route through registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -100,7 +100,7 @@
 </div>
 </div>
 </div>
-<p>Alice’s subscription and the relay’s upstream subscription belong to different sessions. The relay receives objects as a subscriber, then supplies them to Alice as a publisher. It may already have an upstream subscription or cached content, so every new viewer need not cause this whole exchange.</p>
+<p>There are now two subscriptions: Alice’s request to the relay, and the relay’s request to the publisher. The relay receives the audio on one connection and forwards it on the other. If it was already receiving the lecture, it could reuse that content instead of asking the publisher again.</p>
 <p>Now Bob opens the same lecture and asks for the same audio. The relay can reuse its upstream content while maintaining a separate downstream subscription for Bob. If Alice leaves, Bob still needs that content. If both leave, and no recorder or other consumer remains, the relay can cancel its upstream request. This is how a relay combines demand without making every viewer share one connection. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§7</a>.</p>
 <p>The publisher can initiate a subscription too, by offering a track with <code>PUBLISH</code>. The receiver accepts with <code>REQUEST_OK</code>—called <code>PUBLISH_OK</code> when accepting a publication in this draft—or rejects with <code>REQUEST_ERROR</code>. A relay must already know the client is interested in and authorized for that content. Either direction of initiation establishes the same kind of subscription. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§3.1</a>.</p>
 </section>
@@ -108,7 +108,7 @@
 <h2 class="anchored" data-anchor-id="joining-video-in-the-middle">Joining video in the middle</h2>
 <p>Audio is arriving, and Alice’s player also requests video. The publisher is halfway through group 42. In our example, the group’s first object contains a keyframe and the later frames depend on earlier pictures. Receiving only the next new frame may therefore leave Alice with bytes she cannot decode.</p>
 <p>The player can retrieve the beginning of group 42 while following new objects, or wait for the next independent group. The first choice can start playback sooner if the missing content is available and quick to deliver. The second avoids catching up through the current group, but waits for a new decoding starting point.</p>
-<p>A <strong>fetch</strong> requests a bounded portion of a track. In draft-21, a standalone <code>FETCH</code> receives <code>FETCH_OK</code> or <code>REQUEST_ERROR</code>; fetched objects use a separate data stream. Successful delivery finishes when that data stream ends. Acceptance tells the requester that its request was accepted, rather than that every object has already arrived. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§3.2.1</a>.</p>
+<p>A <strong>fetch</strong> asks for a bounded portion of a track. In draft-21, the publisher answers a standalone <code>FETCH</code> with <code>FETCH_OK</code> or <code>REQUEST_ERROR</code>. If it accepts, it sends the objects on a separate data stream and ends that stream when delivery is complete. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§3.2.1</a>.</p>
 <p>For Alice’s first choice, draft-21 also allows <code>FILL_PARAMETERS</code> on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. The ranges can overlap, so the player must handle duplicate objects; pairing a fill through the largest known object with a subscription starting at the next object avoids that overlap. For the second choice, a location filter can start delivery at the next group. A <strong>location</strong> is a group ID and object ID: a position in the track, rather than a clock reading. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">fill ranges (§3.4)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.3.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">location filters (§3.3.1)</a>.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -130,7 +130,7 @@
 </div>
 </div>
 </div>
-<p>Filling the current group uses retained data; starting with the next group waits for new data. Neither route can promise an immediate picture. Retained objects take time to transfer, and the next keyframe may not have been produced yet.</p>
+<p>Alice has a wait either way: time to download the start of group 42, or time for the publisher to produce group 43’s keyframe.</p>
 <p>Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?</p>
 <p>Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The fetch mechanism provides a way to request that content; storage and timing information make the feature possible.</p>
 </section>

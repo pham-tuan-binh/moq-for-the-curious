@@ -31,7 +31,7 @@
 
 
 <p><strong>Playback latency</strong> is the time between capturing media and presenting it to a viewer. Some of that time is spent processing and moving data; some is spent waiting in queues. A connection can keep delivering objects while the viewer falls seconds behind.</p>
-<p>We will first establish the units and account for that delay. Then we will follow a growing queue, distinguish congestion control from media adaptation, and examine priorities and delivery timeouts. Finally, we will look at the player’s own queue and how it returns to live playback. The numerical examples are teaching values, not benchmarks.</p>
+<p>We’ll work out where the delay comes from, then follow a queue as it grows. That leads to the choices a sender can make: send less, favor some content, or stop sending old content. Finally, we’ll look at how the player catches up. The numbers are made up to keep the examples easy to calculate.</p>
 <section id="units-before-arithmetic" class="level2">
 <h2 class="anchored" data-anchor-id="units-before-arithmetic">Which rates and delays are we measuring?</h2>
 <p>A <strong>bit</strong> is a binary digit; a <strong>byte</strong> contains eight bits. Network rates commonly use bits per second, while file sizes commonly use bytes. Here, the prefixes are decimal: one megabit is one million bits.</p>
@@ -81,7 +81,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>A connection can have high capacity and a long delay. “Fast” is ambiguous; use the rate or time that explains the problem. Transport overhead also consumes capacity, so media bitrate and network bitrate are not identical.</p>
+<p>A connection might carry plenty of video each second while taking a long time to deliver any one frame. That’s why we measure both capacity and delay. When comparing network capacity with media bitrate, leave room for packet headers and other transport overhead too.</p>
 </section>
 <section id="where-the-time-goes" class="level2">
 <h2 class="anchored" data-anchor-id="where-the-time-goes">Where does playback delay come from?</h2>
@@ -121,18 +121,18 @@
 </tr>
 </tbody>
 </table></div>
-<p>Reducing network time by five milliseconds takes this example from 200 ms to 195 ms. Reducing the playback buffer has more room to help, but that buffer has a purpose: it absorbs variation in arrival time. Removing it may turn uneven network delivery into uneven playback.</p>
-<p>The appropriate balance depends on the interaction. Someone listening to a lecture may accept additional buffering to avoid interruptions. Someone speaking with the lecturer needs responses quickly and may prefer occasional missing video to a growing conversational delay.</p>
+<p>We could save five milliseconds on the network and bring the total down to 195 ms. The 80 ms playback buffer looks like a bigger opportunity. But if we shrink it, frames that arrive a little late are more likely to miss their playback time. That’s the tradeoff we’re making.</p>
+<p>For a student just listening, a slightly longer wait might be fine if it prevents interruptions. For a student asking a question, that same wait makes the conversation awkward. They may prefer a few skipped pictures so they can keep talking.</p>
 </section>
 <section id="how-a-queue-grows" class="level2">
 <h2 class="anchored" data-anchor-id="how-a-queue-grows">Why does the queue keep growing?</h2>
 <p>Suppose the publisher produces four megabits each second while Alice’s path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.</p>
-<p>If production continues at the same rate, waiting longer makes the problem worse. The application must reduce future work, abandon some queued work, or accept increasing delay. This arithmetic applies whether the transport is MoQ, WebRTC, or something else.</p>
+<p>As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, it needs to produce less data, or the system needs to drop some of the data already waiting.</p>
 <p><strong>Congestion control</strong> limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of <strong>media adaptation</strong>. See <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
-<p>The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing production below the rate the path can carry stops further queue growth. Existing queued data still has to be delivered or abandoned. To return near the live edge, the system may also need to skip old content.</p>
+<p>One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink. If that would take too long, the system can also skip old content to get Alice back near live.</p>
 <section id="congestion-control-flow-control-and-adaptation" class="level3">
 <h3 class="anchored" data-anchor-id="congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</h3>
-<p>Three mechanisms influence how much data is sent. They solve different problems:</p>
+<p>The transport and application each have a part to play:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -169,15 +169,15 @@
 </section>
 <section id="choosing-which-content-to-send" class="level2">
 <h2 class="anchored" data-anchor-id="choosing-which-content-to-send">How do priorities choose what to send?</h2>
-<p>Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.</p>
-<p>MOQT represents these preferences through priorities and group ordering. In draft-21, a lower numeric priority means more urgent work. The recommended scheduler considers subscriber priority before publisher priority. Within the same subscription, group ordering helps choose among groups when those priorities are equal. This is a recommendation, not a guarantee of one scheduling algorithm in every implementation. The full scheduling rules are in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.1</a>.</p>
-<p>Priority changes which work waits. It does not reserve bandwidth or guarantee arrival by a deadline. If urgent audio consumes the available capacity, less urgent video may remain queued. That is why scheduling preferences need to be paired with limits on how long old work remains useful. Check the conventions of the API you use: moq-lite and MOQT fields are not interchangeable merely because both are called priorities.</p>
+<p>Suppose Alice’s connection can no longer keep up with both audio and video. Sending audio first may let her keep following the lecture while the picture struggles. The <strong>scheduler</strong> chooses which pending data to send, so it needs to know that audio matters more here.</p>
+<p>MOQT expresses these choices through priorities and group ordering. In draft-21, smaller priority numbers mean more urgent work. Its recommended scheduler checks subscriber priority first, then publisher priority. When priorities are equal within a subscription, group ordering helps decide which group goes first. Implementations can use other scheduling algorithms. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.1</a> for the full recommendation.</p>
+<p>If we send audio first and it uses all the available capacity, video still has to wait. Priority helps us choose who waits; a timeout lets us decide when waiting has gone on too long. When using a library, check its priority conventions, since moq-lite and MOQT use different rules.</p>
 </section>
 <section id="abandoning-old-content-safely" class="level2">
 <h2 class="anchored" data-anchor-id="abandoning-old-content-safely">When should delivery stop?</h2>
 <p>Suppose video group 41 remains incomplete while group 42 provides a fresh decoding starting point. Finishing group 41 would preserve older pictures, but sending group 42 may bring Alice closer to the lecturer. Independent groups make that choice possible without requiring every preceding picture.</p>
 <p>The sender still has to respect the stream’s structure. A reliable byte stream cannot deliver later bytes past a missing section. To abandon a subgroup’s remaining stream data, MOQT resets that stream. A receiver must then use the media format’s dependencies to decide where decoding can resume.</p>
-<p>Draft-21 defines two optional delivery timeouts. Their different starting points address different places where data can wait. The following examples use a relay’s local clock and a 100 ms timeout. They are separate examples, rather than two required stages for each object. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.2</a>.</p>
+<p>Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. We’ll look at each separately, using a relay’s clock and a 100 ms limit. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.2</a>.</p>
 <section id="waiting-to-enter-the-transport" class="level3">
 <h3 class="anchored" data-anchor-id="waiting-to-enter-the-transport">Waiting to enter the transport</h3>
 <p>The <strong>object delivery timeout</strong> measures age from when the last byte of an object’s header arrives from upstream. At the original publisher, it starts when the application supplies that header. Before handing the object to the underlying transport, the implementation checks its age.</p>

@@ -30,14 +30,14 @@
 
 
 
-<p>QUIC carries application data over a secure connection with multiple independent byte streams. WebTransport gives browser applications access to streams and datagrams. Understanding these tools explains what MOQT can ask the transport to do when data is delayed or lost.</p>
-<p>We will start with the TCP/IP basics, then examine stream ordering, loss, cancellation, and datagrams. Next we will connect those ideas to security and the browser’s WebTransport interface. The final section looks inside QUIC packets and the handshake; you can return to that detail after learning the content model. You do not need to memorize packet headers to follow the book.</p>
+<p>Before we look at MoQ messages, let’s look at how their bytes travel. QUIC carries them over a secure connection with several independent byte streams. In a browser, we use WebTransport to work with those streams and with datagrams.</p>
+<p>We’ll start with TCP/IP, then see what happens when packets go missing and how QUIC lets us stop sending old content. After that, we’ll look at WebTransport. The packet layouts and handshake are at the end; you can come back to those when you want the details.</p>
 <section id="a-short-introduction-to-tcpip" class="level2">
 <h2 class="anchored" data-anchor-id="a-short-introduction-to-tcpip">A short introduction to TCP/IP</h2>
 <p>If you are already familiar with TCP/IP, TCP, and UDP, skip ahead to <a href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a>.</p>
-<p>The Internet connects networks. A <strong>router</strong> forwards packets toward a destination, usually through other routers. <strong>IP</strong>, the Internet Protocol, supplies addressing and packet delivery across those networks. An IP address identifies a network interface; it is not a permanent identity for a person or an application.</p>
+<p>When a student connects to the lecture, their packets usually pass through several networks. A <strong>router</strong> forwards each packet toward its destination. <strong>IP</strong>, the Internet Protocol, provides the addresses and delivery rules that make this possible. An IP address identifies a network interface, such as the one the student is using to connect.</p>
 <p>A packet contains a <strong>header</strong>, which describes how to handle it, and a <strong>payload</strong>, the data it carries. Layers nest: the payload of an IP packet can contain a UDP datagram, whose payload contains QUIC packets. The receiving software unwraps those layers.</p>
-<p>An address gets traffic to a host. A <strong>port</strong> helps the host direct that traffic to the appropriate transport endpoint. A server may listen for QUIC on UDP port 443 while serving TCP connections on TCP port 443: the transport protocol is part of the distinction. DNS translates a name such as <code>relay.example</code> into addresses the client can try. DNS resolution alone does not establish a connection.</p>
+<p>An address gets traffic to a host. A <strong>port</strong> helps the host direct that traffic to the appropriate transport endpoint. A server may listen for QUIC on UDP port 443 while serving TCP connections on TCP port 443: the transport protocol is part of the distinction. DNS translates a name such as <code>relay.example</code> into addresses the client can try. The client then uses an address to try connecting to the relay.</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -47,42 +47,42 @@
 <thead>
 <tr class="header">
 <th>Term</th>
-<th>What it identifies or carries</th>
-<th>What it does not tell you</th>
+<th>What it means</th>
+<th>In our lecture</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>IP address</td>
-<td>A source or destination interface</td>
-<td>Which lecture or track the viewer wants</td>
+<td>An address for a network interface</td>
+<td>The address the student uses to reach the relay</td>
 </tr>
 <tr class="even">
 <td>UDP or TCP port</td>
-<td>A transport endpoint on a host</td>
-<td>Whether the application understands MoQ</td>
+<td>Identifies a transport endpoint on a host</td>
+<td>The relay listens for QUIC on a UDP port</td>
 </tr>
 <tr class="odd">
 <td>Packet</td>
 <td>A unit sent across a network</td>
-<td>Whether its payload is a complete media object</td>
+<td>It may carry part of an audio or video object</td>
 </tr>
 <tr class="even">
 <td>Connection</td>
-<td>State maintained by communicating transport endpoints</td>
-<td>Whether received media can be decoded</td>
+<td>The transport state shared by two endpoints</td>
+<td>The student and relay exchange data over a QUIC connection</td>
 </tr>
 <tr class="odd">
 <td>Protocol</td>
-<td>Rules both endpoints follow to interpret messages</td>
-<td>Which implementation a particular server runs</td>
+<td>Rules for interpreting messages</td>
+<td>MOQT tells the relay how to read the student’s subscription request</td>
 </tr>
 </tbody>
 </table></div>
 <p>IP delivery is <strong>best effort</strong>. Packets can be lost, duplicated, reordered, or delayed. A full queue in a router is one reason for loss. Each link has a <strong>maximum transmission unit</strong>, or MTU: its largest IP packet size. The <strong>path MTU</strong> is the smallest link MTU along the route. Sending one large application message does not make the network carry it as one arbitrarily large packet. See the <a href="https://www.rfc-editor.org/rfc/rfc8200.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">IPv6 specification</a> for packet-size constraints.</p>
 <section id="tcp-and-udp-make-different-promises" class="level3">
 <h3 class="anchored" data-anchor-id="tcp-and-udp-make-different-promises">TCP and UDP make different promises</h3>
-<p><strong>TCP</strong>, the Transmission Control Protocol, provides an ordered byte stream. It tracks bytes, acknowledges progress, and repairs loss. The application reads a continuous sequence rather than individual network packets. If the connection fails, reliable delivery does not make the missing bytes magically arrive.</p>
+<p><strong>TCP</strong>, the Transmission Control Protocol, gives an application an ordered byte stream. If bytes go missing, TCP tries to recover them before handing later bytes to the application. The application reads a continuous sequence, even though those bytes traveled in separate packets. Delivery can still fail if the connection breaks.</p>
 <p><strong>UDP</strong>, the User Datagram Protocol, preserves message boundaries but does not supply ordering or retransmission. The application receives individual datagrams that reach it. A protocol built above UDP can add reliability, security, and congestion control. QUIC does exactly that.</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
@@ -138,12 +138,12 @@
 </tr>
 </tbody>
 </table></div>
-<p>The comparison concerns the transport service, not a speed ranking. A UDP application still needs responsible sending behavior. A TCP application can have low latency. QUIC offers a different way to organize delivery. The base specifications are <a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">TCP, RFC 9293</a>, <a href="https://www.rfc-editor.org/rfc/rfc768.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">UDP, RFC 768</a>, and <a href="https://www.rfc-editor.org/rfc/rfc9000.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC, RFC 9000</a>.</p>
+<p>For MoQ, the useful part is having several streams on one connection. We can put camera video on one stream and captions on another, so missing video bytes don’t force the captions to wait.</p>
 </section>
 <section id="delay-rate-and-feedback" class="level3">
 <h3 class="anchored" data-anchor-id="delay-rate-and-feedback">Delay, rate, and feedback</h3>
 <p><strong>Bandwidth</strong> describes a path’s carrying capacity. <strong>Throughput</strong> is the rate actually achieved. <strong>Latency</strong> is delay; always name the interval being measured. Network delay and the delay from a camera capturing a picture to a screen displaying it are different measurements.</p>
-<p>An <strong>acknowledgment</strong>, or ACK, tells a sender what transport data arrived. <strong>Round-trip time</strong>, or RTT, measures a trip to the peer and back. A sender uses feedback to estimate the path and detect possible loss. An ACK does not prove that a video decoder accepted the bytes or that a viewer saw the picture.</p>
+<p>An <strong>acknowledgment</strong>, or ACK, tells a sender what transport data arrived. <strong>Round-trip time</strong>, or RTT, measures a trip to the peer and back. A sender uses feedback to estimate the path and detect possible loss. To find out whether those bytes became a picture, we need to check the player too.</p>
 <p>Two limits can stop a sender:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
@@ -177,15 +177,15 @@
 <section id="why-one-ordered-stream-can-hurt" class="level2">
 <h2 class="anchored" data-anchor-id="why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</h2>
 <p>Imagine sending camera video and captions through a single ordered byte stream. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is <strong>head-of-line blocking</strong>.</p>
-<p>Ordering is often exactly what we want. The trouble is imposing one ordering on unrelated work. Captions may be useful even while an old video frame is being repaired.</p>
+<p>For a file, waiting for the missing bytes makes sense: we want the whole file in order. For our lecture, the captions may still be useful while the camera video catches up. Putting both on one stream makes them wait together.</p>
 </section>
 <section id="independent-streams" class="level2">
 <h2 class="anchored" data-anchor-id="independent-streams">Independent streams</h2>
 <p>QUIC provides multiple reliable, ordered byte streams within one connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.</p>
 <p>A byte stream has no built-in message boundaries. If the publisher writes two objects, the receiver cannot assume two reads will return those two objects. MOQT supplies framing so the receiver can find where each object starts and ends. <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §2.2</a> explains this distinction.</p>
-<p>The independence is not unlimited. Streams still compete for connection bandwidth, and connection-level flow control can constrain them together. QUIC removes a particular delivery dependency; it does not give every stream a private network.</p>
+<p>All those streams still share the connection’s bandwidth. If the network gets congested, they have less capacity to share.</p>
 <p>QUIC applies flow-control limits to both individual streams and their combined data. A receiver that stops consuming one stream can therefore hold up other streams if the connection-wide limit is exhausted. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §4.1</a> and <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
-<p>MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.</p>
+<p>MoQ uses these streams to separate content that can be useful on its own. In the next chapter, we’ll see how publishers group that content.</p>
 </section>
 <section id="what-a-lost-packet-holds-up" class="level2">
 <h2 class="anchored" data-anchor-id="what-a-lost-packet-holds-up">What a lost packet holds up</h2>
@@ -226,12 +226,12 @@
 </tr>
 </tbody>
 </table></div>
-<p>This is the benefit of separate stream ordering. If the lost packet had carried data from both streams, both could have gaps. Congestion feedback can also slow the whole connection. Stream independence does not mean immunity to the same network failure.</p>
+<p>Here, the captions can continue while the camera stream waits. If packet 11 had carried bytes from both streams, both would have a gap to fill. The sender may also slow down the whole connection in response to the loss.</p>
 </section>
 <section id="reliability-can-have-an-ending" class="level2">
 <h2 class="anchored" data-anchor-id="reliability-can-have-an-ending">Reliability can have an ending</h2>
-<p>Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.</p>
-<p>Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.</p>
+<p>Sometimes the viewer no longer needs the bytes we’re trying to recover. QUIC lets the sender reset a stream, and lets the receiver ask it to stop. We can use this to give up on old video and spend the connection’s capacity on a newer picture.</p>
+<p>Suppose an old camera group is still incomplete when the publisher has a new group with everything needed to start decoding again. We could keep repairing the old group, or cancel it and move on. The application chooses when catching up matters more than seeing every picture.</p>
 </section>
 <section id="where-datagrams-fit" class="level2">
 <h2 class="anchored" data-anchor-id="where-datagrams-fit">Where datagrams fit</h2>
@@ -295,7 +295,7 @@
 <h2 class="anchored" data-anchor-id="a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</h2>
 <p>The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.</p>
 <p>When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.</p>
-<p>For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.</p>
+<p>When the player won’t start, check the connection first, then the MoQ session, then the media. A client might reach the server but speak the wrong protocol version, or receive content its decoder can’t use.</p>
 </section>
 <section id="reading-a-quic-packet" class="level2">
 <h2 class="anchored" data-anchor-id="reading-a-quic-packet">Reading a QUIC packet</h2>
@@ -352,7 +352,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>This is a reading guide, not a complete wire-format table. Field encodings and permitted frame combinations are defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §19</a>; <code>DATAGRAM</code> is defined separately in <a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221</a>.</p>
+<p>For the full frame layouts, see <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §19</a>. The <code>DATAGRAM</code> frame is defined in <a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221</a>.</p>
 <p>Three numbers answer different questions: a <strong>packet number</strong> identifies a transmission within its packet-number space; a <strong>stream ID</strong> identifies a stream; a <strong>byte offset</strong> locates data within that stream. When lost stream data is sent again, it travels in a new packet, with a new packet number. It retains its position in the stream. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-13.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §13.3</a> for how QUIC retransmits information.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -696,6 +696,9 @@
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
 <ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">TCP: RFC 9293</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc768.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">UDP: RFC 768</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9000.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC: RFC 9000</a></li>
 <li><a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC: streams and stream cancellation</a></li>
 <li><a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC datagrams: RFC 9221</a></li>
 <li><a href="https://www.w3.org/TR/webtransport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">W3C WebTransport</a></li>
