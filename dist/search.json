@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "MoQ for the Curious",
     "section": "",
-    "text": "About this book\nMoQ for the Curious explains how Media over QUIC delivers live content: how publishers name it, relays distribute it, and players keep it useful when the network slows.\nThe book introduces networking and media concepts as they are needed. A live lecture provides a running example, from the first subscription to playback and debugging.\nStart reading: What, Why and How →",
+    "text": "About this book\nMoQ for the Curious explains how Media over QUIC delivers live content: how publishers name it, relays distribute it, and players keep it useful when the network slows.\nThe book introduces networking and media concepts as they are needed. A live lecture provides a running example, from the first subscription to playback and debugging.\nThis book is inspired by WebRTC for the Curious and its approach to explaining how the pieces of a real-time communication system fit together.\nStart reading: What, Why and How →",
     "crumbs": [
       "About this book"
     ]

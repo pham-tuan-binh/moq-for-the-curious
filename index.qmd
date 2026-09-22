@@ -4,6 +4,8 @@
 
 The book introduces networking and media concepts as they are needed. A live lecture provides a running example, from the first subscription to playback and debugging.
 
+This book is inspired by [WebRTC for the Curious](https://webrtcforthecurious.com/) and its approach to explaining how the pieces of a real-time communication system fit together.
+
 [Start reading: What, Why and How →](docs/01-what-why-and-how/index.qmd)
 
 ## Where to begin
