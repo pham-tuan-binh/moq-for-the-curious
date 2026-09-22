@@ -66,7 +66,7 @@ Each decoded frame holds resources. After rendering or discarding a frame, the p
 
 Frames do not necessarily arrive at the spacing at which they were captured. Variable network delay produces **jitter**. If the player displayed pictures on arrival, that uneven timing would become visible movement on the screen.
 
-Media timestamps preserve the intended spacing. Consider these illustrative values, in milliseconds. The media timeline and receiver clock have different origins. These teaching values use milliseconds; WebCodecs `VideoFrame.timestamp` uses [microseconds](https://www.w3.org/TR/webcodecs/#dom-videoframe-timestamp), so a player must convert units when mapping clocks.
+Media timestamps tell the player how far apart the frames belong. In the example below, the media timeline and receiver clock start at different points. The table uses milliseconds, while WebCodecs `VideoFrame.timestamp` uses [microseconds](https://www.w3.org/TR/webcodecs/#dom-videoframe-timestamp). The player needs to account for both the starting points and the units.
 
 | Frame | Media timestamp | Arrival on receiver clock | Planned display on receiver clock |
 | --- | ---: | ---: | ---: |

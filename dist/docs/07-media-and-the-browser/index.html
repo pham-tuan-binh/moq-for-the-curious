@@ -121,7 +121,7 @@
 <section id="choosing-when-to-play" class="level2">
 <h2 class="anchored" data-anchor-id="choosing-when-to-play">When should a frame be presented?</h2>
 <p>Frames do not necessarily arrive at the spacing at which they were captured. Variable network delay produces <strong>jitter</strong>. If the player displayed pictures on arrival, that uneven timing would become visible movement on the screen.</p>
-<p>Media timestamps preserve the intended spacing. Consider these illustrative values, in milliseconds. The media timeline and receiver clock have different origins. These teaching values use milliseconds; WebCodecs <code>VideoFrame.timestamp</code> uses <a href="https://www.w3.org/TR/webcodecs/#dom-videoframe-timestamp" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">microseconds</a>, so a player must convert units when mapping clocks.</p>
+<p>Media timestamps tell the player how far apart the frames belong. In the example below, the media timeline and receiver clock start at different points. The table uses milliseconds, while WebCodecs <code>VideoFrame.timestamp</code> uses <a href="https://www.w3.org/TR/webcodecs/#dom-videoframe-timestamp" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">microseconds</a>. The player needs to account for both the starting points and the units.</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
 <col style="width: 20%">

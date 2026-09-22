@@ -80,7 +80,7 @@ The following route connects the project's explanations to the chapters they hel
 | What must agree between different stacks? | [Standards support](https://doc.moq.dev/concept/standard) | Your First MoQ System |
 | How do multiple relays find upstream content? | [Relay clustering](https://doc.moq.dev/bin/relay/cluster) | Relays and Distribution |
 
-Read historical performance and browser-support claims in their original context. For wire behavior, return to the pinned draft; for a deployment, record the implementation revision and observe its behavior.
+The older blog posts describe the software available at the time. This also applies to the [2024 Meetecho gateway demo](https://www.meetecho.com/blog/moq-webrtc/) linked in chapter 1. Use the current project guides for browser support and setup, and draft-21 for the protocol details explained here.
 
 ## Editorial approach and limitations
 

@@ -23,7 +23,7 @@ A connection can have high capacity and a long delay. “Fast” is ambiguous; u
 
 Capture-to-display latency includes capture, encoding, network transit, buffering, decoding, and presentation. A relay or operating system can add another queue along the way. Measuring only the network leaves much of the path unexplained.
 
-Consider this illustrative budget for one frame. The numbers are teaching values, not a MoQ benchmark.
+Suppose one frame spends its time like this:
 
 | Stage | Time |
 | --- | ---: |

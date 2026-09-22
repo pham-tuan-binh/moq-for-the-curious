@@ -73,7 +73,7 @@ Protocol agreement is another boundary. The project's [standards guide](https://
 
 ### Check each boundary
 
-The upstream [quick start](https://doc.moq.dev/setup/#what-starts), rechecked on September 22, 2026, describes a local relay at `localhost:4443` and a web demo at `localhost:5173`. Use the addresses reported by your checkout if they differ. These are documented defaults, not output from a run performed for this book.
+The [quick start](https://doc.moq.dev/setup/#what-starts) lists a local relay at `localhost:4443` and a web demo at `localhost:5173`. If your checkout reports different addresses, use those.
 
 | Action | Look for | What that observation establishes |
 |---|---|---|

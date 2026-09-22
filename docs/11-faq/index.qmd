@@ -8,7 +8,7 @@ You can read this chapter in any order. For a term rather than a design question
 
 The baseline for this edition is **draft-ietf-moq-transport-21**, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current [IETF document status](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/) before implementing them.
 
-This book is a dated explanation, not an automatically synchronized mirror of the specification. Links to the pinned draft preserve what the edition describes. Links to project documentation can change after publication.
+The draft links point to the version this book explains. Project documentation may have moved on since then.
 
 ## Does MoQ replace WebRTC?
 
