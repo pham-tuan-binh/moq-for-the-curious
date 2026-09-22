@@ -6,9 +6,11 @@ This chapter explains what MoQ does, why it is useful, and how its parts fit tog
 
 **Media over QUIC (MoQ)** lets applications publish live content that other applications can subscribe to. A publisher can send content directly to subscribers or distribute it through relays. **MoQ Transport (MOQT)** is the protocol that defines how content is named, requested, and delivered. It runs over **QUIC**, a secure transport with multiple independent byte streams, either directly or through WebTransport.
 
-This is a **publish/subscribe** model: one endpoint makes content available, and another asks to receive it. We will use a live lecture to follow that exchange throughout the book.
+This is a **publish/subscribe** model: one endpoint makes content available, and another asks to receive it.
 
-In our lecture, the lecturer is a **publisher**. Each viewer is a **subscriber**. The lecturer could send directly to every viewer, but that would make the lecturer's upload connection carry another copy for each person who joins. Instead, the publisher can send to a **relay**, a server that forwards the content to interested viewers.
+To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.
+
+In this example, the lecturer is a **publisher**. Each viewer is a **subscriber**. The lecturer could send directly to every viewer, but that would make the lecturer's upload connection carry another copy for each person who joins. Instead, the publisher can send to a **relay**, a server that forwards the content to interested viewers.
 
 ```{=html}
 <figure class="editorial-illustration">

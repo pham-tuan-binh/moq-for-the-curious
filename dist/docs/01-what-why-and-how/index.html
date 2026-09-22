@@ -34,8 +34,9 @@
 <section id="what-is-moq" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
 <p><strong>Media over QUIC (MoQ)</strong> lets applications publish live content that other applications can subscribe to. A publisher can send content directly to subscribers or distribute it through relays. <strong>MoQ Transport (MOQT)</strong> is the protocol that defines how content is named, requested, and delivered. It runs over <strong>QUIC</strong>, a secure transport with multiple independent byte streams, either directly or through WebTransport.</p>
-<p>This is a <strong>publish/subscribe</strong> model: one endpoint makes content available, and another asks to receive it. We will use a live lecture to follow that exchange throughout the book.</p>
-<p>In our lecture, the lecturer is a <strong>publisher</strong>. Each viewer is a <strong>subscriber</strong>. The lecturer could send directly to every viewer, but that would make the lecturer’s upload connection carry another copy for each person who joins. Instead, the publisher can send to a <strong>relay</strong>, a server that forwards the content to interested viewers.</p>
+<p>This is a <strong>publish/subscribe</strong> model: one endpoint makes content available, and another asks to receive it.</p>
+<p>To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.</p>
+<p>In this example, the lecturer is a <strong>publisher</strong>. Each viewer is a <strong>subscriber</strong>. The lecturer could send directly to every viewer, but that would make the lecturer’s upload connection carry another copy for each person who joins. Instead, the publisher can send to a <strong>relay</strong>, a server that forwards the content to interested viewers.</p>
 <figure class="editorial-illustration figure">
 <img src="../../assets/illustrations/lecture-distribution.svg" width="960" height="440" loading="lazy" decoding="async" alt="A publisher sends audio and video to a relay. Viewer A receives both tracks; viewer B receives only audio." class="figure-img">
 <figcaption>The relay receives the publication once and forwards the tracks each viewer requests. Blue is audio; purple is video. Requests and transport acknowledgments are omitted.</figcaption>
