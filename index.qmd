@@ -20,4 +20,4 @@ The research date is **September 16, 2026**. Each chapter links to primary sourc
 
 ## Maintenance and contributions
 
-This book is maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). Corrections, clearer explanations, and new examples are welcome. You can submit a pull request directly, or email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or ask for an update.
+This book is maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). Corrections, clearer explanations, and new examples are welcome. The [GitHub repository and contribution guide](https://github.com/pham-tuan-binh/moq-for-the-curious#readme) explain how to edit and build the book. You can submit a pull request directly, or email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or ask for an update.

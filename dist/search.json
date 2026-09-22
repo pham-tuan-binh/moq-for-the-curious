@@ -34,7 +34,7 @@
     "href": "index.html#maintenance-and-contributions",
     "title": "MoQ for the Curious",
     "section": "Maintenance and contributions",
-    "text": "Maintenance and contributions\nThis book is maintained by @pham-tuan-binh. Corrections, clearer explanations, and new examples are welcome. You can submit a pull request directly, or email binhpham@binhph.am to suggest a change or ask for an update.",
+    "text": "Maintenance and contributions\nThis book is maintained by @pham-tuan-binh. Corrections, clearer explanations, and new examples are welcome. The GitHub repository and contribution guide explain how to edit and build the book. You can submit a pull request directly, or email binhpham@binhph.am to suggest a change or ask for an update.",
     "crumbs": [
       "About this book"
     ]

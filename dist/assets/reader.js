@@ -20,6 +20,32 @@
     });
   }
   diagrams();
+  // Follow heading positions in document order, including nested subsections.
+  const outlineLinks = [...document.querySelectorAll('.outline a[href^="#"], .mobile-outline a[href^="#"]')];
+  const headingTargets = [...new Set(outlineLinks.map(link => document.getElementById(decodeURIComponent(link.hash.slice(1)))))]
+    .filter(Boolean).map(section => ({section, heading: section.querySelector('h2,h3,h4,h5,h6') || section}));
+  let scrollFrame = 0;
+  function updateOutline() {
+    scrollFrame = 0;
+    let current = headingTargets[0]?.section;
+    for (const target of headingTargets) {
+      if (target.heading.getBoundingClientRect().top <= 120) current = target.section;
+      else break;
+    }
+    for (const link of outlineLinks) {
+      const active = current && decodeURIComponent(link.hash.slice(1)) === current.id;
+      link.classList.toggle('is-current', Boolean(active));
+      if (active) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  }
+  function scheduleOutline() { if (!scrollFrame) scrollFrame = requestAnimationFrame(updateOutline); }
+  window.addEventListener('scroll', scheduleOutline, {passive:true});
+  window.addEventListener('resize', scheduleOutline);
+  window.addEventListener('hashchange', scheduleOutline);
+  window.addEventListener('load', scheduleOutline);
+  if (window.ResizeObserver) new ResizeObserver(scheduleOutline).observe(document.querySelector('main'));
+  updateOutline();
   const menu=document.querySelector('#menu-toggle'), sidebar=document.querySelector('.sidebar');
   menu.addEventListener('click',()=>{const open=sidebar.classList.toggle('open');menu.setAttribute('aria-expanded',String(open));});
   const dialog=document.querySelector('#search-dialog'),input=document.querySelector('#book-search'),results=document.querySelector('#search-results'),status=document.querySelector('#search-status');

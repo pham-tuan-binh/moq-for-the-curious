@@ -1,87 +1,92 @@
 # MoQ for the Curious
 
-An independently written, concepts-first guide to Media over QUIC, rendered with Quarto and a custom static reader. Original technical prose, with concrete examples and links to primary specifications.
+A free online book about **Media over QUIC**: how live media gets from a publisher, through relays, to a player—and what happens when the network cannot keep up.
 
-## Read and edit
+**[Read the book →](https://moqforthecurious.com)**
 
-- `index.qmd`: book introduction.
-- `docs/<chapter>/index.qmd`: the thirteen chapters, including the early WebRTC comparison in chapter one.
-- `_quarto.yml`: source chapter order and rendering options.
-- `assets/reader.css` and `assets/reader.js`: reader typography, navigation, search, and diagrams.
-- `dist/`: generated static site, tracked for deployment. Do not edit generated pages.
+The book starts with a comparison to WebRTC and an introduction to TCP/IP and QUIC. It then follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
 
-Install [Quarto](https://quarto.org/docs/get-started/) (built and verified with 1.10.18), then:
+## Contribute
+
+Corrections, clearer explanations, better diagrams, and missing topics are welcome. Open an [issue](https://github.com/pham-tuan-binh/moq-for-the-curious/issues) to discuss a change, or send a pull request directly.
+
+For a technical correction, include the relevant specification section and version. For an unclear explanation, point to the passage and describe where you lost the thread. Small, focused contributions are useful.
+
+Maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). You can also email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or request an update.
+
+## Build and preview
+
+Install **Python 3** and [Quarto 1.10.18](https://quarto.org/docs/get-started/), the version used by the publishing workflow. Then run:
 
 ```sh
-quarto render
-quarto preview
-```
-
-Alternatively, `python3 scripts/build.py` finds an installed Quarto CLI or the development copy in `.tools/bin/quarto`. No Python or R notebook execution is required. To serve an existing build:
-
-```sh
+git clone https://github.com/pham-tuan-binh/moq-for-the-curious.git
+cd moq-for-the-curious
+python3 scripts/build.py
 python3 -m http.server 4173 --directory dist
 ```
 
-Chapter directory URLs remain compatible with the original site. The custom reader supplies full-text search, chapter numbering, previous/next navigation, section outlines, and subsection navigation. The prose is present in static HTML; a no-JavaScript chapter list provides mobile navigation without scripts.
+Open [localhost:4173](http://localhost:4173). After editing a source file, rebuild and refresh the page. The build script uses Quarto from your PATH or an existing project-local `.tools/bin/quarto` installation.
 
-## Editorial boundaries
+Quarto renders the chapter content; a custom reader supplies navigation, search, and the dark theme. The output is plain HTML, CSS, and JavaScript with local fonts and diagram dependencies. No application server or API key is required. Serve the output over HTTP so search can load its index.
 
-Research baseline: September 16, 2026; MOQT draft-21. MOQT, moq-lite, and hang are identified separately. Upstream commands are sourced examples, not executed compatibility tests. Teaching numbers are not benchmarks. See chapter 13 for the source policy.
+### Where to edit
 
-The explanations and diagrams are original. Quarto renders the content; the published interface uses a custom reader with locally hosted Source Sans 3 and a dark palette matching WebRTC for the Curious.
+| Path | Purpose |
+|---|---|
+| `index.qmd` | Book introduction and contribution links |
+| `docs/*/index.qmd` | Chapter prose, tables, and Mermaid source |
+| `_quarto.yml` | Chapter order and rendering configuration |
+| `assets/reader.css`, `assets/reader.js` | Reading interface, search, and diagram rendering |
+| `assets/illustrations/` | Editable editorial figures |
+| `scripts/post-render.py` | Static page templates and section navigation |
+| `scripts/seo.py` | Chapter metadata, canonical URLs, and sitemap |
+| `dist/` | Generated website; rebuild rather than edit by hand |
 
-After rendering, run `python3 scripts/check-book.py` to validate chapter links, fragments, assets, and reading landmarks. Editorial review findings and their resolution are recorded in `reviews/2026-09-16.md`.
-
-## GitHub Pages
-
-This book is a fully static site. `dist/` contains HTML, CSS, JavaScript, the search index, and all diagram dependencies. It needs no application server, database, Sites account, or API keys. Mermaid runs in the reader's browser and creates inline SVG diagrams; diagrams are not exported as image files. The prose remains readable without JavaScript.
-
-To publish the source using GitHub Pages:
-
-1. Push this project to your GitHub repository's `main` branch, including `.github/workflows/pages.yml`.
-2. In the repository, open **Settings → Pages → Build and deployment**, and select **GitHub Actions** as the source.
-3. Open **Actions → Publish book to GitHub Pages → Run workflow**. Later pushes to `main` rebuild and publish automatically.
-
-The workflow installs Quarto 1.10.18, renders the book, checks local links and portable paths, then uploads only `dist/` to Pages. It uses the built-in GitHub token; no personal access token is needed. Navigation and assets use relative paths, so the same output works at `https://OWNER.github.io/REPOSITORY/` or a custom domain. If you use a different default branch, update the workflow's `branches` entry.
-
-For another static host, upload the contents of `dist/`. To make a portable ZIP:
+### Check your changes
 
 ```sh
-python3 scripts/build.py
 python3 scripts/check-book.py
-python3 scripts/package-static.py
+python3 scripts/check-seo.py
 ```
 
-The archive is written to `artifacts/moq-for-the-curious-static.zip`, with `index.html` at its root. Serve it over HTTP to use search; opening files directly with `file://` can prevent the browser from loading the search index.
+The checks validate local links, section anchors, assets, reading landmarks, and search metadata. Also inspect the affected pages in a browser: check narrow screens, table scrolling, diagram labels, and subsection navigation. Automated checks do not verify technical claims or visual clarity.
 
-Local `.openai/` hosting configuration is ignored by Git and is not used by GitHub Pages. Hosting setup follows the [GitHub Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Generated output is currently tracked. Include the rebuilt `dist/` files with source changes.
 
-## Writing guidelines
+## Writing and visual standards
 
-Lead with the mechanism or the problem it solves. Define terms when first needed, use one consistent example, and keep requirements tied to their source revision. Prefer concrete verbs and short paragraphs. Remove slogans, repeated disclaimers, and descriptions of the writing itself. Diagrams should explain a relationship or sequence; the surrounding prose must remain sufficient without them.
+Explain the mechanism before its edge cases. Define terms when first needed, use concrete examples, and distinguish protocol requirements from implementation choices. Link the source near the claim it supports.
 
-## Search visibility
+For each mechanism, check whether the reader can understand:
 
-Each chapter has a unique title, an authored description, and social sharing metadata. Production builds add canonical directory URLs, Book / TechArticle structured data, breadcrumbs, and an XML sitemap. The production URL is https://moqforthecurious.com. The GitHub Pages workflow explicitly uses this HTTPS address for canonical URLs and the sitemap.
+- **Participants:** who sends, receives, or makes a decision?
+- **Sequence:** what happens first, what can overlap, and what counts as success?
+- **Structure:** what contains what, and which identifiers belong to each layer?
+- **Failure:** what changes after loss, rejection, timeout, or missing media dependencies?
 
-For another host, set the actual public URL when building:
+Choose the visual that answers the question: sequence diagrams for exchanges, topology diagrams for distribution, aligned field layouts for wire formats, and tables for comparisons. Mermaid renders directly in the browser. Keep figures legible, use sentence-case labels, and explain omitted details. Avoid decorative generated artwork. The surrounding prose should remain useful without the diagram.
+
+## Sources and scope
+
+The protocol baseline is **MOQT draft-21**, reviewed on September 16, 2026. Later editorial and setup-resource checks are recorded in the [references chapter](https://moqforthecurious.com/docs/13-references/). Draft-sensitive claims must cite the pinned version; do not silently update a rule to match a newer draft.
+
+MOQT, moq-lite, and hang are described separately. Teaching values are not benchmarks. The upstream demonstration commands are documented recipes, not compatibility tests executed for this book.
+
+## Publishing
+
+Pushes to `main` run the [GitHub Pages workflow](.github/workflows/pages.yml), which builds the book, checks it, and deploys `dist/` to **[moqforthecurious.com](https://moqforthecurious.com)**.
+
+For a fork, enable **Settings → Pages → GitHub Actions** and change the workflow's `SITE_URL` to your public address. Internal links and assets use relative paths, including on repository-based Pages URLs.
+
+For another static host:
 
 ```sh
 SITE_URL=https://your-domain.example/book python3 scripts/build.py
+python3 scripts/check-book.py
+python3 scripts/check-seo.py
+python3 scripts/package-static.py
 ```
 
-Builds default to `https://moqforthecurious.com`. Override `SITE_URL` for another deployment, or set it to an empty string to omit canonical URLs and the sitemap. Metadata does not guarantee rankings. After publishing, submit `sitemap.xml` in Google Search Console. A `robots.txt` file only controls crawlers when served at the domain root; the sitemap itself works at a repository prefix.
+Upload `dist/`, or extract `artifacts/moq-for-the-curious-static.zip` into the host's public directory. Builds default to `https://moqforthecurious.com`; set `SITE_URL` explicitly for a different deployment, or to an empty string to omit canonical URLs and the sitemap.
 
-Font files are self-hosted and their licenses are included under `assets/fonts/`. All prose and chapter links are available in the HTML without JavaScript.
-
-## Visual coverage review
-
-On each content pass, proactively check mechanisms for missing explanations of:
-
-- Participants and responsibilities: who sends, receives, or decides?
-- Sequence and state: what happens first, what can overlap, and what counts as success?
-- Structure: what contains what, and which identifiers belong to each layer?
-- Failure: what changes after loss, rejection, timeout, or missing decoding dependencies?
-
-Add a native Mermaid sequence/structure diagram or a reference table when it answers a concrete reader question. Explain simplifications, distinguish logical structure from wire layout, and cite the relevant versioned specification. Verify diagrams render and remain legible; a diagram count alone is not evidence of coverage.
+Production metadata includes unique chapter titles and descriptions, social sharing tags, canonical URLs, structured data, and `sitemap.xml`. Font licenses are included in `assets/fonts/`. Local tooling, archives, and `.openai/` hosting configuration are ignored by Git.
