@@ -101,7 +101,7 @@ The same naming rules that make caching useful make this restart decision necess
 
 ## How does moq-lite name these concepts? {#a-vocabulary-translation}
 
-When working with the moq-lite implementation, you will encounter **broadcast** for a named collection of tracks and **frame** for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and uses a simpler group-per-stream model. Keep that distinction in mind when moving between [its documentation](https://doc.moq.dev/concept/moq-lite) and the IETF specification.
+When working with the moq-lite implementation, you will encounter **broadcast** for a named collection of tracks and **frame** for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and normally sends each group on its own stream. Since moq-lite 05, a small group containing one frame can instead use a datagram, subject to the transport's size limit. Keep that distinction in mind when moving between [its documentation](https://doc.moq.dev/concept/moq-lite) and the IETF specification.
 
 ## Sources and further reading {.unnumbered #sources}
 

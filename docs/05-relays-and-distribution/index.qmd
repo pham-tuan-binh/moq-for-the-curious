@@ -30,6 +30,14 @@ Each downstream connection still needs its own bytes. For one 2 Mb/s track and 1
 
 The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.
 
+### Can subscriptions reduce encoding work too?
+
+Suppose the lecturer offers high- and low-resolution video, but every viewer chooses the lower resolution. Forwarding only that track saves network traffic. Avoiding the unused high-resolution encoding can also save work at the publisher.
+
+The moq.dev [concepts guide](https://doc.moq.dev/concept/) describes demand flowing back through shared subscriptions. Its publishing application can use that demand to start an encoder when the first subscriber arrives and stop it when the last leaves. A recorder also counts as a subscriber. This is application behavior enabled by the library, not a MOQT requirement that every encoder automatically stops.
+
+In our lecture, switching on an idle rendition would also need to produce decoder configuration and a usable starting picture. Saving work must not leave the first viewer waiting for references that were never sent.
+
 ## What does a relay need to know? {#relays-need-structure-not-codec-knowledge}
 
 A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.

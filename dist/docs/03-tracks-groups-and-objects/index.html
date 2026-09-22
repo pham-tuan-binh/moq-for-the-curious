@@ -183,7 +183,7 @@
 </section>
 <section id="a-vocabulary-translation" class="level2">
 <h2 class="anchored" data-anchor-id="a-vocabulary-translation">How does moq-lite name these concepts?</h2>
-<p>When working with the moq-lite implementation, you will encounter <strong>broadcast</strong> for a named collection of tracks and <strong>frame</strong> for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and uses a simpler group-per-stream model. Keep that distinction in mind when moving between <a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">its documentation</a> and the IETF specification.</p>
+<p>When working with the moq-lite implementation, you will encounter <strong>broadcast</strong> for a named collection of tracks and <strong>frame</strong> for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and normally sends each group on its own stream. Since moq-lite 05, a small group containing one frame can instead use a datagram, subject to the transport’s size limit. Keep that distinction in mind when moving between <a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">its documentation</a> and the IETF specification.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

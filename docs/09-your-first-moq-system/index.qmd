@@ -59,12 +59,17 @@ The exact log messages depend on the checkout. Use the player UI and available l
 | --- | --- |
 | Project revision | |
 | Actual transport selected | |
+| Negotiated protocol and revision, if exposed | |
 | Broadcast/publication name | |
 | Selected media rendition | |
-| Codec, if exposed | |
+| Codec and container, if exposed | |
 | Test video visible and audio audible | |
 
 Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”
+
+The [moq.dev transport guide](https://doc.moq.dev/concept/transport) explains how its clients choose among transports. A browser exposing WebTransport does not prove the library selected it for this connection. Record what happened, including any fallback.
+
+Protocol agreement is another boundary. The project's [standards guide](https://doc.moq.dev/concept/standard) distinguishes its simpler model from supported IETF revisions. A negotiated version alone does not establish that both implementations support every request or media format your application needs. Test live subscription, late joining, and decoding separately when connecting different stacks.
 
 ### Check each boundary
 

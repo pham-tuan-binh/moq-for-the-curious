@@ -4,7 +4,7 @@ A free online book about **Media over QUIC**: how live media gets from a publish
 
 **[Read the book →](https://moqforthecurious.com)**
 
-The book starts with what MoQ does, why it is useful, and how its parts fit together, followed by a comparison with WebRTC. It then introduces TCP/IP and QUIC. It then follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
+The book starts with what MoQ does and how it relates to WebRTC, then explains why it is useful and how its parts fit together. After introducing TCP/IP and QUIC, it follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
 
 ## Contribute
 

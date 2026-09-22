@@ -112,6 +112,12 @@ The transport must reach what the specification calls “all data committed” b
 
 For datagrams, the subgroup timeout instead uses the same age check as the object timeout; if both are nonzero, the smaller value applies. Zero disables the corresponding timeout. These rules describe a single hop's delivery decisions. They do not create a capture-to-display deadline across the whole relay network.
 
+### Is moq-lite's maximum age the same timer?
+
+No. The moq.dev [moq-lite guide](https://doc.moq.dev/concept/moq-lite) describes a maximum age relative to the media timeline. Older groups can become unwanted as newer media appears. A network stall by itself does not advance that timeline, and sending a backlog in a burst does not make its media new.
+
+Both publisher and subscriber apply the limit. This matters when viewers share upstream delivery: content still useful to a patient viewer may already be too old for someone speaking in the call. Keep this implementation setting separate from draft-21's local delivery timers and from a player's capture-to-display delay.
+
 ## How does the player return to live? {#returning-to-live-playback}
 
 After the network recovers, Alice may still be watching frames that reached her earlier. A fresh transport queue does not empty the player's playback queue. The player needs its own policy for skipping stale decoded frames or moving its presentation clock forward, while respecting audio synchronization and decoding dependencies.

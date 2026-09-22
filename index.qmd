@@ -10,7 +10,7 @@ This book is inspired by [WebRTC for the Curious](https://webrtcforthecurious.co
 
 ## Where to begin
 
-The first chapter explains what MoQ is, why it is useful, and how five activities fit together: connect, discover, request, deliver, and present. It then shows [how MoQ compares with WebRTC](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc) and maps those activities to the chapters ahead. Tracks, groups, and objects give those steps a shared vocabulary. The later chapters cover security, a first experiment, and debugging.
+The first chapter defines MoQ and immediately introduces its relationship to WebRTC. It then explains why MoQ is useful and how five activities fit together: connect, discover, request, deliver, and present. A [detailed WebRTC comparison](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc) and chapter guide follow. Tracks, groups, and objects give those steps a shared vocabulary. The later chapters cover security, a first experiment, and debugging.
 
 A fictional lecture runs through the examples. When a new term appears, we explain what it means and why it matters. The [glossary](docs/12-glossary/index.qmd) is here whenever a word gets in the way.
 

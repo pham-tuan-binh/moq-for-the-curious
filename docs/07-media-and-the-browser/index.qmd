@@ -27,6 +27,12 @@ flowchart TD
 
 The catalog remains useful after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.
 
+### What does container parsing actually do?
+
+Knowing the codec is not enough to pass a whole received payload to a decoder. In hang's `legacy` container, a frame begins with a variable-length timestamp in microseconds, followed by encoded media. The player reads that timestamp, removes the container header, and supplies the encoded portion to the decoder with the appropriate timing information. Other containers have different layouts. Use the catalog's container declaration, not a guess based on the codec. See the [hang container formats](https://doc.moq.dev/concept/hang#containers).
+
+For example, mistaking timestamp bytes for H.264 data can produce a decoder failure even when delivery was perfect. This is why parsing has its own step in the diagram.
+
 ### Four things that are easy to confuse
 
 | Term | What it describes | In the lecture |

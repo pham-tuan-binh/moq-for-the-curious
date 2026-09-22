@@ -1,12 +1,20 @@
 # What, Why and How
 
-This chapter explains what MoQ does, why it is useful, and how its parts fit together. We will follow a publication from its publisher to a player, then compare that model with WebRTC and map it to the rest of the book.
+This chapter explains what MoQ does, why it is useful, and how its parts fit together. We will begin with a short comparison with WebRTC, then use an online lecture to explain the model. After following a publication from publisher to player, we will examine the comparison in more detail and map the ideas to the rest of the book.
 
 ## What is MoQ?
 
 **Media over QUIC (MoQ)** lets applications publish live content that other applications can subscribe to. A publisher can send content directly to subscribers or distribute it through relays. **MoQ Transport (MOQT)** is the protocol that defines how content is named, requested, and delivered. It runs over **QUIC**, a secure transport with multiple independent byte streams, either directly or through WebTransport.
 
-This is a **publish/subscribe** model: one endpoint makes content available, and another asks to receive it.
+### Where does WebRTC fit?
+
+If you know WebRTC, start with this distinction: WebRTC gives the browser an integrated system for exchanging live audio and video. MOQT supplies the delivery part of a media system. A MoQ library combines it with codecs, media descriptions, and playback logic. The [detailed comparison below](#how-does-moq-compare-with-webrtc) explains what each approach supplies.
+
+Why separate those pieces? A conversation needs quick responses; someone watching a broadcast may prefer extra buffering if it prevents interruptions. The goal is control over that balance, as well as low latency. The moq.dev article [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) explains this motivation from its author's experience with live broadcasting. Published in 2023, it is an architectural argument; its browser-support observations are historical.
+
+### A lecture as an example
+
+MoQ uses a **publish/subscribe** model: one endpoint makes content available, and another asks to receive it.
 
 To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.
 
@@ -120,6 +128,8 @@ Neither protocol name tells you the final delay, operating cost, or audience lim
 
 ### They can work together
 
+The moq.dev project now documents [WebRTC import and export gateways](https://doc.moq.dev/bin/rtc), using WHIP and WHEP for HTTP-based WebRTC session setup. A gateway lets a service connect existing WebRTC tools to a MoQ distribution path. Check the gateway's supported codecs and direction of operation before choosing one.
+
 An existing WebRTC publisher can feed a gateway that publishes the content over MoQ. The gateway has to translate media packaging and session behavior; replacing a socket is not enough. Lorenzo Miniero's [Meetecho interoperability demo](https://www.meetecho.com/blog/moq-webrtc/) shows one such bridge. That 2024 article uses older drafts, so use it to understand the architecture rather than today's message formats.
 
 For a practical evaluation, start with one complete path: a speaker, a relay or media server, and a viewer on a constrained connection. Measure join time, conversational delay, stalls, and recovery. Then increase the audience. [Cloudflare's account of its MoQ work](https://blog.cloudflare.com/moq/) explains the distribution motivation from an operator's perspective; the [webrtcHacks use-case comparison](https://webrtchacks.com/webrtc-vs-moq-by-use-case/) offers another author's assessment of the tradeoffs. These are useful implementation perspectives, not performance guarantees from a standard.
@@ -128,7 +138,7 @@ For a practical evaluation, start with one complete path: a speaker, a relay or 
 
 You will encounter two related names as you read: the IETF MoQ work and the moq.dev project. The **IETF**, the Internet Engineering Task Force, develops the transport specification through public drafts. **moq.dev** provides applications and libraries, including a smaller protocol model called **moq-lite** and a media format called **hang**.
 
-This book uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It is an Internet-Draft, still being developed rather than a finished RFC. The moq.dev examples describe project documentation reviewed on September 16, 2026. We identify implementation-specific behavior as we encounter it, so you can tell which ideas belong to the transport specification and which belong to the example software. When connecting implementations, check that their protocol revisions and media formats agree.
+This book uses MOQT draft-21, published September 8, 2026, as its IETF baseline. It is an Internet-Draft, still being developed rather than a finished RFC. The moq.dev examples describe project documentation reviewed on September 22, 2026. We identify implementation-specific behavior as we encounter it, so you can tell which ideas belong to the transport specification and which belong to the example software. When connecting implementations, check that their protocol revisions and media formats agree.
 
 ## How to read this book
 

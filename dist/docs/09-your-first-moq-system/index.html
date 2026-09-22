@@ -80,24 +80,30 @@
 <td></td>
 </tr>
 <tr class="odd">
+<td>Negotiated protocol and revision, if exposed</td>
+<td></td>
+</tr>
+<tr class="even">
 <td>Broadcast/publication name</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Selected media rendition</td>
 <td></td>
 </tr>
-<tr class="odd">
-<td>Codec, if exposed</td>
+<tr class="even">
+<td>Codec and container, if exposed</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Test video visible and audio audible</td>
 <td></td>
 </tr>
 </tbody>
 </table></div>
 <p>Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”</p>
+<p>The <a href="https://doc.moq.dev/concept/transport" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev transport guide</a> explains how its clients choose among transports. A browser exposing WebTransport does not prove the library selected it for this connection. Record what happened, including any fallback.</p>
+<p>Protocol agreement is another boundary. The project’s <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">standards guide</a> distinguishes its simpler model from supported IETF revisions. A negotiated version alone does not establish that both implementations support every request or media format your application needs. Test live subscription, late joining, and decoding separately when connecting different stacks.</p>
 <section id="check-each-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="check-each-boundary">Check each boundary</h3>
 <p>The upstream <a href="https://doc.moq.dev/setup/#what-starts" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">quick start</a>, rechecked on September 22, 2026, describes a local relay at <code>localhost:4443</code> and a web demo at <code>localhost:5173</code>. Use the addresses reported by your checkout if they differ. These are documented defaults, not output from a run performed for this book.</p>

@@ -64,6 +64,24 @@ Start with [moq.dev](https://moq.dev/) and the [concepts guide](https://doc.moq.
 
 For experiments, use the [setup](https://doc.moq.dev/setup/) and [development](https://doc.moq.dev/setup/dev) documentation. For a reachable relay, read the [production guide](https://doc.moq.dev/setup/prod). These pages describe a particular project and can evolve independently of this book’s IETF baseline.
 
+### Read moq.dev with a specific question
+
+The following route connects the project's explanations to the chapters they help illuminate. The blog posts explain design choices; the guides describe evolving software.
+
+| Question | Material | Read alongside |
+| --- | --- | --- |
+| Why separate delivery from the browser's media stack? | [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) (2023) | The opening WebRTC comparison |
+| Can subscriber choices reduce publisher work? | [Concepts](https://doc.moq.dev/concept/) | Relays and Distribution |
+| How does a conference use publications? | [Conferencing](https://doc.moq.dev/concept/use-case/conferencing) | Publishing and Subscribing |
+| Why use cancellable streams for timely media? | [Never Use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | QUIC and WebTransport; the title is an argument, not a protocol prohibition |
+| Which age limit does this implementation apply? | [moq-lite subscriptions](https://doc.moq.dev/concept/moq-lite#subscriptions) | Latency and Congestion |
+| What is inside a delivered media payload? | [hang](https://doc.moq.dev/concept/hang) | Media and the Browser |
+| How do existing WebRTC tools connect? | [RTC gateways](https://doc.moq.dev/bin/rtc) | The detailed WebRTC comparison |
+| What must agree between different stacks? | [Standards support](https://doc.moq.dev/concept/standard) | Your First MoQ System |
+| How do multiple relays find upstream content? | [Relay clustering](https://doc.moq.dev/bin/relay/cluster) | Relays and Distribution |
+
+Read historical performance and browser-support claims in their original context. For wire behavior, return to the pinned draft; for a deployment, record the implementation revision and observe its behavior.
+
 ## Editorial approach and limitations
 
 The protocol baseline was reviewed on **September 16, 2026**; the technical explanations and linked setup resources were checked on **September 22, 2026**. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.
