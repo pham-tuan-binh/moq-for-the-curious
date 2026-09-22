@@ -4,7 +4,7 @@
 <defs><marker id="blue-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#84b2ff"/></marker><marker id="purple-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#c1a1ff"/></marker></defs>
 <rect width="960" height="440" fill="#343a40"/>
 <g font-family="Arial,Helvetica,sans-serif" fill="#e9ecef">
-<text x="36" y="40" font-size="15" letter-spacing="1.5">ONE PUBLICATION · TWO VIEWING CHOICES</text>
+<text x="36" y="40" font-size="17">One publication, two viewing choices</text>
 <g fill="none" stroke-width="2">
 <path d="M238 200H385" stroke="#84b2ff" marker-end="url(#blue-arrow)"/>
 <path d="M238 230H385" stroke="#c1a1ff" marker-end="url(#purple-arrow)"/>
