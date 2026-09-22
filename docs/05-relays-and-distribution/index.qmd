@@ -19,13 +19,20 @@ flowchart TD
 
 With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.
 
-Each downstream connection still needs its own bytes. If a relay sends a two-megabit-per-second track to 100 viewers, the payload egress is roughly 200 megabits per second, before overhead. The benefit is sharing the upstream path and placing fan-out where capacity is available.
+Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the difference looks like this. These figures count payload only, before transport overhead.
+
+| Distribution | Lecturer sends | Relay sends | Each viewer receives |
+| --- | ---: | ---: | ---: |
+| Lecturer connects directly to every viewer | 200 Mb/s | — | 2 Mb/s |
+| Lecturer sends one copy to a relay | 2 Mb/s | 200 Mb/s | 2 Mb/s |
+
+The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.
 
 ## Caching helps, but has limits
 
 A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. Immutable object identities let different viewers reuse the same cached payload.
 
-MOQT permits caching; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.
+[MOQT permits caching](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1); it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.
 
 For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.
 

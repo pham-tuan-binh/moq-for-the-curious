@@ -25,6 +25,17 @@ flowchart TD
 
 The catalog remains useful after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.
 
+### Four things that are easy to confuse
+
+| Term | What it describes | In the lecture |
+| --- | --- | --- |
+| Codec | How media is compressed and reconstructed | H.264 video |
+| Rendition | One encoding offered to the viewer | A 720p version of the lecturer’s camera |
+| MoQ object | An addressed unit delivered by the transport | A payload identified by its track, group, and object IDs |
+| Decoded frame | A picture the decoder has reconstructed | A `VideoFrame` the player can render |
+
+The media format defines how encoded chunks fit into objects. MOQT itself does not require one object to equal one video frame. Keeping that boundary clear helps locate failures: receiving an object proves delivery, while displaying a picture also requires parsing, decoding, and scheduling.
+
 ## Starting with a decodable picture
 
 Video compression often describes how one picture differs from earlier pictures. Such a predicted frame is useful only when the decoder has the reference pictures it needs. A **keyframe** supplies a fresh decoding starting point in the video model we are using.
@@ -87,5 +98,6 @@ The moq.dev project provides higher-level player and publisher packages that han
 ## Sources and further reading {.unnumbered #sources}
 
 - [moq.dev: hang catalog and containers](https://doc.moq.dev/concept/hang)
-- [W3C WebCodecs](https://www.w3.org/TR/webcodecs/)
+- [W3C WebCodecs](https://www.w3.org/TR/webcodecs/): the API and its resource-lifetime rules
+- [WebCodecs samples](https://w3c.github.io/webcodecs/samples/): small working examples maintained with the specification
 - [moq.dev: browser libraries](https://doc.moq.dev/)

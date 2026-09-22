@@ -20,7 +20,7 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open">Search <kbd>/</kbd></button></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/" aria-current="page"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 06</p><h1>Latency and Congestion</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#units-before-arithmetic">Units before arithmetic</a><a class="toc-level-2" href="#where-the-time-goes">Where the time goes</a><a class="toc-level-2" href="#how-a-queue-grows">How a queue grows</a><a class="toc-level-2" href="#choosing-which-content-to-send">Choosing which content to send</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content safely</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 06</p><h1>Latency and Congestion</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#units-before-arithmetic">Units before arithmetic</a><a class="toc-level-2" href="#where-the-time-goes">Where the time goes</a><a class="toc-level-2" href="#how-a-queue-grows">How a queue grows</a><a class="toc-level-3" href="#congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">Choosing which content to send</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content safely</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
@@ -127,6 +127,42 @@
 <p>If production continues at the same rate, waiting longer makes the problem worse. The application must reduce future work, abandon some queued work, or accept increasing delay. This arithmetic applies whether the transport is MoQ, WebRTC, or something else.</p>
 <p><strong>Congestion control</strong> limits what the transport sends to avoid overwhelming the network. When capacity falls, the transport reduces its sending rate. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of <strong>media adaptation</strong>. See <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7">RFC 9002 §7</a>.</p>
 <p>The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing future production prevents further growth; it does not automatically remove an existing backlog. To return near the live edge, the system may also need to skip old content.</p>
+<section id="congestion-control-flow-control-and-adaptation" class="level3">
+<h3 class="anchored" data-anchor-id="congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</h3>
+<p>Three mechanisms influence how much data is sent. They solve different problems:</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mechanism</th>
+<th>Question it answers</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>QUIC congestion control</td>
+<td>How much traffic can this network path carry?</td>
+<td>Packet loss causes the sender to reduce its sending rate</td>
+</tr>
+<tr class="even">
+<td>QUIC flow control</td>
+<td>How much stream data is the receiver willing to accept?</td>
+<td>The receiver stops granting more credit while its buffers are full</td>
+</tr>
+<tr class="odd">
+<td>Media adaptation</td>
+<td>How much media should the application produce or request?</td>
+<td>The player switches from a 4 Mb/s rendition to a 1 Mb/s rendition</td>
+</tr>
+</tbody>
+</table></div>
+<p>Flow control protects the receiver with limits on individual streams and the connection as a whole. It does not measure whether a frame is still worth displaying. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4">RFC 9000 §4</a>. A player can therefore receive data reliably and within its allowed limits while still falling behind the lecture.</p>
+</section>
 </section>
 <section id="choosing-which-content-to-send" class="level2">
 <h2 class="anchored" data-anchor-id="choosing-which-content-to-send">Choosing which content to send</h2>
@@ -207,6 +243,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/05-relays-and-distribution/"><small>Previous chapter</small><span>Relays and Distribution</span></a><a href="../../docs/07-media-and-the-browser/"><small>Next chapter</small><span>Media and the Browser</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#units-before-arithmetic">Units before arithmetic</a><a class="toc-level-2" href="#where-the-time-goes">Where the time goes</a><a class="toc-level-2" href="#how-a-queue-grows">How a queue grows</a><a class="toc-level-2" href="#choosing-which-content-to-send">Choosing which content to send</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content safely</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#units-before-arithmetic">Units before arithmetic</a><a class="toc-level-2" href="#where-the-time-goes">Where the time goes</a><a class="toc-level-2" href="#how-a-queue-grows">How a queue grows</a><a class="toc-level-3" href="#congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">Choosing which content to send</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content safely</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

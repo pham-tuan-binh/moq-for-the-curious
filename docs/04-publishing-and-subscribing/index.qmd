@@ -57,7 +57,21 @@ The player can retrieve the beginning of group 42 while following new objects, o
 
 A **fetch** requests a bounded portion of a track. In draft-21, a standalone `FETCH` receives `FETCH_OK` or `REQUEST_ERROR`; fetched objects use a separate data stream. Successful delivery finishes when that data stream ends. Acceptance tells the requester that its request was accepted, rather than that every object has already arrived. See [§3.2.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1).
 
-For Alice's first choice, draft-21 also allows `FILL_PARAMETERS` on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. For the second choice, a location filter can start delivery at the next group. A **location** is a group ID and object ID: a position in the track, rather than a clock reading. See [§3.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.5).
+For Alice's first choice, draft-21 also allows `FILL_PARAMETERS` on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. For the second choice, a location filter can start delivery at the next group. A **location** is a group ID and object ID: a position in the track, rather than a clock reading. See [fill ranges (§3.4)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.4) and [location filters (§3.3.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.3.1).
+
+```{mermaid}
+flowchart TD
+    accTitle: Two ways to join a video track
+    accDescr: Alice joins during group 42. She can retrieve its earlier objects and follow new ones, or wait for the independently decodable group 43. Either route needs codec configuration before decoding.
+    J["Alice joins during group 42"] --> C["Retrieve earlier objects in group 42"]
+    J --> W["Wait for group 43"]
+    C --> F["Combine with ongoing delivery"]
+    W --> K["Receive group 43 from its keyframe"]
+    F --> D["Decode with the codec configuration"]
+    K --> D
+```
+
+Filling the current group uses retained data; starting with the next group waits for new data. Neither route can promise an immediate picture. Retained objects take time to transfer, and the next keyframe may not have been produced yet.
 
 Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?
 

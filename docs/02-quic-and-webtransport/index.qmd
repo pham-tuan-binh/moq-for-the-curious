@@ -61,13 +61,13 @@ Ordering is often exactly what we want. The trouble is imposing one ordering on 
 
 ## Independent streams
 
-**UDP**, the User Datagram Protocol, sends individual messages without promising arrival or order. QUIC builds its own delivery mechanisms on top of UDP and provides multiple reliable, ordered byte streams within a connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.
+QUIC provides multiple reliable, ordered byte streams within one connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.
 
 A byte stream has no built-in message boundaries. If the publisher writes two objects, the receiver cannot assume two reads will return those two objects. MOQT supplies framing so the receiver can find where each object starts and ends. [RFC 9000 §2.2](https://www.rfc-editor.org/rfc/rfc9000.html#section-2.2) explains this distinction.
 
 The independence is not unlimited. Streams still compete for connection bandwidth, and connection-level flow control can constrain them together. QUIC removes a particular delivery dependency; it does not give every stream a private network.
 
-Flow control protects the receiver’s memory: the receiver advertises how many stream bytes it can accept, for each stream and for the connection. Congestion control protects the network by limiting how much traffic the sender puts in flight. Either can hold up sending, for different reasons. We will return to congestion control in the latency chapter. See [RFC 9000 §4.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1) and [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
+QUIC applies flow-control limits to both individual streams and their combined data. A receiver that stops consuming one stream can therefore hold up other streams if the connection-wide limit is exhausted. See [RFC 9000 §4.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1) and [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
 
 MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.
 
@@ -87,7 +87,7 @@ A **QUIC frame** is a transport instruction inside a QUIC packet. It is unrelate
 
 This is a reading guide, not a complete wire-format table. Field encodings and permitted frame combinations are defined in [RFC 9000 §19](https://www.rfc-editor.org/rfc/rfc9000.html#section-19); `DATAGRAM` is defined separately in [RFC 9221](https://www.rfc-editor.org/rfc/rfc9221.html).
 
-Three numbers answer different questions: a **packet number** identifies a transmission within its packet-number space; a **stream ID** identifies a stream; a **byte offset** locates data within that stream. When lost stream data is sent again, it travels in a new packet, with a new packet number. It retains its position in the stream.
+Three numbers answer different questions: a **packet number** identifies a transmission within its packet-number space; a **stream ID** identifies a stream; a **byte offset** locates data within that stream. When lost stream data is sent again, it travels in a new packet, with a new packet number. It retains its position in the stream. See [RFC 9000 §13.3](https://www.rfc-editor.org/rfc/rfc9000.html#section-13.3) for how QUIC retransmits information.
 
 ```{mermaid}
 flowchart TD
@@ -153,7 +153,7 @@ WebTransport transports application bytes. It does not know that those bytes rep
 
 ## A fallback changes the tradeoffs
 
-The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: **TCP** (Transmission Control Protocol) provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.
+The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.
 
 When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.
 

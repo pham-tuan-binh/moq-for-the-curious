@@ -78,7 +78,28 @@
 <p>Audio is arriving, and Alice’s player also requests video. The publisher is halfway through group 42. In our example, the group’s first object contains a keyframe and the later frames depend on earlier pictures. Receiving only the next new frame may therefore leave Alice with bytes she cannot decode.</p>
 <p>The player can retrieve the beginning of group 42 while following new objects, or wait for the next independent group. The first choice can start playback sooner if the missing content is available and quick to deliver. The second avoids catching up through the current group, but waits for a new decoding starting point.</p>
 <p>A <strong>fetch</strong> requests a bounded portion of a track. In draft-21, a standalone <code>FETCH</code> receives <code>FETCH_OK</code> or <code>REQUEST_ERROR</code>; fetched objects use a separate data stream. Successful delivery finishes when that data stream ends. Acceptance tells the requester that its request was accepted, rather than that every object has already arrived. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.2.1">§3.2.1</a>.</p>
-<p>For Alice’s first choice, draft-21 also allows <code>FILL_PARAMETERS</code> on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. For the second choice, a location filter can start delivery at the next group. A <strong>location</strong> is a group ID and object ID: a position in the track, rather than a clock reading. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.5">§3.5</a>.</p>
+<p>For Alice’s first choice, draft-21 also allows <code>FILL_PARAMETERS</code> on the subscription. These request a bounded fill range on a fetch stream alongside ongoing subscription delivery. For the second choice, a location filter can start delivery at the next group. A <strong>location</strong> is a group ID and object ID: a position in the track, rather than a clock reading. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.4">fill ranges (§3.4)</a> and <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.3.1">location filters (§3.3.1)</a>.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    accTitle: Two ways to join a video track
+    accDescr: Alice joins during group 42. She can retrieve its earlier objects and follow new ones, or wait for the independently decodable group 43. Either route needs codec configuration before decoding.
+    J["Alice joins during group 42"] --&gt; C["Retrieve earlier objects in group 42"]
+    J --&gt; W["Wait for group 43"]
+    C --&gt; F["Combine with ongoing delivery"]
+    W --&gt; K["Receive group 43 from its keyframe"]
+    F --&gt; D["Decode with the codec configuration"]
+    K --&gt; D
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Filling the current group uses retained data; starting with the next group waits for new data. Neither route can promise an immediate picture. Retained objects take time to transfer, and the next keyframe may not have been produced yet.</p>
 <p>Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?</p>
 <p>Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The fetch mechanism provides a way to request that content; storage and timing information make the feature possible.</p>
 </section>

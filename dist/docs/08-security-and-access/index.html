@@ -53,8 +53,46 @@
 <section id="giving-each-participant-the-right-permissions" class="level2">
 <h2 class="anchored" data-anchor-id="giving-each-participant-the-right-permissions">Giving each participant the right permissions</h2>
 <p><strong>Authentication</strong> establishes identity. <strong>Authorization</strong> decides what that identity may do. In our lecture, the lecturer may publish under the class namespace, while students may subscribe to it. A student should not gain publication rights merely because they can watch.</p>
-<p>The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token’s presence alone establishes none of these facts.</p>
+<p>The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token’s presence alone establishes none of these facts. <a href="https://www.rfc-editor.org/rfc/rfc8725.html#section-3">RFC 8725</a> explains JWT validation, including checking the issuer and intended audience.</p>
 <p>A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2">draft-21 §15.3.2</a>.</p>
+<p>Write down the intended policy before encoding it in tokens. For example, this class might use:</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Participant</th>
+<th>Discover the class</th>
+<th>Subscribe to media</th>
+<th>Publish media</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Lecturer</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Enrolled student</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>Visitor</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+<p>These are application rules, not built-in MOQT roles. Checking this table against actual requests is more useful than merely checking that every request has a token.</p>
 <p>Access decisions extend to discovery. Even if an outsider cannot receive the objects, revealing a private lecture’s title may disclose information. The service should decide whether that outsider can discover the publication at all.</p>
 </section>
 <section id="keeping-the-relay-from-reading-the-lecture" class="level2">

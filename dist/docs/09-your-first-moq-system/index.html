@@ -20,7 +20,7 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open">Search <kbd>/</kbd></button></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/" aria-current="page"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 09</p><h1>Your First MoQ System</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose the implementation deliberately</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Trace one frame conceptually</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Make the network inconvenient</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 09</p><h1>Your First MoQ System</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose the implementation deliberately</a><a class="toc-level-2" href="#before-running-commands">Before running commands</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-3" href="#check-each-boundary">Check each boundary</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Trace one frame conceptually</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Make the network inconvenient</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
@@ -34,6 +34,12 @@
 <p>This walkthrough uses the <strong>moq.dev project</strong>, including its moq-lite and hang stack. It is not a minimal implementation of every feature in MOQT draft-21. The project’s current documentation is the authority for installation and command changes.</p>
 <p>Use its <a href="https://doc.moq.dev/setup/">setup guide</a> to install the prerequisites and obtain the project checkout. Record the checkout revision and library versions alongside your observations. A reproducible experiment needs more than the name “MoQ.”</p>
 <p>The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.</p>
+</section>
+<section id="before-running-commands" class="level2">
+<h2 class="anchored" data-anchor-id="before-running-commands">Before running commands</h2>
+<p>A <strong>terminal</strong> lets you start programs by typing commands. Your <strong>working directory</strong> is the folder those commands run in. <code>git clone</code> downloads a repository; <code>cd moq</code> enters that checkout. <code>git rev-parse HEAD</code> prints its current commit identifier, which lets another reader locate the same source revision. Git’s <a href="https://git-scm.com/docs/git-rev-parse">revision documentation</a> explains that command.</p>
+<p>The demo runs several <strong>processes</strong>: running programs with separate jobs. A <strong>listener</strong> accepts traffic at an address and port. <code>localhost</code> refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.</p>
+<p>Keep the terminal running while using the demo. A process printing that it started is evidence about that process; it does not yet prove the browser can receive or play media.</p>
 </section>
 <section id="start-with-the-local-demo" class="level2">
 <h2 class="anchored" data-anchor-id="start-with-the-local-demo">Start with the local demo</h2>
@@ -82,6 +88,52 @@
 </tbody>
 </table></div>
 <p>Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”</p>
+<section id="check-each-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="check-each-boundary">Check each boundary</h3>
+<p>The upstream <a href="https://doc.moq.dev/setup/#what-starts">quick start</a>, rechecked on September 22, 2026, describes a local relay at <code>localhost:4443</code> and a web demo at <code>localhost:5173</code>. Use the addresses reported by your checkout if they differ. These are documented defaults, not output from a run performed for this book.</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Action</th>
+<th>Look for</th>
+<th>What that observation establishes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Start the recipe</td>
+<td>The relay, publisher, and web demo start without fatal errors</td>
+<td>The local processes launched</td>
+</tr>
+<tr class="even">
+<td>Open the web demo address</td>
+<td>The player interface loads</td>
+<td>The web server can serve the page</td>
+</tr>
+<tr class="odd">
+<td>Select the test publication, if selection is offered</td>
+<td>Its media or track description becomes available</td>
+<td>The player found the publication</td>
+</tr>
+<tr class="even">
+<td>Start playback</td>
+<td>Pictures change over time; audio is audible when enabled</td>
+<td>At least one complete media path works</td>
+</tr>
+<tr class="odd">
+<td>Inspect available logs</td>
+<td>Selected transport and accepted requests</td>
+<td>Which transport and request path produced that result</td>
+</tr>
+</tbody>
+</table></div>
+<p>A loaded web page does not prove that its media connection succeeded. Likewise, silent audio is not enough to diagnose packet loss: check the player’s mute control and whether playback needs a click. Browser playback restrictions are explained in <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay">MDN’s autoplay guide</a>.</p>
+</section>
 </section>
 <section id="trace-one-frame-conceptually" class="level2">
 <h2 class="anchored" data-anchor-id="trace-one-frame-conceptually">Trace one frame conceptually</h2>
@@ -118,6 +170,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/08-security-and-access/"><small>Previous chapter</small><span>Security and Access</span></a><a href="../../docs/10-debugging/"><small>Next chapter</small><span>Debugging</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose the implementation deliberately</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Trace one frame conceptually</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Make the network inconvenient</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose the implementation deliberately</a><a class="toc-level-2" href="#before-running-commands">Before running commands</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-3" href="#check-each-boundary">Check each boundary</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Trace one frame conceptually</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Make the network inconvenient</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

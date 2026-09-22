@@ -12,6 +12,14 @@ Use its [setup guide](https://doc.moq.dev/setup/) to install the prerequisites a
 
 The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.
 
+## Before running commands
+
+A **terminal** lets you start programs by typing commands. Your **working directory** is the folder those commands run in. `git clone` downloads a repository; `cd moq` enters that checkout. `git rev-parse HEAD` prints its current commit identifier, which lets another reader locate the same source revision. Git's [revision documentation](https://git-scm.com/docs/git-rev-parse) explains that command.
+
+The demo runs several **processes**: running programs with separate jobs. A **listener** accepts traffic at an address and port. `localhost` refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.
+
+Keep the terminal running while using the demo. A process printing that it started is evidence about that process; it does not yet prove the browser can receive or play media.
+
 ## Start with the local demo
 
 This walkthrough follows the upstream quick start’s recommended [Nix route, with flakes enabled](https://doc.moq.dev/setup/). After installing that prerequisite, obtain the project and record the checkout you are using:
@@ -45,6 +53,20 @@ The exact log messages depend on the checkout. Use the player UI and available l
 | Test video visible and audio audible | |
 
 Watch the player and the relay logs together. Identify transport establishment, publication discovery, subscription acceptance, and actual playback. Do not collapse all four observations into “connected.”
+
+### Check each boundary
+
+The upstream [quick start](https://doc.moq.dev/setup/#what-starts), rechecked on September 22, 2026, describes a local relay at `localhost:4443` and a web demo at `localhost:5173`. Use the addresses reported by your checkout if they differ. These are documented defaults, not output from a run performed for this book.
+
+| Action | Look for | What that observation establishes |
+|---|---|---|
+| Start the recipe | The relay, publisher, and web demo start without fatal errors | The local processes launched |
+| Open the web demo address | The player interface loads | The web server can serve the page |
+| Select the test publication, if selection is offered | Its media or track description becomes available | The player found the publication |
+| Start playback | Pictures change over time; audio is audible when enabled | At least one complete media path works |
+| Inspect available logs | Selected transport and accepted requests | Which transport and request path produced that result |
+
+A loaded web page does not prove that its media connection succeeded. Likewise, silent audio is not enough to diagnose packet loss: check the player's mute control and whether playback needs a click. Browser playback restrictions are explained in [MDN's autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay).
 
 ## Trace one frame conceptually
 

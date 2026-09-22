@@ -52,11 +52,23 @@ A single average bitrate can hide bursts. A large keyframe can create a temporar
 
 The player may also retain stale decoded frames after the transport has recovered. Measure network arrival time and actual display time independently where possible.
 
+## Turn a symptom into a test
+
+Suppose the picture freezes while audio continues. Start by writing two facts: audio is still being presented; video is not. That narrows the investigation, but it does not prove the network is healthy. Audio may need less bandwidth, and the two media paths may have different queues.
+
+| Question | If yes | If no |
+|---|---|---|
+| Are new video objects arriving? | Inspect parsing and decoding | Inspect the video subscription and publisher |
+| Are decoded video frames being produced? | Inspect presentation timing and rendering | Check configuration and missing reference pictures |
+| Does the displayed frame age keep increasing? | Inspect queued work and adaptation | Check whether the player is skipping or pausing instead |
+
+Take these observations over the same interval. A decoder counter from a minute ago cannot explain whether new objects are usable now. If your library exposes no counter for a stage, add a small log at that boundary rather than treating the missing measurement as zero.
+
 ## Collect evidence that connects the layers
 
 For a useful bug report, record the client and relay versions, actual transport, publication and track identifiers, codec, error code, and the time of the failure. Include the smallest repeatable sequence that triggers it.
 
-QUIC packet captures do not normally expose encrypted application payloads. Structured application logs and transport telemetry such as qlog can provide information that packet timing alone cannot. Redact credentials and private publication names before sharing evidence.
+QUIC packet captures do not normally expose encrypted application payloads. Structured application logs and transport telemetry such as qlog can provide information that packet timing alone cannot. If your implementation exports a supported qlog trace, [qvis](https://qvis.quictools.info/) provides QUIC visualizations for inspecting transport behavior. A transport trace still does not show whether the player presented a frame. Redact credentials and private publication names before sharing evidence.
 
 One final habit helps: change one thing at a time. If you replace the codec, relay, browser, and network together, a successful run will leave you with four possible explanations.
 

@@ -48,6 +48,18 @@ If production continues at the same rate, waiting longer makes the problem worse
 
 The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing future production prevents further growth; it does not automatically remove an existing backlog. To return near the live edge, the system may also need to skip old content.
 
+### Congestion control, flow control, and adaptation
+
+Three mechanisms influence how much data is sent. They solve different problems:
+
+| Mechanism | Question it answers | Example |
+| --- | --- | --- |
+| QUIC congestion control | How much traffic can this network path carry? | Packet loss causes the sender to reduce its sending rate |
+| QUIC flow control | How much stream data is the receiver willing to accept? | The receiver stops granting more credit while its buffers are full |
+| Media adaptation | How much media should the application produce or request? | The player switches from a 4 Mb/s rendition to a 1 Mb/s rendition |
+
+Flow control protects the receiver with limits on individual streams and the connection as a whole. It does not measure whether a frame is still worth displaying. See [RFC 9000 §4](https://www.rfc-editor.org/rfc/rfc9000.html#section-4). A player can therefore receive data reliably and within its allowed limits while still falling behind the lecture.
+
 ## Choosing which content to send
 
 Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.

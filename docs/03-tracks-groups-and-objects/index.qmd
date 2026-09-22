@@ -78,6 +78,19 @@ For example, a layered video codec might produce a base layer that gives a usabl
 
 A subgroup organizes delivery; its ID is not an extra component of the object address in the table above. Objects delivered as datagrams do not belong to subgroups, and fetched objects have their own stream representation. These distinctions are defined in [draft-21 §2.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2).
 
+### Keep the two kinds of structure separate
+
+A track describes content. A stream carries bytes. Their lifetimes need not match: one video track can continue throughout the lecture while new subgroup streams open as new groups are published.
+
+| Question | Content structure | Delivery structure |
+| --- | --- | --- |
+| Which video does Alice want? | The `video-low` track | A subscription requests it |
+| Where can her decoder start? | A group beginning at a usable picture | The required objects must arrive before playback |
+| What identifies one picture in this example? | Its track, group ID, and object ID | That identity survives forwarding through a relay |
+| Which bytes wait behind a loss? | Objects may depend on other objects for decoding | Bytes on the same stream share ordered delivery |
+
+Separating these questions avoids a common mistake: opening a new transport stream does not create a new video track or a new decoding starting point.
+
 ## Restarting is a naming problem too
 
 Suppose the lecturer’s publisher crashes. When it restarts, it reuses `video-low`, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.

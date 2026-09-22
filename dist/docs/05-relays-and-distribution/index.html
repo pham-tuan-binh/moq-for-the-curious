@@ -50,12 +50,37 @@
 </div>
 </div>
 <p>With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.</p>
-<p>Each downstream connection still needs its own bytes. If a relay sends a two-megabit-per-second track to 100 viewers, the payload egress is roughly 200 megabits per second, before overhead. The benefit is sharing the upstream path and placing fan-out where capacity is available.</p>
+<p>Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the difference looks like this. These figures count payload only, before transport overhead.</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Distribution</th>
+<th style="text-align: right;">Lecturer sends</th>
+<th style="text-align: right;">Relay sends</th>
+<th style="text-align: right;">Each viewer receives</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Lecturer connects directly to every viewer</td>
+<td style="text-align: right;">200 Mb/s</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">2 Mb/s</td>
+</tr>
+<tr class="even">
+<td>Lecturer sends one copy to a relay</td>
+<td style="text-align: right;">2 Mb/s</td>
+<td style="text-align: right;">200 Mb/s</td>
+<td style="text-align: right;">2 Mb/s</td>
+</tr>
+</tbody>
+</table></div>
+<p>The relay moves the 100-way copying work off the lecturer’s connection. It does not remove that work. With several relays, draw the branches and count the copies on each link.</p>
 </section>
 <section id="caching-helps-but-has-limits" class="level2">
 <h2 class="anchored" data-anchor-id="caching-helps-but-has-limits">Caching helps, but has limits</h2>
 <p>A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. Immutable object identities let different viewers reuse the same cached payload.</p>
-<p>MOQT permits caching; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.</p>
+<p><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1">MOQT permits caching</a>; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.</p>
 <p>For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.</p>
 </section>
 <section id="each-hop-has-its-own-conditions" class="level2">

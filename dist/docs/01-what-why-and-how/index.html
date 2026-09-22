@@ -50,6 +50,7 @@
 </div>
 </div>
 </div>
+<p>Publisher and subscriber describe what an endpoint does with a track. They are not fixed kinds of device: a student can receive the lecture and publish microphone audio over the same session. A relay receives content upstream and publishes it downstream. See the draft’s <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3">role definitions</a>.</p>
 <p>To let the viewers make different choices, the publisher gives the pieces separate names. The lecturer’s audio can be one <strong>track</strong>, camera video another, and slides a third. A track contains individually identifiable pieces of data called <strong>objects</strong>. For example, a media format might place one compressed video frame in each object. The phone viewer requests the audio track; the laptop viewer requests audio and video.</p>
 <p>A relay can also <strong>cache</strong> objects: keep copies so it can answer later requests. Someone joining the lecture may need content published a moment earlier to begin playback. If the relay has kept that content, it can supply it without asking the lecturer to send another copy.</p>
 <p>Although media motivates this design, an object’s payload can also be application data. The transport handles names and delivery. The application and its media format agree on what the delivered bytes mean.</p>

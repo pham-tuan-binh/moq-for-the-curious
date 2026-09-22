@@ -22,9 +22,19 @@ For a service that trusts its relay operator with the lecture, this may be the i
 
 **Authentication** establishes identity. **Authorization** decides what that identity may do. In our lecture, the lecturer may publish under the class namespace, while students may subscribe to it. A student should not gain publication rights merely because they can watch.
 
-The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token's presence alone establishes none of these facts.
+The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token's presence alone establishes none of these facts. [RFC 8725](https://www.rfc-editor.org/rfc/rfc8725.html#section-3) explains JWT validation, including checking the issuer and intended audience.
 
 A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
+
+Write down the intended policy before encoding it in tokens. For example, this class might use:
+
+| Participant | Discover the class | Subscribe to media | Publish media |
+| --- | --- | --- | --- |
+| Lecturer | Yes | Yes | Yes |
+| Enrolled student | Yes | Yes | No |
+| Visitor | No | No | No |
+
+These are application rules, not built-in MOQT roles. Checking this table against actual requests is more useful than merely checking that every request has a token.
 
 Access decisions extend to discovery. Even if an outsider cannot receive the objects, revealing a private lecture's title may disclose information. The service should decide whether that outsider can discover the publication at all.
 
