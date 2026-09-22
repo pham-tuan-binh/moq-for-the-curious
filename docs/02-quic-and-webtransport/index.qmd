@@ -196,13 +196,18 @@ A `STREAM` frame type is in the range `0x08`–`0x0f`. Its low three bits contro
 
 Try this complete illustrative frame, shown **after decryption**:
 
-```text
-0e  02  00  03  61 62 63
-│   │   │   │   └─────── three data bytes: "abc"
-│   │   │   └─────────── length = 3
-│   │   └─────────────── offset = 0
-│   └────────────────── stream ID = 2
-└────────────────────── STREAM: OFF=1, LEN=1, FIN=0
+```{=html}
+<figure class="wire-format byte-example">
+<table aria-label="Decoded STREAM frame: seven bytes with field annotations">
+<thead><tr><th>Byte 0</th><th>Byte 1</th><th>Byte 2</th><th>Byte 3</th><th>Byte 4</th><th>Byte 5</th><th>Byte 6</th></tr></thead>
+<tbody>
+<tr class="hex-values"><td>0e</td><td>02</td><td>00</td><td>03</td><td>61</td><td>62</td><td>63</td></tr>
+<tr><td>Type<small>STREAM</small></td><td>Stream ID<small>2</small></td><td>Offset<small>0</small></td><td>Length<small>3 bytes</small></td><td colspan="3">Data<small>“abc”</small></td></tr>
+<tr><td colspan="4">Frame metadata<small>OFF = 1, LEN = 1, FIN = 0</small></td><td colspan="3">Application bytes<small>Stream offsets 0, 1, 2</small></td></tr>
+</tbody>
+</table>
+<figcaption>Read left to right. Each cell in the hexadecimal row is one byte. The first four describe the frame; the last three carry its data. Values are shown after decryption.</figcaption>
+</figure>
 ```
 
 Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: `abc` is just recognizable test data. Exact frame rules appear in [RFC 9000 §19.8](https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8), with stream IDs in [§2.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1).

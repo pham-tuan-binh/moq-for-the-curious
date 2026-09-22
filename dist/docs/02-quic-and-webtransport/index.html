@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/02-quic-and-webtransport/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=971434ffb33a" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=971434ffb33a"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=971434ffb33a" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=4f2a641846d2" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=4f2a641846d2"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=4f2a641846d2" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -504,12 +504,46 @@
 <figcaption>STREAM frame layout after packet decryption. Each variable-length field changes where the next field begins.</figcaption>
 </figure>
 <p>Try this complete illustrative frame, shown <strong>after decryption</strong>:</p>
-<pre class="text"><code>0e  02  00  03  61 62 63
-│   │   │   │   └─────── three data bytes: "abc"
-│   │   │   └─────────── length = 3
-│   │   └─────────────── offset = 0
-│   └────────────────── stream ID = 2
-└────────────────────── STREAM: OFF=1, LEN=1, FIN=0</code></pre>
+<figure class="wire-format byte-example figure">
+
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table" aria-label="Decoded STREAM frame: seven bytes with field annotations">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Byte 0</th>
+<th data-quarto-table-cell-role="th">Byte 1</th>
+<th data-quarto-table-cell-role="th">Byte 2</th>
+<th data-quarto-table-cell-role="th">Byte 3</th>
+<th data-quarto-table-cell-role="th">Byte 4</th>
+<th data-quarto-table-cell-role="th">Byte 5</th>
+<th data-quarto-table-cell-role="th">Byte 6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hex-values odd">
+<td>0e</td>
+<td>02</td>
+<td>00</td>
+<td>03</td>
+<td>61</td>
+<td>62</td>
+<td>63</td>
+</tr>
+<tr class="even">
+<td>Type<span class="small">STREAM</span></td>
+<td>Stream ID<span class="small">2</span></td>
+<td>Offset<span class="small">0</span></td>
+<td>Length<span class="small">3 bytes</span></td>
+<td colspan="3">Data<span class="small">“abc”</span></td>
+</tr>
+<tr class="odd">
+<td colspan="4">Frame metadata<span class="small">OFF = 1, LEN = 1, FIN = 0</span></td>
+<td colspan="3">Application bytes<span class="small">Stream offsets 0, 1, 2</span></td>
+</tr>
+</tbody>
+</table></div>
+
+<figcaption>Read left to right. Each cell in the hexadecimal row is one byte. The first four describe the frame; the last three carry its data. Values are shown after decryption.</figcaption>
+</figure>
 <p>Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: <code>abc</code> is just recognizable test data. Exact frame rules appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8">RFC 9000 §19.8</a>, with stream IDs in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1">§2.1</a>.</p>
 </section>
 </section>
