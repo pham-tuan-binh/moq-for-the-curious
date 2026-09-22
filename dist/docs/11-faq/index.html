@@ -62,8 +62,8 @@
 </section>
 <section id="is-moq-peer-to-peer" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-peer-to-peer">Is MoQ peer-to-peer?</h2>
-<p>MOQT can operate between endpoints or through relays. It does not by itself supply every rendezvous and NAT traversal mechanism needed for arbitrary browser-to-browser connectivity. The common browser deployment connects outward to a server through WebTransport.</p>
-<p>Some native stacks add their own peer connectivity. Those are implementation capabilities to investigate separately from the core object and subscription model.</p>
+<p>In the browser setup used here, the publisher and viewers connect to a relay over WebTransport. They don’t connect directly to each other, and MOQT doesn’t provide ICE, STUN, or TURN for NAT traversal.</p>
+<p>MOQT can still carry content directly between two endpoints that can reach each other. Native software can add its own peer connectivity, as <a href="https://doc.moq.dev/concept/use-case/conferencing" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev describes</a>. That connectivity comes from the surrounding stack. For our lecture, relays also solve the scaling problem: the lecturer sends one copy and the servers handle distribution to the audience.</p>
 </section>
 <section id="is-moq-lite-the-same-as-moqt" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-lite-the-same-as-moqt">Is moq-lite the same as MOQT?</h2>

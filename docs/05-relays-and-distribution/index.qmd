@@ -30,6 +30,18 @@ Each downstream connection still needs its own bytes. For one 2 Mb/s track and 1
 
 Here, the lecturer uploads 2 Mb/s and the relay sends 200 Mb/s across its viewer connections. With more relays, we can do the same calculation for each link.
 
+### What happens when one relay is full?
+
+Moving the copies to a server gives us somewhere to add capacity. Suppose our 100 students are split between two regions. We could put a relay in each region and have each receive one copy from an upstream relay. The upstream relay sends two copies, and each regional relay sends 50. The lecturer still sends one.
+
+This is how the distribution tree grows: each relay shares the content coming in and makes copies for the viewers or relays below it. We still pay for those outgoing bytes and connections, but adding viewers no longer means asking the lecturer’s laptop and home connection to carry every copy. The service has to provide enough relay capacity and route viewers to it. See the [MOQT relay motivation](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2.4).
+
+### Why does everyone connect to a server?
+
+There’s also the problem of reaching the other device. The lecturer and students may all sit behind home routers that translate private addresses and filter incoming traffic. WebRTC uses ICE, STUN, and TURN to work out a path. In our browser MoQ setup, everyone connects out to a relay with a reachable address, as described in the [opening comparison](../01-what-why-and-how/index.qmd#how-content-reaches-people).
+
+The relay receives those connections and forwards the requested tracks between them. It doesn’t run a NAT traversal procedure on the clients’ behalf. If the network blocks the chosen transport, the client still needs a supported fallback or another way to reach the server.
+
 ### Can subscriptions reduce encoding work too?
 
 Suppose the lecturer offers high- and low-resolution video, but every viewer chooses the lower resolution. Forwarding only that track saves network traffic. Avoiding the unused high-resolution encoding can also save work at the publisher.

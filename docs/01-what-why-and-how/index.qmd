@@ -20,7 +20,11 @@ MoQ uses a **publish/subscribe** model: one endpoint makes content available, an
 
 To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.
 
-In this example, the lecturer is a **publisher**. Each viewer is a **subscriber**. The lecturer could send directly to every viewer, but that would make the lecturer's upload connection carry another copy for each person who joins. Instead, the publisher can send to a **relay**, a server that forwards the content to interested viewers.
+In this example, the lecturer is a **publisher**. Each viewer is a **subscriber**. If the lecturer sent a separate 2 Mb/s copy to 100 students, their connection would need to upload 200 Mb/s. Every new student would add more work to the lecturer’s connection.
+
+Instead, the lecturer sends one copy to a **relay**, a server that forwards it to the students. The lecturer uploads 2 Mb/s, while the relay handles the copies for all 100 viewers. As the audience grows, we can add relays and spread that work across servers. These numbers count media bytes, before network overhead.
+
+Both the lecturer and the students connect out to the relay. In the browser setup we use here, they don’t open direct connections to each other. MOQT doesn’t include WebRTC’s machinery for finding a peer-to-peer path through home routers and firewalls. We’ll explain that [connection setup below](#how-content-reaches-people).
 
 ```{=html}
 <figure class="editorial-illustration">
@@ -109,6 +113,10 @@ With MoQ, a media library handles capture, encoding, decoding, and playback arou
 ### How content reaches people
 
 WebRTC uses **ICE** to find a working path between endpoints. **STUN** helps discover reachable addresses; **TURN** supplies a relay path when needed. In a group call, a **selective forwarding unit**, or **SFU**, can receive each participant's media and forward selected streams to others. An SFU handles media distribution; a TURN server relays traffic along a connection path. These are different jobs. See [RFC 8835 §3.4](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4) and [RFC 7667 §3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7).
+
+A home router often uses **NAT**, or Network Address Translation, to let several devices share a public address. A device behind it can open a connection out, but another student can’t simply dial that device’s private address from across the Internet. ICE tries to find a usable path, with STUN and TURN helping along the way. See [the ICE introduction](https://www.rfc-editor.org/rfc/rfc8445.html#section-1).
+
+The browser MoQ setup takes a different route: everyone opens an outgoing WebTransport connection to a reachable relay. The lecturer and student each talk to that server, so they don’t need to find a direct path between their devices. MOQT itself defines no ICE, STUN, or TURN procedure. This is the connection model used in [moq.dev’s conferencing setup](https://doc.moq.dev/concept/use-case/conferencing).
 
 A browser MoQ client normally opens an outgoing WebTransport connection to a server. MoQ relays distribute requested tracks and can retain objects for later requests. For our lecture, that means a relay can forward the current audio while supplying a newly arrived viewer with earlier video needed to begin decoding. Caching is an explicit part of MOQT's [relay model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7); retaining enough useful content remains an implementation decision.
 
