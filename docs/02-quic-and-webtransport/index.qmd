@@ -1,6 +1,6 @@
 # QUIC and WebTransport
 
-Before following a subscription, we need to understand what carries it. This chapter works upward from an Internet packet to the streams a MoQ application uses. You do not need to memorize packet headers; you need to know which layer is responsible when something is delayed or lost.
+Before following a subscription, we need to understand what carries it. This chapter explains the transport promises a MoQ application uses, then looks inside the packets that carry them. You do not need to memorize packet headers; you need to know which layer is responsible when something is delayed or lost.
 
 ## A short introduction to TCP/IP
 
@@ -55,7 +55,7 @@ A slow reader and a congested network can both look like “sending stopped,” 
 
 ## Why one ordered stream can hurt
 
-Imagine sending camera video and captions through a single ordered byte stream. The network carries bytes in chunks called **packets**. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is **head-of-line blocking**.
+Imagine sending camera video and captions through a single ordered byte stream. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is **head-of-line blocking**.
 
 Ordering is often exactly what we want. The trouble is imposing one ordering on unrelated work. Captions may be useful even while an old video frame is being repaired.
 
@@ -71,7 +71,66 @@ QUIC applies flow-control limits to both individual streams and their combined d
 
 MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.
 
+## What a lost packet holds up
+
+Suppose camera bytes use stream A and captions use stream B. The offsets below are illustrative byte positions, not MoQ object IDs.
+
+| Event | Stream A: camera | Stream B: captions |
+|---|---|---|
+| Packet 10 arrives | Bytes 0–99 are readable | No data yet |
+| Packet 11 is lost | Bytes 100–199 are missing | No data in this packet |
+| Packet 12 arrives | Bytes 200–299 wait behind the gap | Bytes 0–39 can be read |
+| Missing data arrives in a later packet | Bytes 100–299 become readable in order | No need to wait for A's repair |
+
+This is the benefit of separate stream ordering. If the lost packet had carried data from both streams, both could have gaps. Congestion feedback can also slow the whole connection. Stream independence does not mean immunity to the same network failure.
+
+## Reliability can have an ending
+
+Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.
+
+Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.
+
+## Where datagrams fit
+
+QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.
+
+QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See [RFC 9221 §5](https://www.rfc-editor.org/rfc/rfc9221.html#section-5).
+
+That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.
+
+A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.
+
+## Security belongs to the connection
+
+Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See [RFC 9001 §4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4).
+
+## WebTransport is the browser doorway
+
+Browser JavaScript does not generally get a raw QUIC socket. **WebTransport** exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.
+
+| Layer, from the application toward the network | Native direct-QUIC path | Browser path used in this book |
+|---|---|---|
+| Content and requests | MoQ Transport | MoQ Transport |
+| Browser session interface | Not needed | WebTransport over HTTP/3 |
+| Multiplexed secure transport | QUIC, integrating TLS 1.3 | QUIC, integrating TLS 1.3 |
+| Datagram transport | UDP | UDP |
+| Network addressing and forwarding | IP | IP |
+
+**HTTP/3** is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See [RFC 9114](https://www.rfc-editor.org/rfc/rfc9114.html) and the [WebTransport API specification](https://www.w3.org/TR/webtransport/).
+
+WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.
+
+## A fallback changes the tradeoffs
+
+The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.
+
+When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.
+
+For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.
+
 ## Reading a QUIC packet
+
+The rest of this chapter looks inside the transport. You can continue to [Tracks, Groups and Objects](../03-tracks-groups-and-objects/index.qmd) now and return here when you want to read packet fields.
 
 A **QUIC frame** is a transport instruction inside a QUIC packet. It is unrelated to a video frame, which represents a picture. A packet can carry several QUIC frames, including stream data from different streams.
 
@@ -215,39 +274,6 @@ Try this complete illustrative frame, shown **after decryption**:
 Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: `abc` is just recognizable test data. Exact frame rules appear in [RFC 9000 §19.8](https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8), with stream IDs in [§2.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1).
 
 
-## What a lost packet holds up
-
-Suppose camera bytes use stream A and captions use stream B. The offsets below are illustrative byte positions, not MoQ object IDs.
-
-| Event | Stream A: camera | Stream B: captions |
-|---|---|---|
-| Packet 10 arrives | Bytes 0–99 are readable | No data yet |
-| Packet 11 is lost | Bytes 100–199 are missing | No data in this packet |
-| Packet 12 arrives | Bytes 200–299 wait behind the gap | Bytes 0–39 can be read |
-| Missing data arrives in a later packet | Bytes 100–299 become readable in order | No need to wait for A's repair |
-
-This is the benefit of separate stream ordering. If the lost packet had carried data from both streams, both could have gaps. Congestion feedback can also slow the whole connection. Stream independence does not mean immunity to the same network failure.
-
-## Reliability can have an ending
-
-Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.
-
-Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.
-
-## Where datagrams fit
-
-QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.
-
-QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See [RFC 9221 §5](https://www.rfc-editor.org/rfc/rfc9221.html#section-5).
-
-That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.
-
-A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.
-
-## Security belongs to the connection
-
-Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See [RFC 9001 §4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4).
-
 ### The handshake, message by message
 
 A **handshake** establishes the shared state needed for protected communication. This example shows a fresh QUIC connection with server authentication, without Retry, resumption, or packet loss. Each arrow represents a flight of messages; it need not fit in one packet.
@@ -275,30 +301,6 @@ Initial packets use publicly derivable protection keys, so a network observer ca
 
 The drawing puts application traffic last for readability. Endpoints can begin sending 1-RTT data once the required keys are available; the client need not wait for `HANDSHAKE_DONE` before sending it. ACKs are omitted. Resumption can enable **0-RTT**, or early data, with replay considerations that applications must handle. The complete flows appear in [RFC 9000 §7.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-7.1).
 
-
-## WebTransport is the browser doorway
-
-Browser JavaScript does not generally get a raw QUIC socket. **WebTransport** exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.
-
-| Layer, from the application toward the network | Native direct-QUIC path | Browser path used in this book |
-|---|---|---|
-| Content and requests | MoQ Transport | MoQ Transport |
-| Browser session interface | Not needed | WebTransport over HTTP/3 |
-| Multiplexed secure transport | QUIC, integrating TLS 1.3 | QUIC, integrating TLS 1.3 |
-| Datagram transport | UDP | UDP |
-| Network addressing and forwarding | IP | IP |
-
-**HTTP/3** is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See [RFC 9114](https://www.rfc-editor.org/rfc/rfc9114.html) and the [WebTransport API specification](https://www.w3.org/TR/webtransport/).
-
-WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.
-
-## A fallback changes the tradeoffs
-
-The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.
-
-When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.
-
-For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.
 
 ## Sources and further reading {.unnumbered #sources}
 

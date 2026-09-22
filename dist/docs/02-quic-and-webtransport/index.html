@@ -23,14 +23,14 @@
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/" aria-current="page"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 02</p><h1>QUIC and WebTransport</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 02</p><h1>QUIC and WebTransport</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>Before following a subscription, we need to understand what carries it. This chapter works upward from an Internet packet to the streams a MoQ application uses. You do not need to memorize packet headers; you need to know which layer is responsible when something is delayed or lost.</p>
+<p>Before following a subscription, we need to understand what carries it. This chapter explains the transport promises a MoQ application uses, then looks inside the packets that carry them. You do not need to memorize packet headers; you need to know which layer is responsible when something is delayed or lost.</p>
 <section id="a-short-introduction-to-tcpip" class="level2">
 <h2 class="anchored" data-anchor-id="a-short-introduction-to-tcpip">A short introduction to TCP/IP</h2>
 <p>The Internet connects networks. A <strong>router</strong> forwards packets toward a destination, usually through other routers. <strong>IP</strong>, the Internet Protocol, supplies addressing and packet delivery across those networks. An IP address identifies a network interface; it is not a permanent identity for a person or an application.</p>
@@ -174,7 +174,7 @@
 </section>
 <section id="why-one-ordered-stream-can-hurt" class="level2">
 <h2 class="anchored" data-anchor-id="why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</h2>
-<p>Imagine sending camera video and captions through a single ordered byte stream. The network carries bytes in chunks called <strong>packets</strong>. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is <strong>head-of-line blocking</strong>.</p>
+<p>Imagine sending camera video and captions through a single ordered byte stream. A packet containing video bytes goes missing. Later caption bytes arrive, but the receiver cannot expose them through that stream until the missing earlier bytes are recovered. This is <strong>head-of-line blocking</strong>.</p>
 <p>Ordering is often exactly what we want. The trouble is imposing one ordering on unrelated work. Captions may be useful even while an old video frame is being repaired.</p>
 </section>
 <section id="independent-streams" class="level2">
@@ -185,8 +185,119 @@
 <p>QUIC applies flow-control limits to both individual streams and their combined data. A receiver that stops consuming one stream can therefore hold up other streams if the connection-wide limit is exhausted. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §4.1</a> and <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
 <p>MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.</p>
 </section>
+<section id="what-a-lost-packet-holds-up" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-lost-packet-holds-up">What a lost packet holds up</h2>
+<p>Suppose camera bytes use stream A and captions use stream B. The offsets below are illustrative byte positions, not MoQ object IDs.</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Event</th>
+<th>Stream A: camera</th>
+<th>Stream B: captions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Packet 10 arrives</td>
+<td>Bytes 0–99 are readable</td>
+<td>No data yet</td>
+</tr>
+<tr class="even">
+<td>Packet 11 is lost</td>
+<td>Bytes 100–199 are missing</td>
+<td>No data in this packet</td>
+</tr>
+<tr class="odd">
+<td>Packet 12 arrives</td>
+<td>Bytes 200–299 wait behind the gap</td>
+<td>Bytes 0–39 can be read</td>
+</tr>
+<tr class="even">
+<td>Missing data arrives in a later packet</td>
+<td>Bytes 100–299 become readable in order</td>
+<td>No need to wait for A’s repair</td>
+</tr>
+</tbody>
+</table></div>
+<p>This is the benefit of separate stream ordering. If the lost packet had carried data from both streams, both could have gaps. Congestion feedback can also slow the whole connection. Stream independence does not mean immunity to the same network failure.</p>
+</section>
+<section id="reliability-can-have-an-ending" class="level2">
+<h2 class="anchored" data-anchor-id="reliability-can-have-an-ending">Reliability can have an ending</h2>
+<p>Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.</p>
+<p>Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.</p>
+</section>
+<section id="where-datagrams-fit" class="level2">
+<h2 class="anchored" data-anchor-id="where-datagrams-fit">Where datagrams fit</h2>
+<p>QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.</p>
+<p>QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See <a href="https://www.rfc-editor.org/rfc/rfc9221.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221 §5</a>.</p>
+<p>That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.</p>
+<p>A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.</p>
+</section>
+<section id="security-belongs-to-the-connection" class="level2">
+<h2 class="anchored" data-anchor-id="security-belongs-to-the-connection">Security belongs to the connection</h2>
+<p>Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §4</a>.</p>
+</section>
+<section id="webtransport-is-the-browser-doorway" class="level2">
+<h2 class="anchored" data-anchor-id="webtransport-is-the-browser-doorway">WebTransport is the browser doorway</h2>
+<p>Browser JavaScript does not generally get a raw QUIC socket. <strong>WebTransport</strong> exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer, from the application toward the network</th>
+<th>Native direct-QUIC path</th>
+<th>Browser path used in this book</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Content and requests</td>
+<td>MoQ Transport</td>
+<td>MoQ Transport</td>
+</tr>
+<tr class="even">
+<td>Browser session interface</td>
+<td>Not needed</td>
+<td>WebTransport over HTTP/3</td>
+</tr>
+<tr class="odd">
+<td>Multiplexed secure transport</td>
+<td>QUIC, integrating TLS 1.3</td>
+<td>QUIC, integrating TLS 1.3</td>
+</tr>
+<tr class="even">
+<td>Datagram transport</td>
+<td>UDP</td>
+<td>UDP</td>
+</tr>
+<tr class="odd">
+<td>Network addressing and forwarding</td>
+<td>IP</td>
+<td>IP</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>HTTP/3</strong> is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See <a href="https://www.rfc-editor.org/rfc/rfc9114.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9114</a> and the <a href="https://www.w3.org/TR/webtransport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">WebTransport API specification</a>.</p>
+<p>WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.</p>
+</section>
+<section id="a-fallback-changes-the-tradeoffs" class="level2">
+<h2 class="anchored" data-anchor-id="a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</h2>
+<p>The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.</p>
+<p>When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.</p>
+<p>For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.</p>
+</section>
 <section id="reading-a-quic-packet" class="level2">
 <h2 class="anchored" data-anchor-id="reading-a-quic-packet">Reading a QUIC packet</h2>
+<p>The rest of this chapter looks inside the transport. You can continue to <a href="../../docs/03-tracks-groups-and-objects/index.html">Tracks, Groups and Objects</a> now and return here when you want to read packet fields.</p>
 <p>A <strong>QUIC frame</strong> is a transport instruction inside a QUIC packet. It is unrelated to a video frame, which represents a picture. A packet can carry several QUIC frames, including stream data from different streams.</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
@@ -547,63 +658,6 @@
 </figure>
 <p>Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: <code>abc</code> is just recognizable test data. Exact frame rules appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §19.8</a>, with stream IDs in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§2.1</a>.</p>
 </section>
-</section>
-<section id="what-a-lost-packet-holds-up" class="level2">
-<h2 class="anchored" data-anchor-id="what-a-lost-packet-holds-up">What a lost packet holds up</h2>
-<p>Suppose camera bytes use stream A and captions use stream B. The offsets below are illustrative byte positions, not MoQ object IDs.</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Event</th>
-<th>Stream A: camera</th>
-<th>Stream B: captions</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Packet 10 arrives</td>
-<td>Bytes 0–99 are readable</td>
-<td>No data yet</td>
-</tr>
-<tr class="even">
-<td>Packet 11 is lost</td>
-<td>Bytes 100–199 are missing</td>
-<td>No data in this packet</td>
-</tr>
-<tr class="odd">
-<td>Packet 12 arrives</td>
-<td>Bytes 200–299 wait behind the gap</td>
-<td>Bytes 0–39 can be read</td>
-</tr>
-<tr class="even">
-<td>Missing data arrives in a later packet</td>
-<td>Bytes 100–299 become readable in order</td>
-<td>No need to wait for A’s repair</td>
-</tr>
-</tbody>
-</table></div>
-<p>This is the benefit of separate stream ordering. If the lost packet had carried data from both streams, both could have gaps. Congestion feedback can also slow the whole connection. Stream independence does not mean immunity to the same network failure.</p>
-</section>
-<section id="reliability-can-have-an-ending" class="level2">
-<h2 class="anchored" data-anchor-id="reliability-can-have-an-ending">Reliability can have an ending</h2>
-<p>Reliable delivery means lost stream bytes can be retransmitted. It does not mean the application must keep a stream alive forever. A sender can reset a stream; a receiver can ask it to stop. That gives a live application a way to abandon work.</p>
-<p>Consider an old camera group that is still incomplete when a fresh independent group becomes available. Continuing to repair the old group may improve completeness, but delay the picture the viewer wants now. Cancelling old work is an application decision enabled by the transport.</p>
-</section>
-<section id="where-datagrams-fit" class="level2">
-<h2 class="anchored" data-anchor-id="where-datagrams-fit">Where datagrams fit</h2>
-<p>QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.</p>
-<p>QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See <a href="https://www.rfc-editor.org/rfc/rfc9221.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221 §5</a>.</p>
-<p>That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.</p>
-<p>A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.</p>
-</section>
-<section id="security-belongs-to-the-connection" class="level2">
-<h2 class="anchored" data-anchor-id="security-belongs-to-the-connection">Security belongs to the connection</h2>
-<p>Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §4</a>.</p>
 <section id="the-handshake-message-by-message" class="level3">
 <h3 class="anchored" data-anchor-id="the-handshake-message-by-message">The handshake, message by message</h3>
 <p>A <strong>handshake</strong> establishes the shared state needed for protected communication. This example shows a fresh QUIC connection with server authentication, without Retry, resumption, or packet loss. Each arrow represents a flight of messages; it need not fit in one packet.</p>
@@ -637,59 +691,6 @@
 <p>The drawing puts application traffic last for readability. Endpoints can begin sending 1-RTT data once the required keys are available; the client need not wait for <code>HANDSHAKE_DONE</code> before sending it. ACKs are omitted. Resumption can enable <strong>0-RTT</strong>, or early data, with replay considerations that applications must handle. The complete flows appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-7.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §7.1</a>.</p>
 </section>
 </section>
-<section id="webtransport-is-the-browser-doorway" class="level2">
-<h2 class="anchored" data-anchor-id="webtransport-is-the-browser-doorway">WebTransport is the browser doorway</h2>
-<p>Browser JavaScript does not generally get a raw QUIC socket. <strong>WebTransport</strong> exposes streams and datagrams to web applications. For the MOQT mapping described in this edition, the browser uses WebTransport over HTTP/3; native software can use QUIC directly.</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Layer, from the application toward the network</th>
-<th>Native direct-QUIC path</th>
-<th>Browser path used in this book</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Content and requests</td>
-<td>MoQ Transport</td>
-<td>MoQ Transport</td>
-</tr>
-<tr class="even">
-<td>Browser session interface</td>
-<td>Not needed</td>
-<td>WebTransport over HTTP/3</td>
-</tr>
-<tr class="odd">
-<td>Multiplexed secure transport</td>
-<td>QUIC, integrating TLS 1.3</td>
-<td>QUIC, integrating TLS 1.3</td>
-</tr>
-<tr class="even">
-<td>Datagram transport</td>
-<td>UDP</td>
-<td>UDP</td>
-</tr>
-<tr class="odd">
-<td>Network addressing and forwarding</td>
-<td>IP</td>
-<td>IP</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>HTTP/3</strong> is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See <a href="https://www.rfc-editor.org/rfc/rfc9114.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9114</a> and the <a href="https://www.w3.org/TR/webtransport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">WebTransport API specification</a>.</p>
-<p>WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.</p>
-</section>
-<section id="a-fallback-changes-the-tradeoffs" class="level2">
-<h2 class="anchored" data-anchor-id="a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</h2>
-<p>The moq.dev stack documents a WebSocket fallback. This can help reach networks where the preferred transport is unavailable. It does not preserve all of QUIC’s independent-stream behavior: TCP provides one reliable, ordered byte stream. When the fallback carries all its work over that stream, missing bytes can hold up later bytes belonging to unrelated work.</p>
-<p>When testing a player, record which transport it actually used. Otherwise, you can spend a long time explaining “QUIC performance” while measuring a different path.</p>
-<p>For a first mental model, keep three questions separate: can the client connect, can the peers speak the same MoQ version, and can the receiver use the content? Each can fail while the previous one succeeds.</p>
-</section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
 <ul>
@@ -703,6 +704,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/01-what-why-and-how/"><small>Previous chapter</small><span>What, Why and How</span></a><a href="../../docs/03-tracks-groups-and-objects/"><small>Next chapter</small><span>Tracks, Groups and Objects</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

@@ -4,14 +4,6 @@ Alice opens the lecture page while the lecturer is already speaking. Her browser
 
 A subscription supplies that information. It asks another endpoint to deliver objects from a named track. In this chapter we will follow Alice's request from the first connection through playback, then see what changes when another viewer joins.
 
-## Finding the lecture
-
-The application must first turn Alice's choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. Discovery supplies information about what is available within the service; the application decides how to present that information as a room list, an invitation, or a public directory.
-
-Once it finds the publication, the player reads its media description. This tells it which tracks contain audio and which contain video **renditions**: alternative encodings, such as low-resolution and high-resolution video. Alice's player can start by choosing audio and a low-resolution rendition. We will examine that media description in the browser chapter.
-
-Discovery and delivery can have different access rules. A private lecture might be hidden from the room list as well as unavailable for playback. Knowing its name does not grant permission to receive it. MOQT provides [namespace discovery mechanisms](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4); the service supplies the access policy.
-
 ## Establishing a session
 
 Before Alice and the relay can exchange requests, they need a compatible MoQ session. A session is the protocol relationship in which the endpoints exchange requests and content. The transport carries that conversation, but it does not interpret its messages.
@@ -20,7 +12,7 @@ In MOQT draft-21, version selection happens during transport establishment. Nati
 
 Each endpoint opens a control stream and starts it with `SETUP`, exchanging session options and supported extensions. Each control stream is **unidirectional**: only the endpoint that opened it sends on it. A request such as `SUBSCRIBE` uses a separate **bidirectional** stream, so the other endpoint can answer on that same stream. Objects travel separately from these request messages.
 
-The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway, with early arrivals buffered until setup completes. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
+The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
 
 ### From a connection to the first object
 
@@ -42,6 +34,14 @@ sequenceDiagram
 ```
 
 The picture shows one successful ordering, not mandatory waits between every arrow. Setup, requests, and data can overlap under the draft's initialization rules. Discovery is omitted because this client already knows the track name. `SUBSCRIBE_OK` accepts a request; it does not mean the first picture has been decoded. The separate streams are specified in [draft-21 §6.4](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4).
+
+## Finding the lecture
+
+Before asking for media, the application must turn Alice's choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. Discovery supplies information about what is available within the service; the application decides how to present that information as a room list, an invitation, or a public directory.
+
+Once it finds the publication, the player reads its media description. This tells it which tracks contain audio and which contain video **renditions**: alternative encodings, such as low-resolution and high-resolution video. Alice's player can start by choosing audio and a low-resolution rendition. We will examine that media description in the browser chapter.
+
+Discovery and delivery can have different access rules. A private lecture might be hidden from the room list as well as unavailable for playback. Knowing its name does not grant permission to receive it. MOQT provides [namespace discovery mechanisms](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4); the service supplies the access policy.
 
 ## Asking for audio
 

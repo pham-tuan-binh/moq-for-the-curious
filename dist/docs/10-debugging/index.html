@@ -38,9 +38,10 @@
 <div>
 <pre class="mermaid mermaid-js">flowchart TD
   accTitle: Locate the first missing step in playback
-  accDescr: Check transport, session, subscription, decoding, and presentation in order. A failure at each stage narrows which layer to investigate.
+  accDescr: Check transport, session, discovery, subscription, object delivery, decoding, and presentation in order. A failure at each stage narrows which layer to investigate.
   A["Transport connects"] --&gt; B["MoQ session opens"]
-  B --&gt; C["Subscription accepted"]
+  B --&gt; N["Publication and track found"]
+  N --&gt; C["Subscription accepted"]
   C --&gt; D["Objects arrive"]
   D --&gt; E["Decoder produces frames"]
   E --&gt; F["Player presents frames"]

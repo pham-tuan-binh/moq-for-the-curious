@@ -1,7 +1,5 @@
 # Your First MoQ System
 
-Follow one publication from a local source to a working player.
-
 You now know enough to make an experiment understandable. Keep the first system small: one publisher, one relay, one viewer, and a known media source. The goal is to see each layer working, not to reproduce a global distribution network on your first afternoon.
 
 ## Choose the implementation deliberately
@@ -33,7 +31,7 @@ nix develop --command just
 
 The documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.
 
-Save the revision printed by `git rev-parse HEAD` with your notes. The command opens the development environment and starts the demo. We are following the upstream recipe, not claiming this book has tested every platform or checkout.
+Save the revision printed by `git rev-parse HEAD` with your notes. The final command, `nix develop --command just`, opens the development environment and starts the demo.
 
 For more detailed Rust logging, stop the demo and rerun it with the project's [documented logging setting](https://doc.moq.dev/setup/dev):
 
