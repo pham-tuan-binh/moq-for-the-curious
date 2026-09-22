@@ -171,7 +171,7 @@ You only need to know what a client and server are to begin. Read the chapters i
 7. **[Security and Access](../08-security-and-access/index.qmd).** What connections protect and which permissions the service must enforce.
 8. **[Your First MoQ System](../09-your-first-moq-system/index.qmd).** Demos, libraries, and guides to help you start building.
 
-The [FAQ](../11-faq/index.qmd) answers broader questions, the [glossary](../12-glossary/index.qmd) explains terms, and the [references](../13-references/index.qmd) point to the specifications behind the explanations.
+The [glossary](../12-glossary/index.qmd) explains terms, and the [references](../13-references/index.qmd) point to the specifications behind the explanations.
 
 ## Sources and further reading {.unnumbered #sources}
 

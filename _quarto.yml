@@ -30,7 +30,6 @@ book:
         - docs/09-your-first-moq-system/index.qmd
     - part: "Keep exploring"
       chapters:
-        - docs/11-faq/index.qmd
         - docs/12-glossary/index.qmd
         - docs/13-references/index.qmd
 
