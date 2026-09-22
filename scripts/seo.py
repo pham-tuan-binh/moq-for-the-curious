@@ -20,7 +20,7 @@ DESCRIPTIONS = [
     'A glossary of Media over QUIC terms, including tracks, groups, objects, subgroups, subscriptions, relays, QUIC, and WebTransport.',
     'Primary sources for Media over QUIC: the pinned MOQT draft, QUIC RFCs, WebTransport specifications, media formats, and implementation references.',
 ]
-BASE = os.environ.get('SITE_URL', '').strip().rstrip('/')
+BASE = os.environ.get('SITE_URL', 'https://moqforthecurious.com').strip().rstrip('/')
 if BASE and (urlsplit(BASE).scheme not in ('https', 'http') or not urlsplit(BASE).netloc or urlsplit(BASE).query or urlsplit(BASE).fragment):
     raise ValueError('SITE_URL must be an absolute public site URL without a query or fragment')
 

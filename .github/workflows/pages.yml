@@ -24,7 +24,7 @@ jobs:
         id: pages
       - name: Render static book
         env:
-          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          SITE_URL: https://moqforthecurious.com
         run: python3 scripts/build.py
       - name: Check links and portable paths
         run: |

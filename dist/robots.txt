@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://moqforthecurious.com/sitemap.xml

@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#176951"/><text x="32" y="44" text-anchor="middle" font-family="Georgia,serif" font-size="45" fill="white">m</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>MoQ for the Curious</title>
+  <rect width="32" height="32" rx="3" fill="#343a40"/>
+  <path d="M6 24V8h4l6 9 6-9h4v16h-4V15l-6 9-6-9v9Z" fill="#84b2ff"/>
+</svg>

@@ -22,6 +22,27 @@ Each endpoint opens a control stream and starts it with `SETUP`, exchanging sess
 
 The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway, with early arrivals buffered until setup completes. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
 
+### From a connection to the first object
+
+This sequence follows a direct-QUIC session after its transport handshake. The browser path first establishes a WebTransport session. Stream labels describe their jobs, not numeric QUIC stream IDs.
+
+```{mermaid}
+sequenceDiagram
+    accTitle: MoQ session setup and first subscription delivery
+    accDescr: After transport establishment, client and relay each send SETUP on their own control stream. The client opens a bidirectional request stream for SUBSCRIBE, the relay answers SUBSCRIBE_OK there, and sends objects on separate subgroup streams.
+    participant C as Client
+    participant R as Relay
+    Note over C,R: Transport established with compatible MoQ version
+    C->>R: Client control stream: SETUP
+    R->>C: Relay control stream: SETUP
+    C->>R: New request stream: SUBSCRIBE track
+    R->>C: Same request stream: SUBSCRIBE_OK
+    R->>C: Separate subgroup stream: objects
+    R->>C: Another subgroup stream: more objects
+```
+
+The picture shows one successful ordering, not mandatory waits between every arrow. Setup, requests, and data can overlap under the draft's initialization rules. Discovery is omitted because this client already knows the track name. `SUBSCRIBE_OK` accepts a request; it does not mean the first picture has been decoded. The separate streams are specified in [draft-21 §6.4](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4).
+
 ## Asking for audio
 
 Alice's player sends `SUBSCRIBE`, naming the lecture's audio track and specifying its delivery choices. The relay answers with `SUBSCRIBE_OK` if it accepts, or `REQUEST_ERROR` if it rejects the request. Acceptance establishes the subscription; the audio itself arrives as objects on the data path.

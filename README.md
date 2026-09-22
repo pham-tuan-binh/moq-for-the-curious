@@ -63,7 +63,7 @@ Lead with the mechanism or the problem it solves. Define terms when first needed
 
 ## Search visibility
 
-Each chapter has a unique title, an authored description, and social sharing metadata. Production builds add canonical directory URLs, Book / TechArticle structured data, breadcrumbs, and an XML sitemap. The GitHub Pages workflow obtains the public URL automatically from `actions/configure-pages`, including custom domains and repository prefixes.
+Each chapter has a unique title, an authored description, and social sharing metadata. Production builds add canonical directory URLs, Book / TechArticle structured data, breadcrumbs, and an XML sitemap. The production URL is https://moqforthecurious.com. The GitHub Pages workflow explicitly uses this HTTPS address for canonical URLs and the sitemap.
 
 For another host, set the actual public URL when building:
 
@@ -71,6 +71,17 @@ For another host, set the actual public URL when building:
 SITE_URL=https://your-domain.example/book python3 scripts/build.py
 ```
 
-Without `SITE_URL`, local builds omit canonical URLs and the sitemap to avoid publishing a guessed address. Metadata does not guarantee rankings. After publishing, submit `sitemap.xml` in Google Search Console. A `robots.txt` file only controls crawlers when served at the domain root; the sitemap itself works at a repository prefix.
+Builds default to `https://moqforthecurious.com`. Override `SITE_URL` for another deployment, or set it to an empty string to omit canonical URLs and the sitemap. Metadata does not guarantee rankings. After publishing, submit `sitemap.xml` in Google Search Console. A `robots.txt` file only controls crawlers when served at the domain root; the sitemap itself works at a repository prefix.
 
 Font files are self-hosted and their licenses are included under `assets/fonts/`. All prose and chapter links are available in the HTML without JavaScript.
+
+## Visual coverage review
+
+On each content pass, proactively check mechanisms for missing explanations of:
+
+- Participants and responsibilities: who sends, receives, or decides?
+- Sequence and state: what happens first, what can overlap, and what counts as success?
+- Structure: what contains what, and which identifiers belong to each layer?
+- Failure: what changes after loss, rejection, timeout, or missing decoding dependencies?
+
+Add a native Mermaid sequence/structure diagram or a reference table when it answers a concrete reader question. Explain simplifications, distinguish logical structure from wire layout, and cite the relevant versioned specification. Verify diagrams render and remain legible; a diagram count alone is not evidence of coverage.

@@ -5,22 +5,25 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Publishing and Subscribing — MoQ for the Curious">
 <meta name="twitter:description" content="Follow a MoQ subscription from connection setup to delivered objects. Learn about track discovery, SUBSCRIBE, FETCH, and the publisher lifecycle.">
+<link rel="canonical" href="https://moqforthecurious.com/docs/04-publishing-and-subscribing/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "@id": "https://moqforthecurious.com/docs/04-publishing-and-subscribing/#article", "headline": "Publishing and Subscribing", "description": "Follow a MoQ subscription from connection setup to delivered objects. Learn about track discovery, SUBSCRIBE, FETCH, and the publisher lifecycle.", "url": "https://moqforthecurious.com/docs/04-publishing-and-subscribing/", "inLanguage": "en", "isPartOf": {"@type": "Book", "@id": "https://moqforthecurious.com/#book", "name": "MoQ for the Curious", "url": "https://moqforthecurious.com/", "inLanguage": "en", "about": {"@type": "Thing", "name": "Media over QUIC"}}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "MoQ for the Curious", "item": "https://moqforthecurious.com/"}, {"@type": "ListItem", "position": 2, "name": "Publishing and Subscribing", "item": "https://moqforthecurious.com/docs/04-publishing-and-subscribing/"}]}]}</script>
 <meta property="og:title" content="Publishing and Subscribing — MoQ for the Curious">
 <meta property="og:description" content="Follow a MoQ subscription from connection setup to delivered objects. Learn about track discovery, SUBSCRIBE, FETCH, and the publisher lifecycle.">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="MoQ for the Curious">
 <meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://moqforthecurious.com/docs/04-publishing-and-subscribing/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=a0efac6b35cb"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=a0efac6b35cb" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=7118d84ea922" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=7118d84ea922"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=7118d84ea922" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/" aria-current="page"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 04</p><h1>Publishing and Subscribing</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#finding-the-lecture">Finding the lecture</a><a class="toc-level-2" href="#establishing-a-session">Establishing a session</a><a class="toc-level-2" href="#asking-for-audio">Asking for audio</a><a class="toc-level-2" href="#joining-video-in-the-middle">Joining video in the middle</a><a class="toc-level-2" href="#ending-a-subscription">Ending a subscription</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 04</p><h1>Publishing and Subscribing</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#finding-the-lecture">Finding the lecture</a><a class="toc-level-2" href="#establishing-a-session">Establishing a session</a><a class="toc-level-3" href="#from-a-connection-to-the-first-object">From a connection to the first object</a><a class="toc-level-2" href="#asking-for-audio">Asking for audio</a><a class="toc-level-2" href="#joining-video-in-the-middle">Joining video in the middle</a><a class="toc-level-2" href="#ending-a-subscription">Ending a subscription</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
@@ -41,6 +44,34 @@
 <p>In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition’s draft is <code>moqt-21</code>. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2">§6.2</a>.</p>
 <p>Each endpoint opens a control stream and starts it with <code>SETUP</code>, exchanging session options and supported extensions. Each control stream is <strong>unidirectional</strong>: only the endpoint that opened it sends on it. A request such as <code>SUBSCRIBE</code> uses a separate <strong>bidirectional</strong> stream, so the other endpoint can answer on that same stream. Objects travel separately from these request messages.</p>
 <p>The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway, with early arrivals buffered until setup completes. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3">§6.3</a>.</p>
+<section id="from-a-connection-to-the-first-object" class="level3">
+<h3 class="anchored" data-anchor-id="from-a-connection-to-the-first-object">From a connection to the first object</h3>
+<p>This sequence follows a direct-QUIC session after its transport handshake. The browser path first establishes a WebTransport session. Stream labels describe their jobs, not numeric QUIC stream IDs.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">sequenceDiagram
+    accTitle: MoQ session setup and first subscription delivery
+    accDescr: After transport establishment, client and relay each send SETUP on their own control stream. The client opens a bidirectional request stream for SUBSCRIBE, the relay answers SUBSCRIBE_OK there, and sends objects on separate subgroup streams.
+    participant C as Client
+    participant R as Relay
+    Note over C,R: Transport established with compatible MoQ version
+    C-&gt;&gt;R: Client control stream: SETUP
+    R-&gt;&gt;C: Relay control stream: SETUP
+    C-&gt;&gt;R: New request stream: SUBSCRIBE track
+    R-&gt;&gt;C: Same request stream: SUBSCRIBE_OK
+    R-&gt;&gt;C: Separate subgroup stream: objects
+    R-&gt;&gt;C: Another subgroup stream: more objects
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The picture shows one successful ordering, not mandatory waits between every arrow. Setup, requests, and data can overlap under the draft’s initialization rules. Discovery is omitted because this client already knows the track name. <code>SUBSCRIBE_OK</code> accepts a request; it does not mean the first picture has been decoded. The separate streams are specified in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4">draft-21 §6.4</a>.</p>
+</section>
 </section>
 <section id="asking-for-audio" class="level2">
 <h2 class="anchored" data-anchor-id="asking-for-audio">Asking for audio</h2>
@@ -123,6 +154,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/03-tracks-groups-and-objects/"><small>Previous chapter</small><span>Tracks, Groups and Objects</span></a><a href="../../docs/05-relays-and-distribution/"><small>Next chapter</small><span>Relays and Distribution</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#finding-the-lecture">Finding the lecture</a><a class="toc-level-2" href="#establishing-a-session">Establishing a session</a><a class="toc-level-2" href="#asking-for-audio">Asking for audio</a><a class="toc-level-2" href="#joining-video-in-the-middle">Joining video in the middle</a><a class="toc-level-2" href="#ending-a-subscription">Ending a subscription</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#finding-the-lecture">Finding the lecture</a><a class="toc-level-2" href="#establishing-a-session">Establishing a session</a><a class="toc-level-3" href="#from-a-connection-to-the-first-object">From a connection to the first object</a><a class="toc-level-2" href="#asking-for-audio">Asking for audio</a><a class="toc-level-2" href="#joining-video-in-the-middle">Joining video in the middle</a><a class="toc-level-2" href="#ending-a-subscription">Ending a subscription</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

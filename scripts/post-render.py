@@ -10,7 +10,7 @@ from seo import metadata, write_discovery
 OUT = Path('dist')
 chapters = [(Path('index.qmd'), 'Introduction')]
 chapters += [(p, p.read_text().splitlines()[0].removeprefix('# ')) for p in sorted(Path('docs').glob('*/index.qmd'))]
-version = hashlib.sha256((Path('assets/reader.css').read_bytes()+Path('assets/reader.js').read_bytes())).hexdigest()[:12]
+version = hashlib.sha256((Path('assets/reader.css').read_bytes()+Path('assets/reader.js').read_bytes()+Path('assets/favicon.svg').read_bytes())).hexdigest()[:12]
 for asset in ['reader.css', 'reader.js']:
     shutil.copyfile(Path('assets')/asset, OUT/'assets'/asset)
 shutil.copytree('assets/fonts', OUT/'assets/fonts', dirs_exist_ok=True)
@@ -56,7 +56,7 @@ for number, (source, label) in enumerate(chapters):
 {metadata(number, title, source)}
 <link rel="preload" href="{prefix}/assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{{display:none}}@media(max-width:760px){{.sidebar{{display:block;position:static;width:auto;height:auto;border:0}}}}</style></noscript>
-<link rel="icon" href="{prefix}/assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{prefix}/assets/favicon.svg?v={version}" type="image/svg+xml">
 <link rel="stylesheet" href="{prefix}/assets/reader.css?v={version}">{mermaid}
 <script src="{prefix}/assets/reader.js?v={version}" defer></script></head>
 <body data-root="{prefix}/"><a class="skip" href="#quarto-document-content">Skip to content</a>
