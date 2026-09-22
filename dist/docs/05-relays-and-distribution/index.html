@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/05-relays-and-distribution/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=589e969292f7" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=589e969292f7"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=589e969292f7" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=ccc182d81c24" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=ccc182d81c24"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=ccc182d81c24" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -53,7 +53,7 @@
 </div>
 </div>
 </div>
-<p>With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.</p>
+<p>With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. Viewers in each region can receive content from their local relay.</p>
 <p>Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the payload rates are:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <thead>
@@ -100,7 +100,7 @@
 </section>
 <section id="relays-need-structure-not-codec-knowledge" class="level2">
 <h2 class="anchored" data-anchor-id="relays-need-structure-not-codec-knowledge">What does a relay need to know?</h2>
-<p>A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.</p>
+<p>A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. The same relay can forward audio, video, and application data.</p>
 <p>For this to work, the publisher needs to put the right media at each group boundary. Suppose the relay sends a new viewer a group that depends on pictures from the previous group. The relay has delivered what was requested, but the player still can’t show it.</p>
 </section>
 <section id="caching-helps-but-has-limits" class="level2">
@@ -119,7 +119,7 @@
 <h2 class="anchored" data-anchor-id="what-a-relay-does-not-automatically-do">Which jobs belong to the wider service?</h2>
 <p>Suppose a student needs low-resolution video, but the publisher only sends high resolution. Someone has to create the smaller version. A <strong>transcoder</strong> does that by decoding and re-encoding the media. The service might run one alongside a relay, which then forwards the resulting objects.</p>
 <p>The service also has to choose nearby relays, connect them, and recover when one fails. The moq.dev project includes clustering features to help with this setup.</p>
-<p>Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked. That small drawing often reveals more than a single “CDN” box.</p>
+<p>Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

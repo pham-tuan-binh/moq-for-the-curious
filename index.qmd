@@ -16,7 +16,7 @@ Start with the first chapter for an introduction and a [comparison with WebRTC](
 
 This edition uses **[MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21)**, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.
 
-The draft is useful reading alongside the book. Start with its [motivation section](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2), then follow the content model and protocol behavior before looking up individual message fields. Its structure helps connect the details to the problems they solve.
+The draft is useful reading alongside the book. Start with its [motivation section](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2), then follow the content model and protocol behavior before looking up individual message fields.
 
 Initial research was completed on **September 16, 2026**, with a technical fact-check on **September 22, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
 

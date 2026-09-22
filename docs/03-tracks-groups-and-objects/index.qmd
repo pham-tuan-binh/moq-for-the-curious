@@ -97,7 +97,7 @@ Suppose the lecturer’s publisher crashes. When it restarts, it reuses `video-l
 
 We could put the restarted lecture under a fresh namespace, such as `lectures / session-8`. Or we could keep track of the group IDs and continue without reusing them. Either way, a new picture needs an address that won’t collide with an old one.
 
-With distinct names, a relay can tell the old publication from the new one. Next, we’ll follow a student’s request for one of these tracks.
+The relay can now distinguish the new content from its cached objects. Next, we’ll follow a student’s request for a track.
 
 ## How does moq-lite name these concepts? {#a-vocabulary-translation}
 

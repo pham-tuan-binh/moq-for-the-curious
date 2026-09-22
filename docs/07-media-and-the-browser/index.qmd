@@ -25,7 +25,7 @@ flowchart TD
     D -. Media timestamps .-> F
 ```
 
-The catalog remains useful after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.
+The catalog can change after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.
 
 ### What does container parsing actually do?
 
@@ -99,9 +99,9 @@ To measure how far behind the lecture we are, we also need to relate the lecture
 
 ## What else does a browser player need? {#completing-the-player}
 
-A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the [media capture permission rules](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia). Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
+Even after media arrives, the browser may require a user action before it allows playback. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the [media capture permission rules](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia). Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
 
-The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing publisher and player gives a first experiment a path through capture, decoding, and presentation. The chapter's pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.
+The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Start with those packages for the first experiment. If playback fails, check each step: did the player find the media description, receive a decodable starting picture, decode it, and display it?
 
 ## Sources and further reading {.unnumbered #sources}
 

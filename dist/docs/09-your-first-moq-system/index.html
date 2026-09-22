@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/09-your-first-moq-system/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=589e969292f7" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=589e969292f7">
-<script src="../../assets/reader.js?v=589e969292f7" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=ccc182d81c24" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=ccc182d81c24">
+<script src="../../assets/reader.js?v=ccc182d81c24" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -35,8 +35,9 @@
 <section id="choose-the-implementation-deliberately" class="level2">
 <h2 class="anchored" data-anchor-id="choose-the-implementation-deliberately">Choose and record the implementation</h2>
 <p>We’ll use the <strong>moq.dev project</strong> and its moq-lite and hang stack. The project’s documentation has the latest setup instructions; its <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">standards guide</a> explains which MOQT features it supports.</p>
+<p>If you want to explore other stacks first, the <a href="https://moqalliance.org/get-started/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ Alliance getting-started guide</a> lists demos, media tools, and transport libraries. Choose a publisher, relay, and player that agree on the protocol revision and media format.</p>
 <p>The commands below follow the <a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">setup guide</a>. Save the checkout revision and library versions with your notes so you can repeat the experiment later.</p>
-<p>The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.</p>
+<p>Run them from the moq.dev repository, not this book’s repository. They have not been executed as part of publishing this guide.</p>
 </section>
 <section id="before-running-commands" class="level2">
 <h2 class="anchored" data-anchor-id="before-running-commands">Before running commands</h2>
@@ -160,7 +161,7 @@
 <h2 class="anchored" data-anchor-id="make-the-network-inconvenient">Test a constrained network</h2>
 <p>Use a network test setup to constrain bandwidth or introduce delay. Start with one change at a time. Watch the selected rendition, playback age, audio continuity, and recovery after the constraint is removed.</p>
 <p>Ordinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.</p>
-<p>Watch what changes when the network slows down. Does the player choose a lower rendition, skip ahead, pause, or keep falling further behind? These observations give you somewhere to start debugging.</p>
+<p>Watch what changes when the network slows down. Does the player choose a lower rendition, skip ahead, pause, or keep falling further behind? Compare that behavior with the unthrottled run.</p>
 </section>
 <section id="test-a-disconnect" class="level2">
 <h2 class="anchored" data-anchor-id="test-a-disconnect">Test a disconnect</h2>
@@ -169,7 +170,7 @@
 <section id="going-beyond-localhost" class="level2">
 <h2 class="anchored" data-anchor-id="going-beyond-localhost">Going beyond localhost</h2>
 <p>Moving to another machine adds certificate trust, network reachability, and access policy. QUIC uses UDP; opening only a TCP listener does not establish its path. Follow the deployment guide for the listener and fallback configuration actually in use.</p>
-<p>Do not add recording, multiple regions, and private user accounts simultaneously. Add one boundary, verify it, then continue. When something breaks, the debugging chapter gives you a way to locate the first failed layer.</p>
+<p>Do not add recording, multiple regions, and private user accounts simultaneously. Add one boundary, verify it, then continue. When something breaks, use the debugging chapter to find where data stops moving toward the player.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

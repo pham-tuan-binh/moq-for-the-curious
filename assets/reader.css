@@ -43,10 +43,20 @@ dialog{width:min(460px,calc(100% - 32px));max-height:60dvh;padding:16px;border-r
 
 main a:visited{color:#b88dff}#chapters a[aria-current]{color:var(--accent)}
 
-.wire-format{background:var(--bg);border-radius:2px}.wire-format table{table-layout:fixed;margin:0;font-size:14px;min-width:560px}.wire-format th,.wire-format td{text-align:center;border:1px solid var(--line);padding:12px 6px}.wire-format th{font-weight:400;color:var(--muted);font-size:12px}.wire-format td{color:var(--fg)}.wire-format small{display:block;font-size:12px;color:var(--muted);line-height:1.4}.wire-format .book-table-scroll{margin:0}.editorial-illustration img{display:block;width:100%;height:auto}.editorial-illustration{background:var(--bg)}
+.wire-format{background:var(--bg);border-radius:2px}.wire-format table{table-layout:fixed;margin:0;font-size:14px;min-width:560px}.wire-format th,.wire-format td{text-align:center;border:1px solid var(--line);padding:12px 6px}.wire-format th{font-weight:400;color:var(--muted);font-size:12px}.wire-format td{color:var(--fg)}.wire-format small{display:block;font-size:12px;color:var(--muted);line-height:1.4}.wire-format .book-table-scroll{margin:0}.editorial-illustration img{display:block;width:100%;min-width:720px;height:auto}.editorial-illustration{background:var(--bg)}
 
 .byte-example .hex-values td{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:22px;color:var(--accent);background:#84b2ff0d}.byte-example .hex-values td:nth-child(n+5){color:#c1a1ff;background:#c1a1ff0d}
 
 .reader-tools .repository-link{font-size:13px;color:var(--muted);text-decoration:none;padding:4px 0}.reader-tools .repository-link:hover{color:var(--fg)}
 
 .outline a,.mobile-outline a{position:relative}.outline a.is-current,.mobile-outline a.is-current{color:var(--accent);font-weight:600}.outline a.is-current::before,.mobile-outline a.is-current::before{content:"";position:absolute;left:-9px;top:8px;bottom:8px;width:2px;background:var(--accent)}.outline nav{padding-left:10px}.mobile-outline nav{padding-left:10px}
+
+/* Align nested packet labels without shrinking them to fit a wide flowchart. */
+.packet-layout{padding:20px 20px 0}
+.packet-layer{padding:14px;border:1px solid var(--line);text-align:center;font-size:15px;line-height:1.5}
+.packet-layer>strong,.packet-note{display:block}
+.packet-layer>.packet-layer,.packet-field{margin-top:12px}
+.packet-field{padding:10px 12px;background:var(--surface);border:1px solid var(--line)}
+.packet-note{color:var(--muted);font-size:13px;margin-top:3px}
+.packet-layout figcaption{margin:20px -20px 0}
+@media(max-width:760px){.packet-layout{padding:12px 12px 0}.packet-layer{padding:9px}.packet-field{padding:8px}.packet-layout figcaption{margin:12px -12px 0}}

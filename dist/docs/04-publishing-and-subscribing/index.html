@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/04-publishing-and-subscribing/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=589e969292f7" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=589e969292f7"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=589e969292f7" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=ccc182d81c24" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=ccc182d81c24"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=ccc182d81c24" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -35,9 +35,9 @@
 <section id="establishing-a-session" class="level2">
 <h2 class="anchored" data-anchor-id="establishing-a-session">Establishing a session</h2>
 <p>Alice’s player and the relay first agree on a MoQ session. The session holds the settings and request state they need to exchange content over their transport connection.</p>
-<p>In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition’s draft is <code>moqt-21</code>. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.2</a>.</p>
+<p>In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition’s draft is <code>moqt-21</code>. The network can be reachable while session setup fails because the endpoints have no protocol version in common. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.2</a>.</p>
 <p>Each endpoint opens a control stream and starts it with <code>SETUP</code>, exchanging session options and supported extensions. Each control stream is <strong>unidirectional</strong>: only the endpoint that opened it sends on it. A request such as <code>SUBSCRIBE</code> uses a separate <strong>bidirectional</strong> stream, so the other endpoint can answer on that same stream. Objects travel separately from these request messages.</p>
-<p>The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.3</a>.</p>
+<p>The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The endpoint need not wait for a reply at each step before starting the next. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§6.3</a>.</p>
 <section id="from-a-connection-to-the-first-object" class="level3">
 <h3 class="anchored" data-anchor-id="from-a-connection-to-the-first-object">From a connection to the first object</h3>
 <p>This sequence follows a direct-QUIC session after its transport handshake. The browser path first establishes a WebTransport session. Stream labels describe their jobs, not numeric QUIC stream IDs.</p>
@@ -69,14 +69,14 @@
 </section>
 <section id="finding-the-lecture" class="level2">
 <h2 class="anchored" data-anchor-id="finding-the-lecture">Finding the lecture</h2>
-<p>Before asking for media, the application must turn Alice’s choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. Discovery supplies information about what is available within the service; the application decides how to present that information as a room list, an invitation, or a public directory.</p>
+<p>Before asking for media, the application must turn Alice’s choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. The application can use discovery results to build a room list or public directory.</p>
 <p>Once it finds the publication, the player reads its media description. This tells it which tracks contain audio and which contain video <strong>renditions</strong>: alternative encodings, such as low-resolution and high-resolution video. Alice’s player can start by choosing audio and a low-resolution rendition. We will examine that media description in the browser chapter.</p>
 <p>Discovery and delivery can have different access rules. A private lecture might be hidden from the room list as well as unavailable for playback. Knowing its name does not grant permission to receive it. MOQT provides <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">namespace discovery mechanisms</a>; the service supplies the access policy.</p>
 </section>
 <section id="asking-for-audio" class="level2">
 <h2 class="anchored" data-anchor-id="asking-for-audio">Asking for audio</h2>
 <p>Alice’s player sends <code>SUBSCRIBE</code>, naming the lecture’s audio track and specifying its delivery choices. The relay answers with <code>SUBSCRIBE_OK</code> if it accepts, or <code>REQUEST_ERROR</code> if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.</p>
-<p>What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The service might give it that route through registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.</p>
+<p>What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The relay can learn where the publisher is from registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -132,7 +132,7 @@
 </div>
 <p>Alice has a wait either way: time to download the start of group 42, or time for the publisher to produce group 43’s keyframe.</p>
 <p>Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?</p>
-<p>Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The fetch mechanism provides a way to request that content; storage and timing information make the feature possible.</p>
+<p>Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The player can then translate the requested time into a fetch range.</p>
 </section>
 <section id="ending-a-subscription" class="level2">
 <h2 class="anchored" data-anchor-id="ending-a-subscription">Ending a subscription</h2>

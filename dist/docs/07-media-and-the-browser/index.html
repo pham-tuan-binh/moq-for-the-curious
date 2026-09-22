@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/07-media-and-the-browser/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=589e969292f7" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=589e969292f7"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=589e969292f7" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=ccc182d81c24" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=ccc182d81c24"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=ccc182d81c24" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -58,7 +58,7 @@
 </div>
 </div>
 </div>
-<p>The catalog remains useful after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.</p>
+<p>The catalog can change after playback starts. The lecturer might add screen sharing, or a rendition might temporarily become unavailable. The player needs to respond to those updates instead of treating the initial list as permanent.</p>
 <section id="what-does-container-parsing-actually-do" class="level3">
 <h3 class="anchored" data-anchor-id="what-does-container-parsing-actually-do">What does container parsing actually do?</h3>
 <p>Let’s look inside one payload. In hang’s <code>legacy</code> container, the first bytes encode a timestamp in microseconds as a variable-length integer. The encoded media comes after it. The player reads the timestamp, strips off that header, and passes the media to the decoder with its timing information. It chooses this parser from the container field in the catalog. See the <a href="https://doc.moq.dev/concept/hang#containers" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">hang container formats</a>.</p>
@@ -189,8 +189,8 @@
 </section>
 <section id="completing-the-player" class="level2">
 <h2 class="anchored" data-anchor-id="completing-the-player">What else does a browser player need?</h2>
-<p>A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the <a href="https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">media capture permission rules</a>. Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.</p>
-<p>The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing publisher and player gives a first experiment a path through capture, decoding, and presentation. The chapter’s pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.</p>
+<p>Even after media arrives, the browser may require a user action before it allows playback. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the <a href="https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">media capture permission rules</a>. Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.</p>
+<p>The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Start with those packages for the first experiment. If playback fails, check each step: did the player find the media description, receive a decodable starting picture, decode it, and display it?</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

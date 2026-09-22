@@ -8,7 +8,7 @@ Sending live video sounds simple enough: capture a picture, send it, show it. Bu
 
 The book builds up the pieces needed to answer those questions. We start with what MoQ does and how it relates to WebRTC, then get into TCP/IP, QUIC, tracks, subscriptions, relays, and playback. There are diagrams, packet layouts, and worked examples along the way, with links to the specifications when you want the details.
 
-The [MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21) is worth reading alongside the book. It starts with the motivation, introduces the content model, then builds up the protocol behavior before getting into message fields. That progression is useful when you're trying to understand why the pieces exist and how they fit together.
+The [MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21) is worth reading alongside the book. It starts with the motivation, introduces the content model, then builds up the protocol behavior before getting into message fields.
 
 ## Contributing
 

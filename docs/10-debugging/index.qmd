@@ -70,7 +70,7 @@ A frozen picture gets older whether the cause is missing data, a decoder failure
 
 For a useful bug report, record the client and relay versions, actual transport, publication and track identifiers, codec, error code, and the time of the failure. Include the smallest repeatable sequence that triggers it.
 
-QUIC packet captures do not normally expose encrypted application payloads. Structured application logs and transport telemetry such as qlog can provide information that packet timing alone cannot. If your implementation exports a supported qlog trace, [qvis](https://qvis.quictools.info/) provides QUIC visualizations for inspecting transport behavior. A transport trace still does not show whether the player presented a frame. Redact credentials and private publication names before sharing evidence.
+QUIC packet captures do not normally expose encrypted application payloads. Use application logs to trace requests and object delivery, and transport traces such as qlog to inspect connection events. If your implementation exports a supported qlog trace, [qvis](https://qvis.quictools.info/) provides QUIC visualizations for inspecting transport behavior. A transport trace still does not show whether the player presented a frame. Redact credentials and private publication names before sharing evidence.
 
 One final habit helps: change one thing at a time. If you replace the codec, relay, browser, and network together, a successful run will leave you with four possible explanations.
 

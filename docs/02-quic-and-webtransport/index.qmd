@@ -39,7 +39,7 @@ IP delivery is **best effort**. Packets can be lost, duplicated, reordered, or d
 | Encryption built into this protocol | No; commonly combined with TLS | No | Yes; integrates TLS 1.3 |
 | Congestion control | Yes | Not supplied by UDP itself | Yes, including datagram traffic |
 
-For MoQ, the useful part is having several streams on one connection. We can put camera video on one stream and captions on another, so missing video bytes don’t force the captions to wait.
+With several streams on one connection, we can put camera video on one and captions on another. Missing video bytes then don’t force the captions to wait.
 
 ### Delay, rate, and feedback
 
@@ -169,23 +169,28 @@ This diagram shows the direct-QUIC stream mapping. One object can span many pack
 
 The following view expands one illustrative IP packet. Boxes show containment, not bit widths. Here, one UDP datagram contains one QUIC packet; other valid arrangements can carry multiple QUIC packets in a datagram.
 
-```{mermaid}
-flowchart TD
-    accTitle: Nested structure of a packet carrying QUIC stream data
-    accDescr: An IP packet contains an IP header and a UDP datagram. The UDP datagram contains its header and a QUIC packet. The QUIC packet has a header and protected payload. After decryption the payload contains frames, including a STREAM frame with a stream ID, offset, and application bytes.
-    subgraph IP["IP packet"]
-      IH["IP header: addresses and network fields"]
-      subgraph UDP["UDP datagram"]
-        UH["UDP header: ports, length, checksum"]
-        subgraph QUIC["QUIC packet"]
-          QH["QUIC header: packet type information, connection ID, packet number"]
-          subgraph P["Protected payload — logical contents after decryption"]
-            ACK["ACK frame"]
-            STREAM["STREAM frame: stream ID, offset, data"]
-          end
-        end
-      end
-    end
+```{=html}
+<figure class="packet-layout" aria-label="Nested structure of a packet carrying QUIC stream data">
+  <div class="packet-layer">
+    <strong>IP packet</strong>
+    <div class="packet-field">IP header: addresses and network fields</div>
+    <div class="packet-layer">
+      <strong>UDP datagram</strong>
+      <div class="packet-field">UDP header: ports, length, checksum</div>
+      <div class="packet-layer">
+        <strong>QUIC packet</strong>
+        <div class="packet-field">QUIC header: packet type information, connection ID, packet number</div>
+        <div class="packet-layer">
+          <strong>Protected payload</strong>
+          <span class="packet-note">Logical contents after decryption</span>
+          <div class="packet-field">ACK frame</div>
+          <div class="packet-field">STREAM frame: stream ID, offset, data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption>Each outer layer carries the layer inside it. Box sizes do not represent field lengths.</figcaption>
+</figure>
 ```
 
 The header's form depends on the packet type. A connection ID helps identify a connection; a stream ID appears inside a `STREAM` frame and identifies one stream within it. The frame's data can hold only part of a MoQ object.

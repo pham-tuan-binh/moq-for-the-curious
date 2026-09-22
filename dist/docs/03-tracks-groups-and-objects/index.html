@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/03-tracks-groups-and-objects/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=589e969292f7" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=589e969292f7"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=589e969292f7" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=ccc182d81c24" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=ccc182d81c24"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=ccc182d81c24" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -179,7 +179,7 @@
 <h2 class="anchored" data-anchor-id="restarting-is-a-naming-problem-too">What happens to names after a restart?</h2>
 <p>Suppose the lecturer’s publisher crashes. When it restarts, it reuses <code>video-low</code>, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.</p>
 <p>We could put the restarted lecture under a fresh namespace, such as <code>lectures / session-8</code>. Or we could keep track of the group IDs and continue without reusing them. Either way, a new picture needs an address that won’t collide with an old one.</p>
-<p>With distinct names, a relay can tell the old publication from the new one. Next, we’ll follow a student’s request for one of these tracks.</p>
+<p>The relay can now distinguish the new content from its cached objects. Next, we’ll follow a student’s request for a track.</p>
 </section>
 <section id="a-vocabulary-translation" class="level2">
 <h2 class="anchored" data-anchor-id="a-vocabulary-translation">How does moq-lite name these concepts?</h2>

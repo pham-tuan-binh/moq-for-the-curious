@@ -9,12 +9,15 @@
   function diagrams() {
     if (!sources.length || !window.mermaid) return;
     rendering = rendering.then(async () => {
+      // Measure labels only after the reading font is available.
+      await document.fonts.ready;
       const color = getComputedStyle(root); const css = name => color.getPropertyValue(name).trim();
       mermaid.initialize({startOnLoad:false, securityLevel:'strict',theme:'base',fontFamily:css('--font'),themeVariables:{darkMode:true,fontSize:'15px',primaryColor:css('--surface'),primaryTextColor:css('--fg'),primaryBorderColor:css('--muted'),lineColor:css('--muted'),secondaryColor:css('--surface'),tertiaryColor:css('--bg'),mainBkg:css('--surface'),clusterBkg:css('--bg'),clusterBorder:css('--line'),edgeLabelBackground:css('--bg'),actorBkg:css('--surface'),actorTextColor:css('--fg'),actorBorder:css('--muted'),signalColor:css('--fg'),signalTextColor:css('--fg'),noteBkgColor:css('--surface'),noteTextColor:css('--fg'),noteBorderColor:css('--line')}});
       for (const {container, source} of sources) {
         try { const {svg} = await mermaid.render('diagram-'+(++serial),source); container.innerHTML=svg;
           const el=container.querySelector('svg'); const w=el.viewBox.baseVal.width;
-          el.style.width=Math.min(w,660)+'px'; el.style.maxWidth='none';
+          // Keep a 15px label at least 12px tall; wider diagrams scroll.
+          el.style.width=Math.min(w,Math.max(660,w*0.8))+'px'; el.style.maxWidth='none';
         } catch { container.textContent='The diagram could not be displayed. Its explanation is in the surrounding text.'; }
       }
     });

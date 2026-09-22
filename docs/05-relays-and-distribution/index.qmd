@@ -19,7 +19,7 @@ flowchart TD
 ```
 
 
-With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.
+With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. Viewers in each region can receive content from their local relay.
 
 Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the payload rates are:
 
@@ -54,7 +54,7 @@ There’s a startup cost to consider. When the first viewer asks for an idle ren
 
 ## What does a relay need to know? {#relays-need-structure-not-codec-knowledge}
 
-A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. That separation makes a generic relay useful for audio, video, and application data.
+A relay uses names, group boundaries, priorities, and delivery rules. It need not inspect the encoded picture to forward it. The same relay can forward audio, video, and application data.
 
 For this to work, the publisher needs to put the right media at each group boundary. Suppose the relay sends a new viewer a group that depends on pictures from the previous group. The relay has delivered what was requested, but the player still can’t show it.
 
@@ -80,7 +80,7 @@ Suppose a student needs low-resolution video, but the publisher only sends high 
 
 The service also has to choose nearby relays, connect them, and recover when one fails. The moq.dev project includes clustering features to help with this setup.
 
-Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked. That small drawing often reveals more than a single “CDN” box.
+Before scaling the lecture, draw the actual publisher, relay, and viewer paths. Mark where content is cached and where authorization is checked.
 
 ## Sources and further reading {.unnumbered #sources}
 

@@ -11,6 +11,7 @@ You don’t need to read the whole specification before trying the demo. Use the
 | You want to… | Start here | Keep in mind |
 |---|---|---|
 | Understand the transport promises | [TCP specification](https://www.rfc-editor.org/rfc/rfc9293.html) and [QUIC overview](https://www.rfc-editor.org/rfc/rfc9000.html#section-1) | TCP bytes, QUIC streams, and MoQ objects are different units |
+| Explore implementations and demos | [MoQ Alliance: Get started](https://moqalliance.org/get-started/) | Check each project’s supported protocol revision and media format |
 | Start a local player | [moq.dev quick start](https://doc.moq.dev/setup/) | Its implementation model is not identical to the pinned MOQT draft |
 | Explain blocked audio | [MDN autoplay guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay) | Browser policy can prevent playback after successful delivery |
 | Inspect a QUIC trace visually | [qvis](https://qvis.quictools.info/) | Your implementation must export a compatible trace |
@@ -20,7 +21,7 @@ You don’t need to read the whole specification before trying the demo. Use the
 
 This edition follows [Media over QUIC Transport, draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21), published September 8, 2026. The chapter links use that version. You can find newer revisions on the [document status page](https://datatracker.ietf.org/doc/draft-ietf-moq-transport/) and follow the wider work through the [MoQ working group](https://datatracker.ietf.org/wg/moq/about/).
 
-Read the object model before the wire-message tables. Once tracks and groups make sense, the fields become answers to recognizable problems rather than an arbitrary list of integers.
+Read the object model before the wire-message tables. You’ll then know what the track, group, and object identifiers refer to when you encounter them in a message.
 
 ## A route through the MOQT specification
 
@@ -48,7 +49,7 @@ Read the explanatory sections first, then use [control messages (§9)](https://d
 
 The [W3C WebTransport specification](https://www.w3.org/TR/webtransport/) describes the browser API for streams and datagrams. Its presence does not remove the need for a protocol library above it.
 
-The [W3C WebCodecs specification](https://www.w3.org/TR/webcodecs/) describes low-level codec interfaces. It is useful for understanding decoder configuration and frame ownership. It does not define a full media player.
+The [W3C WebCodecs specification](https://www.w3.org/TR/webcodecs/) describes low-level codec interfaces. It explains how to configure a decoder and release frames when you’re done with them. Playback scheduling still belongs to the player.
 
 ## The WebRTC comparison
 
@@ -56,7 +57,17 @@ The early comparison uses the [W3C WebRTC specification](https://www.w3.org/TR/w
 
 For media, WebRTC uses **SRTP**, the secure form of the Real-time Transport Protocol. Data channels use **SCTP**, the Stream Control Transmission Protocol, carried inside **DTLS**, Datagram Transport Layer Security. You do not need to learn these packet formats to understand the comparison; the distinction is that WebRTC specifies how these pieces fit together for real-time communication.
 
-[RFC 7667, section 3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) explains how a media server can forward selected streams in a WebRTC conference. This is useful when comparing an SFU with a MoQ relay.
+[RFC 7667, section 3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) explains how a media server can forward selected streams in a WebRTC conference.
+
+## Architectural background
+
+Cloudflare’s [MoQ: Refactoring the Internet’s real-time media stack](https://blog.cloudflare.com/moq/) (August 2025), by Mike English and Renan Dincer, explains why streaming systems combine different protocols, then describes MoQ’s layers and follows content through a relay network.
+
+Its implementation discussion targets draft-07, and its message names and scheduling examples predate this book’s draft-21 baseline. Use the pinned draft for those details.
+
+## Finding an implementation
+
+The MoQ Alliance’s [Get started with MoQ](https://moqalliance.org/get-started/) guide collects browser demos, native media tools, and transport libraries in several languages. Use it to explore options beyond the moq.dev stack used in our walkthrough. Follow each project’s own documentation for setup and compatibility; the directory includes implementations targeting different draft revisions.
 
 ## The moq.dev implementation
 
@@ -93,7 +104,7 @@ The latency numbers in this book are examples, not measurements. We haven’t ru
 
 When updating the book, record the new research date and protocol revision together. Review terminology, setup, subscription behavior, timeout semantics, and the media-format boundary before changing the edition badge.
 
-Keep examples identified as examples. If you add benchmarks, publish the workload, hardware, network conditions, implementation versions, and measurement points. If you add runnable SDK code, pin dependencies and verify it against the corresponding relay. An explanation is most useful when readers can tell exactly what it establishes.
+Keep examples identified as examples. If you add benchmarks, publish the workload, hardware, network conditions, implementation versions, and measurement points. If you add runnable SDK code, pin dependencies and verify it against the corresponding relay. State what you tested and what the results showed.
 
 ## Sources and further reading {.unnumbered #sources}
 

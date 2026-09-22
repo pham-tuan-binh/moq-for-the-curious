@@ -18,7 +18,7 @@ flowchart LR
     R <-->|Protected connection B| S[Student]
 ```
 
-For a service that trusts its relay operator with the lecture, this may be the intended arrangement. The transport protects traffic between endpoints, while the relay enforces access rules. A certificate failure should be corrected through the deployment's trust configuration; disabling verification removes an essential check on which server receives the connection.
+For a service that trusts its relay operator with the lecture, this may be the intended arrangement. The transport protects traffic between endpoints, while the relay enforces access rules. If certificate verification fails, check the hostname, certificate, and client trust configuration. Disabling verification would let the client connect without authenticating the server.
 
 ## Who may discover, subscribe, or publish? {#giving-each-participant-the-right-permissions}
 

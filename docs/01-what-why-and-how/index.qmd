@@ -12,7 +12,7 @@ That’s the problem we’ll use to explore MoQ. We’ll start with what it does
 
 If you’ve built a video call with WebRTC, you’ve used a browser stack that handles encoding, sending, receiving, and decoding media. With MoQ, those pieces are assembled by a media library around MOQT, the protocol that delivers the content. This gives the library more choices about how to package and play it. We’ll get into the [details below](#how-does-moq-compare-with-webrtc).
 
-Separating those pieces gives an application more control over playback. In a conversation, you want quick responses. When watching a broadcast, you might prefer a little extra buffering if it keeps the video from stalling. The moq.dev article [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) explores this tradeoff through the author's experience with live broadcasting.
+Separating those pieces gives an application more control over playback. In a conversation, you want quick responses. When watching a broadcast, you might prefer a little extra buffering if it keeps the video from stalling. The moq.dev article [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) discusses this tradeoff.
 
 ### A lecture as an example
 
@@ -49,9 +49,15 @@ Suppose the lecturer produces four megabits of media each second, but one viewer
 
 We could drop some old video to catch up, but we have to choose what to drop. Compressed video often stores changes from earlier pictures. The **decoder**, which turns compressed data back into pictures, needs those earlier pictures to apply the changes. If we drop one at random, we might also lose the pictures that depend on it.
 
-MoQ gives content a structure that the distribution network can use. Objects belong to groups, and a media format can arrange those groups around useful starting points. A relay can recognize the boundaries, reuse objects requested by several viewers, and choose which work to send on each viewer's connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated content need not all wait behind the same missing bytes. These are central ideas in the draft's [motivation](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2) and [relay model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7).
+MoQ gives content a structure that the distribution network can use. Objects belong to groups, and a media format can arrange those groups around useful starting points. A relay can recognize the boundaries, reuse objects requested by several viewers, and choose which work to send on each viewer's connection. It can do this without decoding the pictures. QUIC supplies separate byte streams so that unrelated content need not all wait behind the same missing bytes. See the draft's [motivation](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2) and [relay model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7).
 
 Now imagine a student asking the lecturer a question while a thousand others listen. The two people speaking need to hear each other quickly. The listeners might be happier with a little more buffering if it keeps the lecture smooth. We can serve the same publication to both and make different delivery choices along their paths.
+
+### Using one protocol along the path
+
+There’s also the work of connecting the pieces. A service might receive the lecturer’s video through one protocol, repackage it for broadcast, and maintain a separate path for conversation. Each boundary needs code and has its own failure modes.
+
+MoQ aims to use the same delivery protocol from publisher through relays to viewers. This is the draft’s [convergence goal](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2.3). It can reduce repackaging between those stages, though viewers still need compatible codecs and media formats. Cloudflare’s [MoQ: Refactoring the Internet’s real-time media stack](https://blog.cloudflare.com/moq/) explains why streaming systems often combine several protocols.
 
 ## How does MoQ work? {#from-opening-a-page-to-hearing-the-lecturer}
 
@@ -67,7 +73,7 @@ We’ll look at each activity in turn. In a running application, some can happen
 
 ### Connect: establish a session
 
-The viewer connects to a server using QUIC or, in the browser path covered here, WebTransport. The endpoints agree on a MOQT version and exchange session settings. They now have a conversation in which they can make requests. [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd) explains the transport; [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd) explains the session.
+The viewer connects to a server using QUIC or, in the browser path covered here, WebTransport. The endpoints agree on a MOQT version and exchange session settings. They can then request content within that session. [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd) explains the transport; [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd) explains the session.
 
 ### Discover: find the content
 
@@ -112,7 +118,7 @@ With MoQ, a media library handles capture, encoding, decoding, and playback arou
 
 ### How content reaches people
 
-Another important difference is how the devices connect. A home router often uses **NAT**, or Network Address Translation, to let several devices share a public address. A student can connect out, but someone across the Internet can’t simply connect to that student’s private address. Finding a path through this setup is called **NAT traversal**.
+The devices also connect differently. A home router often uses **NAT**, or Network Address Translation, to let several devices share a public address. A student can connect out, but someone across the Internet can’t simply connect to that student’s private address. Finding a path through this setup is called **NAT traversal**.
 
 WebRTC handles this with **ICE** (Interactive Connectivity Establishment). The browsers exchange possible addresses through the app’s signaling and test which paths work. **STUN** (Session Traversal Utilities for NAT) helps discover the addresses their routers expose. If a direct path works, media can travel between the peers. Otherwise, ICE can select a path through a **TURN** (Traversal Using Relays around NAT) server. See [the ICE introduction](https://www.rfc-editor.org/rfc/rfc8445.html#section-1) and [WebRTC’s connectivity requirements](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4).
 
@@ -144,7 +150,7 @@ The moq.dev project now documents [WebRTC import and export gateways](https://do
 
 An existing WebRTC publisher can feed a gateway that publishes the content over MoQ. The gateway has to translate media packaging and session behavior; replacing a socket is not enough. Lorenzo Miniero's [Meetecho interoperability demo](https://www.meetecho.com/blog/moq-webrtc/) shows one such bridge.
 
-For a practical evaluation, start with one complete path: a speaker, a relay or media server, and a viewer on a constrained connection. Measure join time, conversational delay, stalls, and recovery. Then increase the audience. For more on these tradeoffs, read [why Cloudflare is working on MoQ](https://blog.cloudflare.com/moq/) and [webrtcHacks' comparison by use case](https://webrtchacks.com/webrtc-vs-moq-by-use-case/).
+For a practical evaluation, start with one complete path: a speaker, a relay or media server, and a viewer on a constrained connection. Measure join time, conversational delay, stalls, and recovery. Then increase the audience. For more on these tradeoffs, read [webrtcHacks' comparison by use case](https://webrtchacks.com/webrtc-vs-moq-by-use-case/).
 
 ## The protocol and the project
 

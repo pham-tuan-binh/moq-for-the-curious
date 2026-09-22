@@ -22,6 +22,8 @@ Keep qualifications that affect an implementation or the meaning of a result. Ex
 
 Avoid defensive paragraphs built around “does not prove,” “not a guarantee,” or “not a ranking.” Avoid repeating what the table already says. Avoid announcing the purpose of every diagram or paragraph. Use few em dashes.
 
+Avoid vague attribution clauses such as “through the author’s experience with live broadcasting.” The author identified this as unnatural writing. For a reading link, say what the article discusses and stop there unless the extra detail helps explain the subject.
+
 The author’s posts vary in capitalization and register. Keep the book’s existing capitalization and technical terminology. Do not invent personal experiments, autobiographical claims, or jokes to imitate the author. A book can have this voice without copying phrases from the posts.
 
 ## Scope

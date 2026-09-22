@@ -8,11 +8,11 @@ We’ll follow Alice as she connects, finds the lecture, asks for audio, and joi
 
 Alice’s player and the relay first agree on a MoQ session. The session holds the settings and request state they need to exchange content over their transport connection.
 
-In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition's draft is `moqt-21`. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See [§6.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2).
+In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition's draft is `moqt-21`. The network can be reachable while session setup fails because the endpoints have no protocol version in common. See [§6.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2).
 
 Each endpoint opens a control stream and starts it with `SETUP`, exchanging session options and supported extensions. Each control stream is **unidirectional**: only the endpoint that opened it sends on it. A request such as `SUBSCRIBE` uses a separate **bidirectional** stream, so the other endpoint can answer on that same stream. Objects travel separately from these request messages.
 
-The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The separate steps explain their responsibilities, rather than imposing a round trip for each one. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
+The implementation can overlap some of this work. Requests and data may be sent while initialization is still underway. The draft recommends buffering early arrivals until setup completes, but permits an endpoint to reset early request streams if it cannot support or does not want to buffer them. The endpoint need not wait for a reply at each step before starting the next. See [§6.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3).
 
 ### From a connection to the first object
 
@@ -37,7 +37,7 @@ This client already knows the track name, so it can subscribe without discovery.
 
 ## Finding the lecture
 
-Before asking for media, the application must turn Alice's choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. Discovery supplies information about what is available within the service; the application decides how to present that information as a room list, an invitation, or a public directory.
+Before asking for media, the application must turn Alice's choice into track names. The lecture page might already contain a publication name, or it might use namespace discovery to find available publishers. The application can use discovery results to build a room list or public directory.
 
 Once it finds the publication, the player reads its media description. This tells it which tracks contain audio and which contain video **renditions**: alternative encodings, such as low-resolution and high-resolution video. Alice's player can start by choosing audio and a low-resolution rendition. We will examine that media description in the browser chapter.
 
@@ -47,7 +47,7 @@ Discovery and delivery can have different access rules. A private lecture might 
 
 Alice's player sends `SUBSCRIBE`, naming the lecture's audio track and specifying its delivery choices. The relay answers with `SUBSCRIBE_OK` if it accepts, or `REQUEST_ERROR` if it rejects the request. Acceptance establishes the subscription. Audio objects arrive separately from the request and response messages.
 
-What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The service might give it that route through registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.
+What if the relay isn’t receiving the lecture yet? It needs to find the publisher and make its own subscription. The relay can learn where the publisher is from registration, configuration, or discovery. In the example below, the relay already knows where the publisher is, and both subscriptions ask for compatible delivery settings.
 
 ```{mermaid}
 sequenceDiagram
@@ -96,7 +96,7 @@ Alice has a wait either way: time to download the start of group 42, or time for
 
 Both choices depend on the media format identifying usable starting points. Switching from low-resolution to high-resolution video raises the same question: where can the decoder begin using the new rendition?
 
-Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The fetch mechanism provides a way to request that content; storage and timing information make the feature possible.
+Fetching also depends on retention. The relay may have discarded the beginning of group 42, or never received it. To offer a “rewind 30 seconds” button, the service must retain enough content and map playback time to track locations. The player can then translate the requested time into a fetch range.
 
 ## Ending a subscription
 
