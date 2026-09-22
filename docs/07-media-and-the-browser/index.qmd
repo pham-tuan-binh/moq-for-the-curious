@@ -8,7 +8,7 @@ The lecture offers an audio track and two video tracks, one at a lower resolutio
 
 MOQT carries application payloads without choosing their media format. Our example uses **hang**, the media layer in the moq.dev stack. Its `catalog.json` track describes the available renditions and their decoder configuration. A rendition is an alternative encoding of the content, such as the lecture's lower-resolution picture. See the [hang catalog and container documentation](https://doc.moq.dev/concept/hang).
 
-Suppose the selected video rendition contains H.264 pictures at 1280 × 720 pixels. Its codec identifier tells the player which decoder it needs. Its initialization data supplies codec-specific setup, and its container field tells the player how to find the encoded chunks and their timestamps. With this information, the player can check support on the student's device and subscribe to a suitable track.
+Suppose the selected video rendition contains H.264 pictures at 1280 × 720 pixels. Its codec identifier tells the player which decoder it needs. Its codec configuration supplies any required setup, either as initialization data or in-band as the format permits, and its container field tells the player how to find the encoded chunks and their timestamps. With this information, the player can check support on the student's device and subscribe to a suitable track.
 
 ```{mermaid}
 flowchart TD
@@ -58,7 +58,7 @@ Each decoded frame holds resources. After rendering or discarding a frame, the p
 
 Frames do not necessarily arrive at the spacing at which they were captured. Variable network delay produces **jitter**. If the player displayed pictures on arrival, that uneven timing would become visible movement on the screen.
 
-Media timestamps preserve the intended spacing. Consider these illustrative values, in milliseconds. The media timeline and receiver clock have different origins.
+Media timestamps preserve the intended spacing. Consider these illustrative values, in milliseconds. The media timeline and receiver clock have different origins. These teaching values use milliseconds; WebCodecs `VideoFrame.timestamp` uses [microseconds](https://www.w3.org/TR/webcodecs/#dom-videoframe-timestamp), so a player must convert units when mapping clocks.
 
 | Frame | Media timestamp | Arrival on receiver clock | Planned display on receiver clock |
 | --- | ---: | ---: | ---: |
@@ -91,7 +91,7 @@ Group and object IDs locate content; the media timestamps tell the player when t
 
 ## Completing the player
 
-A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher needs capture permission. Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
+A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the [media capture permission rules](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia). Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
 
 The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing player gives a first experiment a working path through capture, decoding, and presentation. The chapter's pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.
 

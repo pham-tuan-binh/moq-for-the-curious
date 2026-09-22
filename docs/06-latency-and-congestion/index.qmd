@@ -44,7 +44,7 @@ Suppose the publisher produces four megabits each second while Alice's path carr
 
 If production continues at the same rate, waiting longer makes the problem worse. The application must reduce future work, abandon some queued work, or accept increasing delay. This arithmetic applies whether the transport is MoQ, WebRTC, or something else.
 
-**Congestion control** limits what the transport sends to avoid overwhelming the network. When capacity falls, the transport reduces its sending rate. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
+**Congestion control** limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
 
 The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing future production prevents further growth; it does not automatically remove an existing backlog. To return near the live edge, the system may also need to skip old content.
 
@@ -64,7 +64,7 @@ Flow control protects the receiver with limits on individual streams and the con
 
 Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.
 
-MOQT represents these preferences through priorities and group ordering. In draft-21, a lower numeric priority means more urgent work. Subscriber priority is considered before publisher priority; group ordering helps choose among groups when those priorities are equal. The full scheduling rules are in [§5.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1).
+MOQT represents these preferences through priorities and group ordering. In draft-21, a lower numeric priority means more urgent work. The recommended scheduler considers subscriber priority before publisher priority. Within the same subscription, group ordering helps choose among groups when those priorities are equal. This is a recommendation, not a guarantee of one scheduling algorithm in every implementation. The full scheduling rules are in [§5.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1).
 
 Priority changes which work waits. It does not reserve bandwidth or guarantee arrival by a deadline. If urgent audio consumes the available capacity, less urgent video may remain queued. That is why scheduling preferences need to be paired with limits on how long old work remains useful. Check the conventions of the API you use: moq-lite and MOQT fields are not interchangeable merely because both are called priorities.
 

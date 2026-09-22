@@ -18,7 +18,7 @@ An address gets traffic to a host. A **port** helps the host direct that traffic
 | Connection | State maintained by communicating transport endpoints | Whether received media can be decoded |
 | Protocol | Rules both endpoints follow to interpret messages | Which implementation a particular server runs |
 
-IP delivery is **best effort**. Packets can be lost, duplicated, reordered, or delayed. A full queue in a router is one reason for loss. The path also has a **maximum transmission unit**, or MTU: a limit on packet size for a link. Sending one large application message does not make the network carry it as one arbitrarily large packet. See the [IPv6 specification](https://www.rfc-editor.org/rfc/rfc8200.html#section-5) for packet-size constraints.
+IP delivery is **best effort**. Packets can be lost, duplicated, reordered, or delayed. A full queue in a router is one reason for loss. Each link has a **maximum transmission unit**, or MTU: its largest IP packet size. The **path MTU** is the smallest link MTU along the route. Sending one large application message does not make the network carry it as one arbitrarily large packet. See the [IPv6 specification](https://www.rfc-editor.org/rfc/rfc8200.html#section-5) for packet-size constraints.
 
 ### TCP and UDP make different promises
 
@@ -127,7 +127,7 @@ flowchart TD
 
 The header's form depends on the packet type. A connection ID helps identify a connection; a stream ID appears inside a `STREAM` frame and identifies one stream within it. The frame's data can hold only part of a MoQ object.
 
-For an established QUIC v1 connection, the short-header layout is more compact:
+For 1-RTT packets on a QUIC v1 connection, the short-header layout is more compact:
 
 | Field, in wire order | Size | Purpose |
 |---|---|---|
@@ -141,7 +141,7 @@ Selected first-byte bits and the packet-number bytes have **header protection**.
 
 ### Read the first byte, bit by bit
 
-Here is the QUIC v1 short header **before header protection is applied**. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.
+Here is the base QUIC v1 short header **before header protection is applied**. It assumes no extension changes these bits. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.
 
 ```{=html}
 <figure class="wire-format">
@@ -158,6 +158,8 @@ Here is the QUIC v1 short header **before header protection is applied**. Read t
 ```
 
 `PP` encodes the packet-number length minus one: `00` means one byte; `11` means four. The spin bit supports optional passive latency measurement. The key-phase bit helps identify packet-protection key updates. The short header has no version field or connection-ID-length field; decoding requires connection context. See [RFC 9000 §17.3.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-17.3.1).
+
+The optional [QUIC-bit extension, RFC 9287 §3](https://www.rfc-editor.org/rfc/rfc9287.html#section-3), allows peers to vary the otherwise fixed bit after the required negotiation. The layout above follows RFC 9000 without that extension.
 
 For example, first byte `0x41` is binary `01000001`: short header, fixed bit set, spin zero, reserved zero, key phase zero, and a two-byte packet number. This is the unprotected value. You cannot apply that reading directly to a protected packet capture.
 
@@ -267,7 +269,9 @@ sequenceDiagram
     S->>C: 1-RTT: application frames
 ```
 
-TLS messages travel in QUIC `CRYPTO` frames. QUIC performs packet protection rather than carrying TLS records as TCP-based TLS does. `Initial`, `Handshake`, and `1-RTT` identify packet protection levels; they are not three separate connections. The server's certificate authenticates the server, not the student's permission to watch a lecture. See [RFC 9001 §4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4).
+The handshake messages shown here travel in QUIC `CRYPTO` frames. QUIC performs packet protection rather than carrying TLS records as TCP-based TLS does. `Initial`, `Handshake`, and `1-RTT` identify packet protection levels; they are not three separate connections. The server's certificate authenticates the server, not the student's permission to watch a lecture. See [RFC 9001 §4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4).
+
+Initial packets use publicly derivable protection keys, so a network observer can recover their contents. Handshake and 1-RTT packets use secret keys established through TLS. Do not confuse Initial packet protection with confidentiality; see [RFC 9001 §5](https://www.rfc-editor.org/rfc/rfc9001.html#section-5).
 
 The drawing puts application traffic last for readability. Endpoints can begin sending 1-RTT data once the required keys are available; the client need not wait for `HANDSHAKE_DONE` before sending it. ACKs are omitted. Resumption can enable **0-RTT**, or early data, with replay considerations that applications must handle. The complete flows appear in [RFC 9000 §7.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-7.1).
 

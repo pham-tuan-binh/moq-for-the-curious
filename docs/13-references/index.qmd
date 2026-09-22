@@ -24,7 +24,7 @@ Start with the question you are trying to answer. These links all refer to draft
 | What happens when peers connect? | [Session establishment (§6.2)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2), [initialization (§6.3)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.3), and [stream usage (§6.4)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.4) |
 | What can a relay retain and forward? | [Caching relays (§7.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1) and [relay object handling (§7.7)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.7) |
 
-Read the explanatory sections first, then use [control messages (§9)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9) when you need field layouts. The words **MUST**, **SHOULD**, and **MAY** express requirement levels in specifications. In particular, a recommendation is not a guarantee that every implementation will behave identically.
+Read the explanatory sections first, then use [control messages (§9)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9) when you need field layouts. The words **MUST**, **SHOULD**, and **MAY** express requirement levels when a specification adopts [BCP 14](https://www.rfc-editor.org/rfc/rfc8174.html), which comprises RFC 2119 and RFC 8174. In particular, a recommendation is not a guarantee that every implementation will behave identically.
 
 ## The transport underneath
 
@@ -66,7 +66,7 @@ For experiments, use the [setup](https://doc.moq.dev/setup/) and [development](h
 
 ## Editorial approach and limitations
 
-The protocol baseline was reviewed on **September 16, 2026**; this editorial pass and the linked setup resources were checked on **September 22, 2026**. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.
+The protocol baseline was reviewed on **September 16, 2026**; the technical explanations and linked setup resources were checked on **September 22, 2026**. The guide emphasizes stable ideas and avoids presenting a moving wire format as permanent. Draft-sensitive explanations refer to draft-21; implementation-specific examples are labeled with the project name.
 
 This guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.
 

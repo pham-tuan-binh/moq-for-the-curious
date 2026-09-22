@@ -16,7 +16,7 @@ A fictional lecture runs through the examples. When a new term appears, we expla
 
 This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.
 
-The research date is **September 16, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
+Initial research was completed on **September 16, 2026**, with a technical fact-check on **September 22, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
 
 ## Maintenance and contributions
 

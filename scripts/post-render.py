@@ -5,6 +5,7 @@ import hashlib
 import os
 import re
 import shutil
+from urllib.parse import urlsplit
 from seo import metadata, write_discovery
 
 OUT = Path('dist')
@@ -68,6 +69,21 @@ for number, (source, label) in enumerate(chapters):
 <aside class="outline"><nav aria-label="On this page"><p>On this page</p>{page_contents}</nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>''')
+# Keep book navigation local; open web references without replacing the reader.
+for source, _ in chapters:
+    page = OUT/source.with_suffix('.html')
+    def external_link(match):
+        tag = match.group(0)
+        href = re.search(r'\bhref="([^"]+)"', tag)
+        if not href:
+            return tag
+        url = urlsplit(unescape(href[1]))
+        if url.scheme not in ('http', 'https') or url.hostname in ('moqforthecurious.com', 'www.moqforthecurious.com'):
+            return tag
+        tag = re.sub(r'\s+(target|rel)="[^"]*"', '', tag)
+        hint = '' if re.search(r'\btitle=', tag) else ' title="Opens in a new tab"'
+        return tag[:-1] + ' target="_blank" rel="noopener noreferrer"' + hint + '>'
+    page.write_text(re.sub(r'<a\b[^>]*>', external_link, page.read_text()))
 write_discovery(OUT, chapters)
 (OUT/'.nojekyll').touch()
 print(f'Built custom static reader: {len(chapters)} pages, relative links, local Mermaid.')

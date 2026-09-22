@@ -21,7 +21,7 @@
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
-<div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide">GitHub</a></div>
+<div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/" aria-current="page"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
 <main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 02</p><h1>QUIC and WebTransport</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
@@ -77,7 +77,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>IP delivery is <strong>best effort</strong>. Packets can be lost, duplicated, reordered, or delayed. A full queue in a router is one reason for loss. The path also has a <strong>maximum transmission unit</strong>, or MTU: a limit on packet size for a link. Sending one large application message does not make the network carry it as one arbitrarily large packet. See the <a href="https://www.rfc-editor.org/rfc/rfc8200.html#section-5">IPv6 specification</a> for packet-size constraints.</p>
+<p>IP delivery is <strong>best effort</strong>. Packets can be lost, duplicated, reordered, or delayed. A full queue in a router is one reason for loss. Each link has a <strong>maximum transmission unit</strong>, or MTU: its largest IP packet size. The <strong>path MTU</strong> is the smallest link MTU along the route. Sending one large application message does not make the network carry it as one arbitrarily large packet. See the <a href="https://www.rfc-editor.org/rfc/rfc8200.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">IPv6 specification</a> for packet-size constraints.</p>
 <section id="tcp-and-udp-make-different-promises" class="level3">
 <h3 class="anchored" data-anchor-id="tcp-and-udp-make-different-promises">TCP and UDP make different promises</h3>
 <p><strong>TCP</strong>, the Transmission Control Protocol, provides an ordered byte stream. It tracks bytes, acknowledges progress, and repairs loss. The application reads a continuous sequence rather than individual network packets. If the connection fails, reliable delivery does not make the missing bytes magically arrive.</p>
@@ -136,7 +136,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>The comparison concerns the transport service, not a speed ranking. A UDP application still needs responsible sending behavior. A TCP application can have low latency. QUIC offers a different way to organize delivery. The base specifications are <a href="https://www.rfc-editor.org/rfc/rfc9293.html">TCP, RFC 9293</a>, <a href="https://www.rfc-editor.org/rfc/rfc768.html">UDP, RFC 768</a>, and <a href="https://www.rfc-editor.org/rfc/rfc9000.html">QUIC, RFC 9000</a>.</p>
+<p>The comparison concerns the transport service, not a speed ranking. A UDP application still needs responsible sending behavior. A TCP application can have low latency. QUIC offers a different way to organize delivery. The base specifications are <a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">TCP, RFC 9293</a>, <a href="https://www.rfc-editor.org/rfc/rfc768.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">UDP, RFC 768</a>, and <a href="https://www.rfc-editor.org/rfc/rfc9000.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC, RFC 9000</a>.</p>
 </section>
 <section id="delay-rate-and-feedback" class="level3">
 <h3 class="anchored" data-anchor-id="delay-rate-and-feedback">Delay, rate, and feedback</h3>
@@ -169,7 +169,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>A slow reader and a congested network can both look like “sending stopped,” but they need different fixes. QUIC’s loss detection and congestion control are described in <a href="https://www.rfc-editor.org/rfc/rfc9002.html">RFC 9002</a>.</p>
+<p>A slow reader and a congested network can both look like “sending stopped,” but they need different fixes. QUIC’s loss detection and congestion control are described in <a href="https://www.rfc-editor.org/rfc/rfc9002.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002</a>.</p>
 </section>
 </section>
 <section id="why-one-ordered-stream-can-hurt" class="level2">
@@ -180,9 +180,9 @@
 <section id="independent-streams" class="level2">
 <h2 class="anchored" data-anchor-id="independent-streams">Independent streams</h2>
 <p>QUIC provides multiple reliable, ordered byte streams within one connection. Loss affecting one stream does not impose that stream’s delivery order on another. A stream still has its own ordering: later bytes in that same stream wait for missing earlier bytes.</p>
-<p>A byte stream has no built-in message boundaries. If the publisher writes two objects, the receiver cannot assume two reads will return those two objects. MOQT supplies framing so the receiver can find where each object starts and ends. <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.2">RFC 9000 §2.2</a> explains this distinction.</p>
+<p>A byte stream has no built-in message boundaries. If the publisher writes two objects, the receiver cannot assume two reads will return those two objects. MOQT supplies framing so the receiver can find where each object starts and ends. <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §2.2</a> explains this distinction.</p>
 <p>The independence is not unlimited. Streams still compete for connection bandwidth, and connection-level flow control can constrain them together. QUIC removes a particular delivery dependency; it does not give every stream a private network.</p>
-<p>QUIC applies flow-control limits to both individual streams and their combined data. A receiver that stops consuming one stream can therefore hold up other streams if the connection-wide limit is exhausted. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1">RFC 9000 §4.1</a> and <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7">RFC 9002 §7</a>.</p>
+<p>QUIC applies flow-control limits to both individual streams and their combined data. A receiver that stops consuming one stream can therefore hold up other streams if the connection-wide limit is exhausted. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §4.1</a> and <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
 <p>MoQ takes advantage of this distinction by putting independently useful content on different streams. The grouping decisions above the transport determine how useful that independence becomes.</p>
 </section>
 <section id="reading-a-quic-packet" class="level2">
@@ -239,8 +239,8 @@
 </tr>
 </tbody>
 </table></div>
-<p>This is a reading guide, not a complete wire-format table. Field encodings and permitted frame combinations are defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19">RFC 9000 §19</a>; <code>DATAGRAM</code> is defined separately in <a href="https://www.rfc-editor.org/rfc/rfc9221.html">RFC 9221</a>.</p>
-<p>Three numbers answer different questions: a <strong>packet number</strong> identifies a transmission within its packet-number space; a <strong>stream ID</strong> identifies a stream; a <strong>byte offset</strong> locates data within that stream. When lost stream data is sent again, it travels in a new packet, with a new packet number. It retains its position in the stream. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-13.3">RFC 9000 §13.3</a> for how QUIC retransmits information.</p>
+<p>This is a reading guide, not a complete wire-format table. Field encodings and permitted frame combinations are defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §19</a>; <code>DATAGRAM</code> is defined separately in <a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221</a>.</p>
+<p>Three numbers answer different questions: a <strong>packet number</strong> identifies a transmission within its packet-number space; a <strong>stream ID</strong> identifies a stream; a <strong>byte offset</strong> locates data within that stream. When lost stream data is sent again, it travels in a new packet, with a new packet number. It retains its position in the stream. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-13.3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §13.3</a> for how QUIC retransmits information.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -292,7 +292,7 @@
 </div>
 </div>
 <p>The header’s form depends on the packet type. A connection ID helps identify a connection; a stream ID appears inside a <code>STREAM</code> frame and identifies one stream within it. The frame’s data can hold only part of a MoQ object.</p>
-<p>For an established QUIC v1 connection, the short-header layout is more compact:</p>
+<p>For 1-RTT packets on a QUIC v1 connection, the short-header layout is more compact:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -329,11 +329,11 @@
 </tr>
 </tbody>
 </table></div>
-<p>Selected first-byte bits and the packet-number bytes have <strong>header protection</strong>. The payload has authenticated encryption. A packet capture therefore does not expose this logical frame view without the relevant keys. Long headers, used by Initial and Handshake packets, also carry a version and source connection ID. Read <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17">RFC 9000 §17</a> for the exact layouts and <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-5">RFC 9001 §5</a> for protection.</p>
+<p>Selected first-byte bits and the packet-number bytes have <strong>header protection</strong>. The payload has authenticated encryption. A packet capture therefore does not expose this logical frame view without the relevant keys. Long headers, used by Initial and Handshake packets, also carry a version and source connection ID. Read <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §17</a> for the exact layouts and <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §5</a> for protection.</p>
 </section>
 <section id="read-the-first-byte-bit-by-bit" class="level3">
 <h3 class="anchored" data-anchor-id="read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</h3>
-<p>Here is the QUIC v1 short header <strong>before header protection is applied</strong>. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.</p>
+<p>Here is the base QUIC v1 short header <strong>before header protection is applied</strong>. It assumes no extension changes these bits. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.</p>
 <figure class="wire-format figure">
 
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table" aria-label="QUIC version 1 short header bit layout">
@@ -388,7 +388,8 @@
 
 <figcaption>QUIC v1 short header. Header protection masks the reserved bits, key-phase bit, packet-number-length bits, and packet-number bytes.</figcaption>
 </figure>
-<p><code>PP</code> encodes the packet-number length minus one: <code>00</code> means one byte; <code>11</code> means four. The spin bit supports optional passive latency measurement. The key-phase bit helps identify packet-protection key updates. The short header has no version field or connection-ID-length field; decoding requires connection context. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17.3.1">RFC 9000 §17.3.1</a>.</p>
+<p><code>PP</code> encodes the packet-number length minus one: <code>00</code> means one byte; <code>11</code> means four. The spin bit supports optional passive latency measurement. The key-phase bit helps identify packet-protection key updates. The short header has no version field or connection-ID-length field; decoding requires connection context. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17.3.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §17.3.1</a>.</p>
+<p>The optional <a href="https://www.rfc-editor.org/rfc/rfc9287.html#section-3" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC-bit extension, RFC 9287 §3</a>, allows peers to vary the otherwise fixed bit after the required negotiation. The layout above follows RFC 9000 without that extension.</p>
 <p>For example, first byte <code>0x41</code> is binary <code>01000001</code>: short header, fixed bit set, spin zero, reserved zero, key phase zero, and a two-byte packet number. This is the unprotected value. You cannot apply that reading directly to a protected packet capture.</p>
 </section>
 <section id="how-variable-length-integers-work" class="level3">
@@ -430,7 +431,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>A one-byte value of 37 is <code>0x25</code>. The value 64 needs at least two bytes: <code>0x40 0x40</code>. Remove the leading <code>01</code> length prefix, then interpret the remaining 14 bits as the value. This encoding is defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-16">RFC 9000 §16</a>. Packet numbers use a different encoding; do not parse them as varints.</p>
+<p>A one-byte value of 37 is <code>0x25</code>. The value 64 needs at least two bytes: <code>0x40 0x40</code>. Remove the leading <code>01</code> length prefix, then interpret the remaining 14 bits as the value. This encoding is defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-16" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §16</a>. Packet numbers use a different encoding; do not parse them as varints.</p>
 </section>
 <section id="decode-one-stream-frame" class="level3">
 <h3 class="anchored" data-anchor-id="decode-one-stream-frame">Decode one STREAM frame</h3>
@@ -544,7 +545,7 @@
 
 <figcaption>Read left to right. Each cell in the hexadecimal row is one byte. The first four describe the frame; the last three carry its data. Values are shown after decryption.</figcaption>
 </figure>
-<p>Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: <code>abc</code> is just recognizable test data. Exact frame rules appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8">RFC 9000 §19.8</a>, with stream IDs in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1">§2.1</a>.</p>
+<p>Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: <code>abc</code> is just recognizable test data. Exact frame rules appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §19.8</a>, with stream IDs in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§2.1</a>.</p>
 </section>
 </section>
 <section id="what-a-lost-packet-holds-up" class="level2">
@@ -596,13 +597,13 @@
 <section id="where-datagrams-fit" class="level2">
 <h2 class="anchored" data-anchor-id="where-datagrams-fit">Where datagrams fit</h2>
 <p>QUIC’s DATAGRAM extension provides messages that are not retransmitted by QUIC when lost. They share the connection’s security and congestion control. They do not promise arrival or ordering, and their size is constrained by the path and negotiated limits.</p>
-<p>QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See <a href="https://www.rfc-editor.org/rfc/rfc9221.html#section-5">RFC 9221 §5</a>.</p>
+<p>QUIC does not split a DATAGRAM frame across packets. If an application’s message is too large, it must choose another mapping or define its own fragmentation and reassembly. That also means deciding what to do when one fragment is missing. See <a href="https://www.rfc-editor.org/rfc/rfc9221.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221 §5</a>.</p>
 <p>That can suit a small, replaceable sensor update. It is less convenient for a large video frame that cannot fit in a datagram. A protocol must define how content maps onto these tools; “uses UDP” alone says very little about reliability.</p>
 <p>A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.</p>
 </section>
 <section id="security-belongs-to-the-connection" class="level2">
 <h2 class="anchored" data-anchor-id="security-belongs-to-the-connection">Security belongs to the connection</h2>
-<p>Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4">RFC 9001 §4</a>.</p>
+<p>Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §4</a>.</p>
 <section id="the-handshake-message-by-message" class="level3">
 <h3 class="anchored" data-anchor-id="the-handshake-message-by-message">The handshake, message by message</h3>
 <p>A <strong>handshake</strong> establishes the shared state needed for protected communication. This example shows a fresh QUIC connection with server authentication, without Retry, resumption, or packet loss. Each arrow represents a flight of messages; it need not fit in one packet.</p>
@@ -631,8 +632,9 @@
 </div>
 </div>
 </div>
-<p>TLS messages travel in QUIC <code>CRYPTO</code> frames. QUIC performs packet protection rather than carrying TLS records as TCP-based TLS does. <code>Initial</code>, <code>Handshake</code>, and <code>1-RTT</code> identify packet protection levels; they are not three separate connections. The server’s certificate authenticates the server, not the student’s permission to watch a lecture. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4">RFC 9001 §4</a>.</p>
-<p>The drawing puts application traffic last for readability. Endpoints can begin sending 1-RTT data once the required keys are available; the client need not wait for <code>HANDSHAKE_DONE</code> before sending it. ACKs are omitted. Resumption can enable <strong>0-RTT</strong>, or early data, with replay considerations that applications must handle. The complete flows appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-7.1">RFC 9000 §7.1</a>.</p>
+<p>The handshake messages shown here travel in QUIC <code>CRYPTO</code> frames. QUIC performs packet protection rather than carrying TLS records as TCP-based TLS does. <code>Initial</code>, <code>Handshake</code>, and <code>1-RTT</code> identify packet protection levels; they are not three separate connections. The server’s certificate authenticates the server, not the student’s permission to watch a lecture. See <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §4</a>.</p>
+<p>Initial packets use publicly derivable protection keys, so a network observer can recover their contents. Handshake and 1-RTT packets use secret keys established through TLS. Do not confuse Initial packet protection with confidentiality; see <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001 §5</a>.</p>
+<p>The drawing puts application traffic last for readability. Endpoints can begin sending 1-RTT data once the required keys are available; the client need not wait for <code>HANDSHAKE_DONE</code> before sending it. ACKs are omitted. Resumption can enable <strong>0-RTT</strong>, or early data, with replay considerations that applications must handle. The complete flows appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-7.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §7.1</a>.</p>
 </section>
 </section>
 <section id="webtransport-is-the-browser-doorway" class="level2">
@@ -679,7 +681,7 @@
 </tr>
 </tbody>
 </table></div>
-<p><strong>HTTP/3</strong> is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See <a href="https://www.rfc-editor.org/rfc/rfc9114.html">RFC 9114</a> and the <a href="https://www.w3.org/TR/webtransport/">WebTransport API specification</a>.</p>
+<p><strong>HTTP/3</strong> is HTTP mapped onto QUIC. Using WebTransport over HTTP/3 does not mean making a new HTTP request for every media object. Once established, the WebTransport session exposes streams and datagrams for the application. See <a href="https://www.rfc-editor.org/rfc/rfc9114.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9114</a> and the <a href="https://www.w3.org/TR/webtransport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">WebTransport API specification</a>.</p>
 <p>WebTransport transports application bytes. It does not know that those bytes represent a subscription, an Opus packet, or a camera frame. A MoQ implementation still has to implement the protocol above it.</p>
 </section>
 <section id="a-fallback-changes-the-tradeoffs" class="level2">
@@ -691,10 +693,10 @@
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
 <ul>
-<li><a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2">QUIC: streams and stream cancellation</a></li>
-<li><a href="https://www.rfc-editor.org/rfc/rfc9221.html">QUIC datagrams: RFC 9221</a></li>
-<li><a href="https://www.w3.org/TR/webtransport/">W3C WebTransport</a></li>
-<li><a href="https://doc.moq.dev/concept/transport">moq.dev: transport choices</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC: streams and stream cancellation</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC datagrams: RFC 9221</a></li>
+<li><a href="https://www.w3.org/TR/webtransport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">W3C WebTransport</a></li>
+<li><a href="https://doc.moq.dev/concept/transport" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: transport choices</a></li>
 </ul>
 
 

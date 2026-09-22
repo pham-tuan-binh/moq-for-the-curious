@@ -30,7 +30,7 @@ The relay moves the 100-way copying work off the lecturer’s connection. It doe
 
 ## Caching helps, but has limits
 
-A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. Immutable object identities let different viewers reuse the same cached payload.
+A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. An object is identified by its full track name, group ID, and object ID within a scope. Its payload cannot change, allowing different viewers to reuse the same cached bytes. Some object properties can change under their own rules; immutability does not apply to every cached field.
 
 [MOQT permits caching](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7.1); it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.
 

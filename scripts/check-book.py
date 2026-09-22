@@ -11,10 +11,13 @@ class Page(HTMLParser):
         super().__init__()
         self.path, self.ids, self.links = path, set(), []
         self.main = 0
+        self.anchors = []
         self.feed(path.read_text())
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == "a" and attrs.get("href"):
+            self.anchors.append(attrs)
         if "id" in attrs:
             self.ids.add(attrs["id"])
         self.main += tag == "main"
@@ -26,6 +29,13 @@ class Page(HTMLParser):
 pages = {p.resolve(): Page(p) for p in ROOT.rglob("*.html")}
 errors, checked = [], 0
 for path, page in pages.items():
+    for anchor in page.anchors:
+        url = urlsplit(anchor["href"])
+        external = url.scheme in ("http", "https") and url.hostname not in ("moqforthecurious.com", "www.moqforthecurious.com")
+        if external and (anchor.get("target") != "_blank" or not {"noopener", "noreferrer"} <= set(anchor.get("rel", "").split())):
+            errors.append(f"{path}: external link lacks safe new-tab behavior: {anchor['href']}")
+        if not external and anchor.get("target") == "_blank":
+            errors.append(f"{path}: internal navigation unexpectedly opens a new tab: {anchor['href']}")
     if page.main != 1 or "quarto-document-content" not in page.ids:
         errors.append(f"{path}: missing or duplicate reading landmark")
     for link in page.links:

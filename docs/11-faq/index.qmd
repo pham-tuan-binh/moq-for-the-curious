@@ -48,7 +48,7 @@ Some native stacks add their own peer connectivity. Those are implementation cap
 
 ## Is moq-lite the same as MOQT?
 
-No. moq-lite uses a simpler model, and the moq.dev stack implements compatibility paths for specified MOQT versions. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.
+No. moq-lite uses a simpler model, and the moq.dev stack documents [compatibility paths for specified MOQT versions](https://doc.moq.dev/concept/standard). Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.
 
 ## Can I use this book as a specification?
 

@@ -26,7 +26,7 @@ Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
 **Group:** a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.
 
-**Subgroup:** an ordered subset of objects within one group. Subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
+**Subgroup:** a delivery grouping of objects within one group, sent in ascending object-ID order on its subgroup stream. Stream-based subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
 
 Read more in [Tracks, Groups, and Objects](../03-tracks-groups-and-objects/index.qmd).
 
@@ -104,12 +104,6 @@ Read more in [Media and the Browser](../07-media-and-the-browser/index.qmd).
 
 Read more in [Security and Access](../08-security-and-access/index.qmd).
 
-## Sources and further reading {.unnumbered #sources}
-
-- [MOQT draft-21: terminology](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3)
-- [moq.dev: concepts](https://doc.moq.dev/concept/)
-- [moq.dev: hang](https://doc.moq.dev/concept/hang)
-
 ## IP, TCP, UDP, and QUIC
 
 **IP:** the Internet Protocol, which addresses packets and supports forwarding between networks.
@@ -127,3 +121,9 @@ Read more in [Security and Access](../08-security-and-access/index.qmd).
 **RTT:** round-trip time, a measure of network delay to a peer and back.
 
 Read the [networking introduction and comparison tables](../02-quic-and-webtransport/index.qmd#a-short-introduction-to-tcpip).
+
+## Sources and further reading {.unnumbered #sources}
+
+- [MOQT draft-21: terminology](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3)
+- [moq.dev: concepts](https://doc.moq.dev/concept/)
+- [moq.dev: hang](https://doc.moq.dev/concept/hang)

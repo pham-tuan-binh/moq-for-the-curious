@@ -36,30 +36,41 @@ Although media motivates this design, an object's payload can also be applicatio
 
 ## How does MoQ compare with WebRTC?
 
-WebRTC also carries live audio, video, and application data. If you have used it before, the lecture may sound like a familiar application. The main difference to understand is how much of that application each technology supplies.
+WebRTC and MoQ can both carry a live conversation or a broadcast. They organize the work differently. WebRTC gives a browser an integrated media connection; MOQT gives applications a way to publish and request named content. Comparing them starts with what your application needs to build around that foundation.
 
-Suppose a student turns on a microphone to ask a question. In a browser, WebRTC provides `RTCPeerConnection` to set up a media exchange with another endpoint. The browser integrates encoding, media transport, and receiving media. The application supplies **signaling**, the channel over which the endpoints exchange setup information, and decides who belongs in the room. The [WebRTC API specification](https://www.w3.org/TR/webrtc/) describes this browser interface.
+### What the browser does for you
 
-With MoQ, the lecturer and student can each publish tracks and subscribe to one another. MOQT delivers their objects, while a media layer describes how to interpret them. That description includes the **codec**, the method used to compress and reconstruct the media, and **timestamps**, which place each piece on the media timeline. A player turns the received content into sound and pictures. A MoQ library can provide these pieces together, but they sit above the transport protocol. This division is part of the [MOQT design](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1).
+For a video call, the browser's WebRTC stack handles encoding, media transport, receiving, and decoding. The application uses `RTCPeerConnection`, supplies **signaling** to exchange setup information, and decides who joins the room. Capturing a microphone and attaching received media to a player still require application code. See the [WebRTC API](https://www.w3.org/TR/webrtc/).
+
+MOQT itself supplies no camera API, codec, or player. It delivers objects. A MoQ media library must describe those objects, encode and decode media, and arrange playback. The library can hide much of this work, but its capabilities are separate from what the transport specification guarantees. That separation lets a relay forward the same named content without understanding its codec. See the [MOQT object model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2).
+
+### How content reaches people
+
+WebRTC uses **ICE** to find a working path between endpoints. **STUN** helps discover reachable addresses; **TURN** supplies a relay path when needed. In a group call, a **selective forwarding unit**, or **SFU**, can receive each participant's media and forward selected streams to others. An SFU handles media distribution; a TURN server relays traffic along a connection path. These are different jobs. See [RFC 8835 §3.4](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4) and [RFC 7667 §3.7](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7).
+
+A browser MoQ client normally opens an outgoing WebTransport connection to a server. MoQ relays distribute requested tracks and can retain objects for later requests. For our lecture, that means a relay can forward the current audio while supplying a newly arrived viewer with earlier video needed to begin decoding. Caching is an explicit part of MOQT's [relay model](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-7); retaining enough useful content remains an implementation decision.
 
 ::: {.book-table-scroll role="region" aria-label="WebRTC and MoQ comparison" tabindex="0"}
 
-| Question | WebRTC | MoQ Transport |
+| Requirement | What WebRTC supplies | What to check in a MoQ system |
 | --- | --- | --- |
-| What does the application work with? | A connection set up to exchange media tracks and application messages. | Named tracks of objects that receivers request. |
-| How does it connect? | It checks possible network paths, including paths through a relay. | Browser applications usually connect to a server using WebTransport. |
-| How does a larger audience receive it? | A media server can selectively forward streams to participants. | Relays forward requested objects and can cache them for reuse. |
-| Who supplies media playback? | The browser's WebRTC media stack handles much of the pipeline. | A media library and the application supply the pipeline above MOQT. |
+| A browser voice or video call | An integrated browser media stack and connectivity procedure | Capture, codecs, playback, echo handling, and connectivity in the chosen library |
+| A large live audience | Media forwarding through servers such as SFUs | Relay fan-out, track selection, and actual capacity under load |
+| Joining from a recent starting point | Application or media-server behavior around the live stream | Retained objects, a usable decoding point, and a way to request them |
+| Direct connections across home networks | ICE, STUN, and TURN support | The implementation's connection model; MOQT does not define an ICE replacement |
+| A predictable deployment | Interoperability across the browsers and services you target | Matching MOQT revisions, media formats, browser APIs, and fallback behavior |
 
-: WebRTC and MoQ at a glance
+: Questions to ask when choosing an implementation
 
 :::
 
-WebRTC's connection procedure is called **ICE**. It tests possible paths between endpoints. **STUN** helps an endpoint learn how it is reachable, and **TURN** provides a server through which packets can be relayed. Together, these mechanisms help endpoints communicate across home routers and firewalls. A relay path may be selected because of network restrictions or application policy. These connectivity requirements are described in [RFC 8835, section 3.4](https://www.rfc-editor.org/rfc/rfc8835.html#section-3.4). Browser MoQ applications usually connect outward to a server through **WebTransport**, the browser interface we will explore in the next chapter.
+Neither protocol name tells you the final delay, operating cost, or audience limit. Those depend on the encoder, topology, buffering, available bandwidth, and software. QUIC's streams help organize delivery, but they do not eliminate congestion. WebRTC's integrated media stack does not restrict it to small calls. MoQ's distribution model does not restrict it to broadcasts.
 
-For a conference, WebRTC can use a **selective forwarding unit**, or **SFU**. This server receives media and forwards selected streams to participants, avoiding a separate direct connection between every pair of people. An SFU selects media; a TURN server relays packets along a connection path. A MoQ relay handles named objects and subscriptions, with optional caching. Understanding those jobs is more useful than dividing systems into “peer-to-peer” and “server-based.” The [RTP topology guide](https://www.rfc-editor.org/rfc/rfc7667.html#section-3.7) describes selective forwarding.
+### They can work together
 
-Both WebRTC and MoQ must adapt when the network cannot carry the available media. Their eventual delay depends on encoding, routing, buffering, and implementation choices. WebRTC brings many of the pieces for a browser conversation together. MoQ makes named-content distribution a central part of its design. Either can be used for conversations or large audiences; choosing between complete implementations requires testing the experience you want to provide.
+An existing WebRTC publisher can feed a gateway that publishes the content over MoQ. The gateway has to translate media packaging and session behavior; replacing a socket is not enough. Lorenzo Miniero's [Meetecho interoperability demo](https://www.meetecho.com/blog/moq-webrtc/) shows one such bridge. That 2024 article uses older drafts, so use it to understand the architecture rather than today's message formats.
+
+For a practical evaluation, start with one complete path: a speaker, a relay or media server, and a viewer on a constrained connection. Measure join time, conversational delay, stalls, and recovery. Then increase the audience. [Cloudflare's account of its MoQ work](https://blog.cloudflare.com/moq/) explains the distribution motivation from an operator's perspective; the [webrtcHacks use-case comparison](https://webrtchacks.com/webrtc-vs-moq-by-use-case/) offers another author's assessment of the tradeoffs. These are useful implementation perspectives, not performance guarantees from a standard.
 
 ## Why another protocol?
 

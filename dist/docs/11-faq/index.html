@@ -21,7 +21,7 @@
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
-<div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide">GitHub</a></div>
+<div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/" aria-current="page"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
 <main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 11</p><h1>Frequently Asked Questions</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#is-moq-a-finished-standard">Is MoQ a finished standard?</a><a class="toc-level-2" href="#does-moq-replace-webrtc">Does MoQ replace WebRTC?</a><a class="toc-level-2" href="#does-it-replace-hls-or-dash">Does it replace HLS or DASH?</a><a class="toc-level-2" href="#is-all-moq-traffic-unreliable">Why would I cancel a reliable stream?</a><a class="toc-level-2" href="#can-i-send-chat-or-game-state">Can I send chat or game state?</a><a class="toc-level-2" href="#is-moq-peer-to-peer">Is MoQ peer-to-peer?</a><a class="toc-level-2" href="#is-moq-lite-the-same-as-moqt">Is moq-lite the same as MOQT?</a><a class="toc-level-2" href="#can-i-use-this-book-as-a-specification">Can I use this book as a specification?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
@@ -34,7 +34,7 @@
 <p>Some questions cross chapter boundaries. Here we bring those pieces back together.</p>
 <section id="is-moq-a-finished-standard" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-a-finished-standard">Is MoQ a finished standard?</h2>
-<p>The baseline for this edition is <strong>draft-ietf-moq-transport-21</strong>, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/">IETF document status</a> before implementing them.</p>
+<p>The baseline for this edition is <strong>draft-ietf-moq-transport-21</strong>, dated September 8, 2026. At the research date, it is an active Internet-Draft rather than a published RFC. Treat wire details as versioned and check the current <a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">IETF document status</a> before implementing them.</p>
 <p>This book is a dated explanation, not an automatically synchronized mirror of the specification. Links to the pinned draft preserve what the edition describes. Links to project documentation can change after publication.</p>
 </section>
 <section id="does-moq-replace-webrtc" class="level2">
@@ -45,8 +45,8 @@
 </section>
 <section id="does-it-replace-hls-or-dash" class="level2">
 <h2 class="anchored" data-anchor-id="does-it-replace-hls-or-dash">Does it replace HLS or DASH?</h2>
-<p><strong>HLS</strong> (HTTP Live Streaming) and <strong>DASH</strong> (Dynamic Adaptive Streaming over HTTP) describe ways for players to obtain media in pieces over HTTP, the protocol used for web requests. A description of the available media tells the player which pieces to request. This fits established web servers and caching infrastructure. The <a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf">DASH Industry Forum’s architecture overview</a> describes DASH’s presentation description and segment model.</p>
-<p>MoQ instead lets a receiver subscribe to a named track and receive objects as they become available. Both approaches need media formats, players, and a policy for adapting to the network. Neither the use of HTTP nor subscription by itself fixes the final playback delay. HLS’s playlist-and-segment model is described in <a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2">RFC 8216, section 2</a>; MoQ subscriptions are described in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1">draft-21, section 3.1</a>.</p>
+<p><strong>HLS</strong> (HTTP Live Streaming) and <strong>DASH</strong> (Dynamic Adaptive Streaming over HTTP) describe ways for players to obtain media in pieces over HTTP, the protocol used for web requests. A description of the available media tells the player which pieces to request. This fits established web servers and caching infrastructure. The <a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">DASH Industry Forum’s architecture overview</a> describes DASH’s presentation description and segment model.</p>
+<p>MoQ instead lets a receiver subscribe to a named track and receive objects as they become available. Both approaches need media formats, players, and a policy for adapting to the network. Neither the use of HTTP nor subscription by itself fixes the final playback delay. HLS’s playlist-and-segment model is described in <a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 8216, section 2</a>; MoQ subscriptions are described in <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">draft-21, section 3.1</a>.</p>
 <p>A service can use more than one delivery path. The moq.dev project includes gateways for established formats and protocols. A gateway is a concrete integration to test, not evidence that every arbitrary MoQ publication is playable by an HLS player.</p>
 </section>
 <section id="is-all-moq-traffic-unreliable" class="level2">
@@ -67,7 +67,7 @@
 </section>
 <section id="is-moq-lite-the-same-as-moqt" class="level2">
 <h2 class="anchored" data-anchor-id="is-moq-lite-the-same-as-moqt">Is moq-lite the same as MOQT?</h2>
-<p>No.&nbsp;moq-lite uses a simpler model, and the moq.dev stack implements compatibility paths for specified MOQT versions. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.</p>
+<p>No.&nbsp;moq-lite uses a simpler model, and the moq.dev stack documents <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">compatibility paths for specified MOQT versions</a>. Compatibility depends on the negotiated revision, supported features, and media format. Two products carrying “MoQ” in their name are not an interoperability test.</p>
 </section>
 <section id="can-i-use-this-book-as-a-specification" class="level2">
 <h2 class="anchored" data-anchor-id="can-i-use-this-book-as-a-specification">Can I use this book as a specification?</h2>
@@ -76,12 +76,12 @@
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
 <ul>
-<li><a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/">MOQT: current document status</a></li>
-<li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21">MOQT draft-21</a></li>
-<li><a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2">RFC 8216: HTTP Live Streaming</a></li>
-<li><a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf">DASH-IF interoperability guidelines: architecture</a></li>
-<li><a href="https://doc.moq.dev/">moq.dev: implementation and integrations</a></li>
-<li><a href="https://doc.moq.dev/concept/moq-lite">moq-lite: compatibility boundaries</a></li>
+<li><a href="https://datatracker.ietf.org/doc/draft-ietf-moq-transport/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT: current document status</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT draft-21</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8216.html#section-2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 8216: HTTP Live Streaming</a></li>
+<li><a href="https://dashif.org/docs/IOP-Guidelines/DASH-IF-IOP-Part1-v5.0.0.pdf" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">DASH-IF interoperability guidelines: architecture</a></li>
+<li><a href="https://doc.moq.dev/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: implementation and integrations</a></li>
+<li><a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq-lite: compatibility boundaries</a></li>
 </ul>
 
 

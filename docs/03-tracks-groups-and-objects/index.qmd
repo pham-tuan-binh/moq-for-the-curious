@@ -72,7 +72,7 @@ This property is called **immutability**. Once published, an object’s payload 
 
 We have described what the content is. We also need to decide which objects should travel together.
 
-For subscription delivery, MOQT can divide a group into **subgroups**, each carried on a subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams.
+For subscription delivery, MOQT can divide a group into **subgroups**, normally carrying each on one subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams. A subgroup can use another stream if an earlier stream was reset prematurely or upstream conditions forced objects out of order; different subgroups must not share a subscription stream.
 
 For example, a layered video codec might produce a base layer that gives a usable picture and an enhancement layer that adds detail. Putting them in separate subgroups lets a scheduler favor the base layer when capacity is scarce. The enhancement still depends on the base; a separate stream does not remove that media dependency.
 

@@ -59,7 +59,7 @@ The relay can still route encrypted payloads using visible metadata. Names, size
 
 The relay may retain objects so that another student can join quickly. This works because an object identity refers to the same payload wherever it is served within the service's scope. If an attacker could publish different bytes under the lecturer's identity, those bytes might reach several students through the cache.
 
-Publication authorization must therefore establish ownership of the relevant names. The service also needs to handle legitimate restarts: a lecturer who reconnects must not reuse old object identities for new payloads. A fresh publication namespace or a continuing non-conflicting sequence prevents old cached objects from colliding with new ones.
+Publication authorization must therefore establish ownership of the relevant names, as required by [draft-21 §15.3.3](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.3). The service also needs to handle legitimate restarts: a lecturer who reconnects must not reuse old object identities for new payloads. A fresh publication namespace or a continuing non-conflicting sequence prevents old cached objects from colliding with new ones.
 
 ## Bounding the work a client can cause
 
