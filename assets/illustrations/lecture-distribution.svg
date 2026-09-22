@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" role="img" aria-labelledby="title desc">
+<title id="title">One publication, independently selected tracks</title>
+<desc id="desc">A publisher sends audio and video to a relay. The relay forwards both tracks to one viewer and only audio to another. Blue represents audio and purple represents video. Requests and acknowledgments are omitted.</desc>
+<defs><marker id="blue-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#84b2ff"/></marker><marker id="purple-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#c1a1ff"/></marker></defs>
+<rect width="960" height="440" fill="#343a40"/>
+<g font-family="Arial,Helvetica,sans-serif" fill="#e9ecef">
+<text x="36" y="40" font-size="15" letter-spacing="1.5">ONE PUBLICATION · TWO VIEWING CHOICES</text>
+<g fill="none" stroke-width="2">
+<path d="M238 200H385" stroke="#84b2ff" marker-end="url(#blue-arrow)"/>
+<path d="M238 230H385" stroke="#c1a1ff" marker-end="url(#purple-arrow)"/>
+<path d="M565 200H622V125H714" stroke="#84b2ff" marker-end="url(#blue-arrow)"/>
+<path d="M565 230H650V155H714" stroke="#c1a1ff" marker-end="url(#purple-arrow)"/>
+<path d="M565 200H594V308H714" stroke="#84b2ff" marker-end="url(#blue-arrow)"/>
+</g>
+<g fill="#3c434a" stroke="#79828a"><rect x="36" y="158" width="202" height="118" rx="2"/><rect x="386" y="158" width="178" height="118" rx="2"/><rect x="716" y="88" width="208" height="104" rx="2"/><rect x="716" y="265" width="208" height="104" rx="2"/></g>
+<g font-size="23"><text x="60" y="194">Publisher</text><text x="410" y="194">Relay</text><text x="740" y="123">Viewer A</text><text x="740" y="300">Viewer B</text></g>
+<g font-size="16" fill="#c4cbd2"><text x="60" y="224">Lecture</text><text x="60" y="248">Audio + video</text><text x="410" y="224">Receive once</text><text x="410" y="248">Forward by track</text><text x="740" y="154">Watching + listening</text><text x="740" y="331">Listening only</text></g>
+<g fill="#84b2ff"><rect x="269" y="194" width="13" height="12"/><rect x="306" y="194" width="13" height="12"/><rect x="672" y="119" width="13" height="12"/><rect x="672" y="302" width="13" height="12"/></g>
+<g fill="#c1a1ff"><rect x="287" y="224" width="13" height="12"/><rect x="324" y="224" width="13" height="12"/><rect x="672" y="149" width="13" height="12"/></g>
+<path d="M36 395H924" stroke="#626b74"/>
+<g font-size="15"><rect x="36" y="413" width="12" height="12" fill="#84b2ff"/><text x="58" y="424">Audio track</text><rect x="186" y="413" width="12" height="12" fill="#c1a1ff"/><text x="208" y="424">Video track</text><text x="500" y="424" fill="#bdc2c7">Media delivery shown; reverse traffic omitted.</text></g>
+</g></svg>

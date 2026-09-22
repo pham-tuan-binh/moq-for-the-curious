@@ -33,8 +33,8 @@
 <p>Imagine joining a live lecture from home. You hear the lecturer explain a new slide while the screen still shows the previous one. All the media may eventually arrive, yet the conversation is difficult to follow.</p>
 <p>A live media system has to do more than deliver a file correctly. It has to keep the different parts of an experience close enough together, decide what to do when a connection slows down, and serve people who join at different times. Media over QUIC, or <strong>MoQ</strong>, is an approach to those problems. Throughout this book, we will use the lecture to understand how it works.</p>
 <figure class="editorial-illustration figure">
-<img src="../../assets/illustrations/lecture-distribution.png" width="1536" height="1024" loading="lazy" decoding="async" alt="A lecturer sends one publication to a relay, which distributes it to a laptop viewer, a phone listener, and a classroom screen." class="figure-img">
-<figcaption>One lecture, several viewing experiences. The relay distributes the publication; each viewer chooses the tracks it needs. This illustration shows media flowing outward, omitting requests and transport acknowledgments.</figcaption>
+<img src="../../assets/illustrations/lecture-distribution.svg" width="960" height="440" loading="lazy" decoding="async" alt="A publisher sends audio and video to a relay. Viewer A receives both tracks; viewer B receives only audio." class="figure-img">
+<figcaption>The relay receives the publication once and forwards the tracks each viewer requests. Blue is audio; purple is video. Requests and transport acknowledgments are omitted.</figcaption>
 </figure>
 <section id="what-is-moq" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
