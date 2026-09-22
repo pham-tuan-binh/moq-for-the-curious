@@ -22,163 +22,69 @@
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
-<nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/" aria-current="page"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 06</p><h1>Latency and Congestion</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#units-before-arithmetic">Which rates and delays are we measuring?</a><a class="toc-level-2" href="#where-the-time-goes">Where does playback delay come from?</a><a class="toc-level-2" href="#how-a-queue-grows">Why does the queue keep growing?</a><a class="toc-level-3" href="#congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">How do priorities choose what to send?</a><a class="toc-level-2" href="#abandoning-old-content-safely">When should delivery stop?</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-3" href="#is-moq-lites-maximum-age-the-same-timer">Is moq-lite’s maximum age the same timer?</a><a class="toc-level-2" href="#returning-to-live-playback">How does the player return to live?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/" aria-current="page"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><div class="part">In practice</div><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 06</p><h1>Latency and Congestion</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#where-the-time-goes">Latency</a><a class="toc-level-3" href="#jitter-and-buffering">Jitter and buffering</a><a class="toc-level-2" href="#units-before-arithmetic">Bandwidth</a><a class="toc-level-2" href="#how-a-queue-grows">Congestion</a><a class="toc-level-3" href="#datagrams-can-wait-too">Datagrams can wait too</a><a class="toc-level-3" href="#flow-control">Flow control</a><a class="toc-level-2" href="#media-adaptation">Media adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">Priorities</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-3" href="#maximum-age-in-moq-lite">Maximum age in moq-lite</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p><strong>Playback latency</strong> is the time between capturing media and presenting it to a viewer. Some of that time is spent processing and moving data; some is spent waiting in queues. A connection can keep delivering objects while the viewer falls seconds behind.</p>
-<p>We’ll work out where the delay comes from, then follow a queue as it grows. That leads to the choices a sender can make: send less, favor some content, or stop sending old content. Finally, we’ll look at how the player catches up. The numbers are made up to keep the examples easy to calculate.</p>
-<section id="units-before-arithmetic" class="level2">
-<h2 class="anchored" data-anchor-id="units-before-arithmetic">Which rates and delays are we measuring?</h2>
-<p>A <strong>bit</strong> is a binary digit; a <strong>byte</strong> contains eight bits. Network rates commonly use bits per second, while file sizes commonly use bytes. Here, the prefixes are decimal: one megabit is one million bits.</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Measure</th>
-<th>Meaning</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Bitrate, in Mb/s</td>
-<td>Bits produced or carried each second</td>
-<td>4 Mb/s of encoded media</td>
-</tr>
-<tr class="even">
-<td>Byte rate, in MB/s</td>
-<td>Bytes produced or carried each second</td>
-<td>4 Mb/s = 0.5 MB/s, before transport overhead</td>
-</tr>
-<tr class="odd">
-<td>Available capacity</td>
-<td>The rate a path can currently sustain for this traffic</td>
-<td>A 2 Mb/s path cannot keep up with a 4 Mb/s source</td>
-</tr>
-<tr class="even">
-<td>Throughput</td>
-<td>The transfer rate actually achieved</td>
-<td>Measure delivered bytes over a stated interval</td>
-</tr>
-<tr class="odd">
-<td>RTT, in milliseconds</td>
-<td>Network round-trip time</td>
-<td>A 40 ms RTT is not a 40 ms playback delay</td>
-</tr>
-<tr class="even">
-<td>Playback latency</td>
-<td>Delay from capture to presentation</td>
-<td>Includes processing and buffering as well as transit</td>
-</tr>
-</tbody>
-</table></div>
-<p>A connection might carry plenty of video each second while taking a long time to deliver any one frame. That’s why we measure both capacity and delay. When comparing network capacity with media bitrate, leave room for packet headers and other transport overhead too.</p>
-</section>
+<p>A video can play smoothly and still be seconds behind the person speaking. For someone watching a lecture, that delay might be acceptable. For someone asking the lecturer a question, it makes the conversation difficult.</p>
+<p>Keeping playback close to live takes more than a fast connection. The encoder has to produce media at a rate the network can carry, and the player has to decide how long to wait for missing or delayed content. MoQ gives the sender ways to choose which content to deliver and when to give up on it.</p>
 <section id="where-the-time-goes" class="level2">
-<h2 class="anchored" data-anchor-id="where-the-time-goes">Where does playback delay come from?</h2>
-<p>Capture-to-display latency includes capture, encoding, network transit, buffering, decoding, and presentation. A relay or operating system can add another queue along the way. Measuring only the network leaves much of the path unexplained.</p>
-<p>Suppose one frame spends its time like this:</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Stage</th>
-<th style="text-align: right;">Time</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Capture</td>
-<td style="text-align: right;">20 ms</td>
-</tr>
-<tr class="even">
-<td>Encode</td>
-<td style="text-align: right;">35 ms</td>
-</tr>
-<tr class="odd">
-<td>Network</td>
-<td style="text-align: right;">45 ms</td>
-</tr>
-<tr class="even">
-<td>Playback buffer</td>
-<td style="text-align: right;">80 ms</td>
-</tr>
-<tr class="odd">
-<td>Decode and display</td>
-<td style="text-align: right;">20 ms</td>
-</tr>
-<tr class="even">
-<td>Total</td>
-<td style="text-align: right;">200 ms</td>
-</tr>
-</tbody>
-</table></div>
-<p>We could save five milliseconds on the network and bring the total down to 195 ms. The 80 ms playback buffer looks like a bigger opportunity. But if we shrink it, frames that arrive a little late are more likely to miss their playback time. That’s the tradeoff we’re making.</p>
-<p>For a student just listening, a slightly longer wait might be fine if it prevents interruptions. For a student asking a question, that same wait makes the conversation awkward. They may prefer a few skipped pictures so they can keep talking.</p>
+<h2 class="anchored" data-anchor-id="where-the-time-goes">Latency</h2>
+<p><strong>Playback latency</strong> is the time between capturing media and presenting it to the viewer. Every stage adds to it: capture, encoding, transmission, buffering, decoding, and display. Data can also wait in queues at the publisher, relay, or receiver.</p>
+<p>Network delay is only part of this total. A frame that crosses the network quickly can still spend a long time waiting in the player. Likewise, removing a relay hop will do little for a delay caused mainly by encoding or buffering.</p>
+<p><strong>Round-trip time</strong>, or RTT, measures how long it takes to send data and receive a response. QUIC uses acknowledgment timing to estimate it. A short RTT helps the sender recover from loss sooner, but it doesn’t tell us how far playback is behind capture. See <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §5</a>.</p>
+<section id="jitter-and-buffering" class="level3">
+<h3 class="anchored" data-anchor-id="jitter-and-buffering">Jitter and buffering</h3>
+<p>Frames don’t always arrive at evenly spaced intervals. Some take longer than others, and several may arrive together after a delay. This variation in arrival timing is <strong>jitter</strong>.</p>
+<p>The player buffers media so it can present frames at their intended times despite uneven arrivals. More buffered media gives a late frame more time to arrive, but also makes the viewer wait longer. With a smaller buffer, playback stays closer to live but is more likely to run out of media.</p>
+<p>There’s no single buffer size that suits every application. A lecture broadcast can tolerate more delay than a conversation with the lecturer. The player has to choose how much delay is acceptable and what to do when a frame misses its playback time.</p>
+</section>
+</section>
+<section id="units-before-arithmetic" class="level2">
+<h2 class="anchored" data-anchor-id="units-before-arithmetic">Bandwidth</h2>
+<p>The network must carry media as quickly as the publisher produces it. We describe the media’s <strong>bitrate</strong> in bits per second. For example, 4 Mb/s means four million bits each second, or half a megabyte before packet headers and other overhead.</p>
+<p>The capacity available to a connection changes as it shares links with other traffic. A video that fits comfortably at the start of a session may become too large when another device starts a download or the viewer moves to a weaker wireless connection.</p>
+<p>Average bitrate also hides bursts. A large keyframe takes more time to send than a small frame, even when the average fits within the available capacity. A queue can absorb a short burst. It cannot absorb a sustained excess without growing.</p>
 </section>
 <section id="how-a-queue-grows" class="level2">
-<h2 class="anchored" data-anchor-id="how-a-queue-grows">Why does the queue keep growing?</h2>
-<p>Suppose the publisher produces four megabits each second while Alice’s path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.</p>
-<p>As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, the incoming rate must fall below the outgoing rate, or the system must discard queued data. Dropping old data once will not solve a continuing rate mismatch: the queue will fill again.</p>
-<p><strong>Congestion control</strong> limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of <strong>media adaptation</strong>. See <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
-<p>One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink.</p>
-<p>For example, lowering production to 1 Mb/s on the same 2 Mb/s path leaves 1 Mb/s to drain the ten-megabit backlog. Clearing it takes ten seconds, assuming constant rates and no overhead. Lowering production only to 2 Mb/s stops the queue growing but leaves the backlog in place. If draining it would take too long, the system can also skip old content to get Alice back near live.</p>
-<section id="congestion-control-flow-control-and-adaptation" class="level3">
-<h3 class="anchored" data-anchor-id="congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</h3>
-<p>The transport and application each have a part to play:</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Mechanism</th>
-<th>Question it answers</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>QUIC congestion control</td>
-<td>How much traffic should the sender put on the path now?</td>
-<td>Packet loss causes the sender to reduce its sending rate</td>
-</tr>
-<tr class="even">
-<td>QUIC flow control</td>
-<td>How much stream data is the receiver willing to accept?</td>
-<td>The receiver stops granting more credit while its buffers are full</td>
-</tr>
-<tr class="odd">
-<td>Media adaptation</td>
-<td>How much media should the application produce or request?</td>
-<td>The player switches from a 4 Mb/s rendition to a 1 Mb/s rendition</td>
-</tr>
-</tbody>
-</table></div>
-<p>Flow control protects the receiver with limits on individual streams and the connection as a whole. It does not measure whether a frame is still worth displaying. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §4</a>. A player can therefore receive data reliably and within its allowed limits while still falling behind the lecture.</p>
+<h2 class="anchored" data-anchor-id="how-a-queue-grows">Congestion</h2>
+<p>When more traffic reaches a network link than it can forward, packets wait in a queue. As the queue grows, packets take longer to arrive. If the queue fills, packets may be dropped.</p>
+<p><strong>Congestion control</strong> adjusts the transport’s sending behavior in response to network feedback. QUIC uses acknowledgments to track delivery and detect loss; a congestion controller limits how much data can be in flight. The controller described in <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a> reduces its congestion window when it detects loss or explicit congestion signals. QUIC implementations can use other controllers.</p>
+<p>Slowing transmission helps the network, but the publisher may keep producing media at the same rate. That moves the waiting data into a queue at the sender. Unless the application also changes what it sends, playback can keep falling behind.</p>
+<section id="datagrams-can-wait-too" class="level3">
+<h3 class="anchored" data-anchor-id="datagrams-can-wait-too">Datagrams can wait too</h3>
+<p>Choosing datagrams doesn’t remove network queues. A router can hold a packet for a long time before forwarding it, even if nobody will retransmit it after loss. Excessive queueing like this is called <strong>bufferbloat</strong>. The viewer can receive most of the media and still be far behind.</p>
+<p>QUIC datagrams also share the connection’s congestion controller. When it prevents transmission, the sender must wait or drop the datagram. Skipping retransmission changes how loss is handled; it doesn’t guarantee prompt delivery. See <a href="https://www.rfc-editor.org/rfc/rfc9221.html#section-5.4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221 §5.4</a>.</p>
+<p>The moq.dev article <a href="https://moq.dev/blog/never-use-datagrams/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Never* use Datagrams</a> explains why timely delivery takes more than allowing packet loss. It argues for using independent streams, prioritizing useful content, and cancelling work that has become too old. Those choices still need congestion control to keep queues from growing.</p>
 </section>
+<section id="flow-control" class="level3">
+<h3 class="anchored" data-anchor-id="flow-control">Flow control</h3>
+<p>A receiver can also be too slow to consume incoming data. QUIC’s <strong>flow control</strong> lets it limit how much stream data the sender may send, both per stream and across the connection. This protects the receiver’s buffers. It is separate from congestion control, which responds to conditions on the network path. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-4" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000 §4</a>.</p>
+<p>Neither mechanism knows whether the viewer still wants an old video frame. That decision belongs to the media application.</p>
+</section>
+</section>
+<section id="media-adaptation" class="level2">
+<h2 class="anchored" data-anchor-id="media-adaptation">Media adaptation</h2>
+<p>To keep up with a slower connection, the application must reduce the amount of media it sends. The publisher can lower its encoding bitrate, or the viewer can request a lower-bitrate rendition. This may mean a smaller picture, fewer frames, or more compression.</p>
+<p>Suppose a publisher produces 4 Mb/s while a viewer’s connection carries only 2 Mb/s. Ignoring overhead, each second adds 2 Mb to the sender’s queue. After five seconds, 10 Mb are waiting.</p>
+<p>Switching to a 2 Mb/s rendition stops the queue from growing, but the old data is still there. Switching to 1 Mb/s leaves another 1 Mb/s available to clear the backlog, which would take ten seconds. These rates are simplified, but the consequence matters: reducing bitrate doesn’t immediately remove accumulated delay.</p>
+<p>If that wait is too long, the sender can abandon old content and deliver a newer decoding starting point. It still needs to reduce the bitrate enough to prevent the queue from filling again.</p>
 </section>
 <section id="choosing-which-content-to-send" class="level2">
-<h2 class="anchored" data-anchor-id="choosing-which-content-to-send">How do priorities choose what to send?</h2>
+<h2 class="anchored" data-anchor-id="choosing-which-content-to-send">Priorities</h2>
 <p>Suppose Alice’s connection can no longer keep up with both audio and video. Sending audio first may let her keep following the lecture while the picture struggles. The <strong>scheduler</strong> chooses which pending data to send, so it needs to know that audio matters more here.</p>
 <p>MOQT expresses these choices through priorities and group ordering. In draft-21, smaller priority numbers mean more urgent work. Its recommended scheduler checks subscriber priority first, then publisher priority. When priorities are equal within a subscription, group ordering helps decide which group goes first. Implementations can use other scheduling algorithms. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.1</a> for the full recommendation.</p>
 <p>If we send audio first and it uses all the available capacity, video still has to wait. Priority helps us choose who waits; a timeout lets us decide when waiting has gone on too long. When using a library, check its priority conventions, since moq-lite and MOQT use different rules.</p>
 </section>
 <section id="abandoning-old-content-safely" class="level2">
-<h2 class="anchored" data-anchor-id="abandoning-old-content-safely">When should delivery stop?</h2>
+<h2 class="anchored" data-anchor-id="abandoning-old-content-safely">Abandoning old content</h2>
 <p>Suppose video group 41 remains incomplete while group 42 provides a fresh decoding starting point. Finishing group 41 would preserve older pictures, but sending group 42 may bring Alice closer to the lecturer. Independent groups make that choice possible without requiring every preceding picture.</p>
 <p>The sender still has to respect the stream’s structure. A reliable byte stream cannot deliver later bytes past a missing section. To abandon a subgroup’s remaining stream data, MOQT resets that stream. A receiver must then use the media format’s dependencies to decide where decoding can resume.</p>
-<p>Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. We’ll look at each separately, using a relay’s clock and a 100 ms limit. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.2</a>.</p>
+<p>Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. The examples below use a relay’s clock and a 100 ms limit. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">§5.2</a>.</p>
 <section id="waiting-to-enter-the-transport" class="level3">
 <h3 class="anchored" data-anchor-id="waiting-to-enter-the-transport">Waiting to enter the transport</h3>
 <p>The <strong>object delivery timeout</strong> measures age from when the last byte of an object’s header arrives from upstream. At the original publisher, it starts when the application supplies that header. Before handing the object to the underlying transport, the implementation checks its age.</p>
@@ -227,14 +133,14 @@
 <p>The transport must reach what the specification calls “all data committed” before the timer expires: its completion state for delivering the data, beyond merely accepting bytes into a send buffer. This concerns transport delivery, not whether the player has decoded or displayed the media. Otherwise, the stream is reset. Unlike the object age check, this timer can expire after the sender has handed all the data to the transport.</p>
 <p>For datagrams, the subgroup timeout instead uses the same age check as the object timeout; if both are nonzero, the smaller value applies. Zero disables the corresponding timeout. These rules describe a single hop’s delivery decisions. They do not create a capture-to-display deadline across the whole relay network.</p>
 </section>
-<section id="is-moq-lites-maximum-age-the-same-timer" class="level3">
-<h3 class="anchored" data-anchor-id="is-moq-lites-maximum-age-the-same-timer">Is moq-lite’s maximum age the same timer?</h3>
-<p>No.&nbsp;The moq.dev <a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq-lite guide</a> describes a maximum age relative to the media timeline. Older groups can become unwanted as newer media appears. A network stall by itself does not advance that timeline, and sending a backlog in a burst does not make its media new.</p>
+<section id="maximum-age-in-moq-lite" class="level3">
+<h3 class="anchored" data-anchor-id="maximum-age-in-moq-lite">Maximum age in moq-lite</h3>
+<p>The moq.dev <a href="https://doc.moq.dev/concept/moq-lite" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq-lite guide</a> describes a maximum age relative to the media timeline. Older groups can become unwanted as newer media appears. A network stall by itself does not advance that timeline, and sending a backlog in a burst does not make its media new.</p>
 <p>Both publisher and subscriber apply the limit. This matters when viewers share upstream delivery: content still useful to a patient viewer may already be too old for someone speaking in the call. Keep this implementation setting separate from draft-21’s local delivery timers and from a player’s capture-to-display delay.</p>
 </section>
 </section>
 <section id="returning-to-live-playback" class="level2">
-<h2 class="anchored" data-anchor-id="returning-to-live-playback">How does the player return to live?</h2>
+<h2 class="anchored" data-anchor-id="returning-to-live-playback">Returning to live playback</h2>
 <p>After the network recovers, Alice may still be watching frames that reached her earlier. A fresh transport queue does not empty the player’s playback queue. The player needs its own policy for skipping stale decoded frames or moving its presentation clock forward, while respecting audio synchronization and decoding dependencies.</p>
 <p>Record when fresh objects arrive and when their content is displayed. If arrival recovers but display stays behind, inspect the player’s queue.</p>
 <p>Try briefly reducing available bandwidth, then restoring it. Watch whether playback returns near live, stays behind, or repeatedly changes rendition. Record interruptions as well as average delay. A large keyframe can briefly exceed the path’s capacity even when the average bitrate fits, so the sequence of events matters.</p>
@@ -246,12 +152,13 @@
 <li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT draft-21: priorities and delivery timeouts</a></li>
 <li><a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-14" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MOQT draft-21: transport considerations</a></li>
 <li><a href="https://www.rfc-editor.org/rfc/rfc9002.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC loss detection and congestion control: RFC 9002</a></li>
+<li><a href="https://moq.dev/blog/never-use-datagrams/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: Never* use Datagrams</a></li>
 </ul>
 
 
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/05-relays-and-distribution/"><small>Previous chapter</small><span>Relays and Distribution</span></a><a href="../../docs/07-media-and-the-browser/"><small>Next chapter</small><span>Media and the Browser</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#units-before-arithmetic">Which rates and delays are we measuring?</a><a class="toc-level-2" href="#where-the-time-goes">Where does playback delay come from?</a><a class="toc-level-2" href="#how-a-queue-grows">Why does the queue keep growing?</a><a class="toc-level-3" href="#congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">How do priorities choose what to send?</a><a class="toc-level-2" href="#abandoning-old-content-safely">When should delivery stop?</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-3" href="#is-moq-lites-maximum-age-the-same-timer">Is moq-lite’s maximum age the same timer?</a><a class="toc-level-2" href="#returning-to-live-playback">How does the player return to live?</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#where-the-time-goes">Latency</a><a class="toc-level-3" href="#jitter-and-buffering">Jitter and buffering</a><a class="toc-level-2" href="#units-before-arithmetic">Bandwidth</a><a class="toc-level-2" href="#how-a-queue-grows">Congestion</a><a class="toc-level-3" href="#datagrams-can-wait-too">Datagrams can wait too</a><a class="toc-level-3" href="#flow-control">Flow control</a><a class="toc-level-2" href="#media-adaptation">Media adaptation</a><a class="toc-level-2" href="#choosing-which-content-to-send">Priorities</a><a class="toc-level-2" href="#abandoning-old-content-safely">Abandoning old content</a><a class="toc-level-3" href="#waiting-to-enter-the-transport">Waiting to enter the transport</a><a class="toc-level-3" href="#waiting-for-delivery-to-finish">Waiting for delivery to finish</a><a class="toc-level-3" href="#maximum-age-in-moq-lite">Maximum age in moq-lite</a><a class="toc-level-2" href="#returning-to-live-playback">Returning to live playback</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

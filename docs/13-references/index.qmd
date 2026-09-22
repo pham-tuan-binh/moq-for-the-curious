@@ -67,7 +67,7 @@ Its implementation discussion targets draft-07, and its message names and schedu
 
 ## Finding an implementation
 
-The MoQ Alliance’s [Get started with MoQ](https://moqalliance.org/get-started/) guide collects browser demos, native media tools, and transport libraries in several languages. Use it to explore options beyond the moq.dev stack used in our walkthrough. Follow each project’s own documentation for setup and compatibility; the directory includes implementations targeting different draft revisions.
+The MoQ Alliance’s [Get started with MoQ](https://moqalliance.org/get-started/) guide collects browser demos, native media tools, and transport libraries in several languages. Use it to choose a starting point for your own system. Follow each project’s own documentation for setup and compatibility; the directory includes implementations targeting different draft revisions.
 
 ## The moq.dev implementation
 
@@ -84,7 +84,7 @@ These moq.dev articles and guides are useful companions to the chapters:
 | Why separate delivery from the browser's media stack? | [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) (2023) | The opening WebRTC comparison |
 | Can subscriber choices reduce publisher work? | [Concepts](https://doc.moq.dev/concept/) | Relays and Distribution |
 | How does a conference use publications? | [Conferencing](https://doc.moq.dev/concept/use-case/conferencing) | Publishing and Subscribing |
-| Why use cancellable streams for timely media? | [Never Use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | QUIC and WebTransport |
+| Why can datagrams still arrive late? | [Never* use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | Latency and Congestion |
 | Which age limit does this implementation apply? | [moq-lite subscriptions](https://doc.moq.dev/concept/moq-lite#subscriptions) | Latency and Congestion |
 | What is inside a delivered media payload? | [hang](https://doc.moq.dev/concept/hang) | Media and the Browser |
 | How do existing WebRTC tools connect? | [RTC gateways](https://doc.moq.dev/bin/rtc) | The detailed WebRTC comparison |
@@ -97,7 +97,7 @@ The older blog posts describe the software available at the time. This also appl
 
 The initial protocol review was on **September 16, 2026**. Technical explanations and setup links were checked again on **September 22, 2026**. Protocol details refer to draft-21, and examples using moq.dev features say so.
 
-The latency numbers in this book are examples, not measurements. We haven’t run the upstream walkthrough or tested every browser. Try your chosen software on the devices and networks you plan to support.
+The latency numbers in this book are examples, not measurements. We haven’t tested every linked demo or browser. Try your chosen software on the devices and networks you plan to support.
 
 
 ## Keeping an edition accurate

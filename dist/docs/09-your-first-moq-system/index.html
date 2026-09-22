@@ -22,168 +22,61 @@
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button><a class="repository-link" href="https://github.com/pham-tuan-binh/moq-for-the-curious#readme" aria-label="GitHub repository and contribution guide" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">GitHub</a></div>
-<nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/" aria-current="page"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 09</p><h1>Your First MoQ System</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose and record the implementation</a><a class="toc-level-2" href="#before-running-commands">Before running commands</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Understand the path of one frame</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-3" href="#check-each-boundary">Check each boundary</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Test a constrained network</a><a class="toc-level-2" href="#test-a-disconnect">Test a disconnect</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><div class="part">In practice</div><a href="../../docs/09-your-first-moq-system/" aria-current="page"><span>Your First MoQ System</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 09</p><h1>Your First MoQ System</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#choose-the-implementation-deliberately">Find a starting point</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Follow the media</a><a class="toc-level-2" href="#add-another-viewer">Add another viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Change the network</a><a class="toc-level-2" href="#run-it-outside-your-machine">Run it outside your machine</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
 
 
 
-<p>Let’s put a publisher, relay, and player together using the moq.dev local demo. We’ll start with its test video, add another viewer, then slow the network down to see what changes.</p>
-<p>Before running it, we’ll look at the path one frame takes. As you work through the demo, keep notes on the version you’re using and what you see in the player and logs.</p>
+<p>You can try MoQ in a browser, run a relay yourself, or build a publisher and subscriber with a transport library. The <a href="https://moqalliance.org/get-started/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ Alliance getting-started guide</a> brings these options together, with links to demos, media tools, and implementations in several languages.</p>
+<p>Start with something small: one publisher, one relay, and one viewer. Once media is playing, add another viewer and see how the relay shares the publication.</p>
 <section id="choose-the-implementation-deliberately" class="level2">
-<h2 class="anchored" data-anchor-id="choose-the-implementation-deliberately">Choose and record the implementation</h2>
-<p>We’ll use the <strong>moq.dev project</strong> and its moq-lite and hang stack. The project’s documentation has the latest setup instructions; its <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">standards guide</a> explains which MOQT features it supports.</p>
-<p>If you want to explore other stacks first, the <a href="https://moqalliance.org/get-started/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ Alliance getting-started guide</a> lists demos, media tools, and transport libraries. Choose a publisher, relay, and player that agree on the protocol revision and media format.</p>
-<p>The commands below follow the <a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">setup guide</a>. Save the checkout revision and library versions with your notes so you can repeat the experiment later.</p>
-<p>Run them from the moq.dev repository, not this book’s repository. They have not been executed as part of publishing this guide.</p>
-</section>
-<section id="before-running-commands" class="level2">
-<h2 class="anchored" data-anchor-id="before-running-commands">Before running commands</h2>
-<p>A <strong>terminal</strong> lets you start programs by typing commands. Your <strong>working directory</strong> is the folder those commands run in. <code>git clone</code> downloads a repository; <code>cd moq</code> enters that checkout. <code>git rev-parse HEAD</code> prints its current commit identifier, which lets another reader locate the same source revision. Git’s <a href="https://git-scm.com/docs/git-rev-parse" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">revision documentation</a> explains that command.</p>
-<p>The demo runs several <strong>processes</strong>: running programs with separate jobs. A <strong>listener</strong> accepts traffic at an address and port. <code>localhost</code> refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.</p>
-<p>Keep the terminal running while you use the demo. To stop the foreground recipe, press Ctrl+C in that terminal.</p>
+<h2 class="anchored" data-anchor-id="choose-the-implementation-deliberately">Find a starting point</h2>
+<p>The Alliance guide is a useful place to choose a project based on what you want to build:</p>
+<ul>
+<li><strong>Try live video.</strong> Follow its browser demo links to publish in one tab and watch in another.</li>
+<li><strong>Run your own relay.</strong> Look at the linked relay projects and follow their setup guides.</li>
+<li><strong>Use an existing media source.</strong> Explore the tools for connecting native media pipelines to MoQ.</li>
+<li><strong>Send application data.</strong> Look at the transport libraries if your objects contain messages or state rather than audio and video.</li>
+</ul>
+<p>For a complete media demo, <a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev’s setup guide</a> is one option. For other implementations, browse the Alliance’s <a href="https://moqalliance.org/get-started/#open-source-repositories" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">open-source repository list</a>. Use the chosen project’s documentation for installation commands and supported features.</p>
+<p>Before combining projects, check their protocol revision and media format. Two libraries can both implement MoQ and still disagree on the messages or payloads they expect. Record the versions you use so you can reproduce your setup later.</p>
 </section>
 <section id="trace-one-frame-conceptually" class="level2">
-<h2 class="anchored" data-anchor-id="trace-one-frame-conceptually">Understand the path of one frame</h2>
-<p>A source produces media. An encoder compresses it. The media layer supplies timing and configuration, and maps the encoded data into named tracks and groups. The publisher makes that content available through the relay.</p>
-<p>The viewer chooses tracks, receives objects, interprets the media format, and decodes and presents the content. At each stage, ask what information is added and what can fail.</p>
-<figure class="layers figure"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>Each layer solves a different problem. A working connection is only the beginning.</figcaption></figure>
-<p>Once the demo is running, the observation table below will help you record the publication, transport, rendition, and codec.</p>
+<h2 class="anchored" data-anchor-id="trace-one-frame-conceptually">Follow the media</h2>
+<p>A source produces media. An encoder compresses it. The media format supplies timing and decoder configuration, and the publisher makes the content available as tracks. The relay forwards requested objects to the viewer, which decodes and presents them.</p>
+<figure class="layers figure"><div><strong>Your application</strong><span>Rooms, permissions, playback decisions</span></div><div><strong>Media format</strong><span>Codec configuration, timestamps, payloads</span></div><div><strong>MoQ transport</strong><span>Names, subscriptions, groups, objects</span></div><div><strong>QUIC / WebTransport</strong><span>Secure streams, datagrams, congestion control</span></div><figcaption>The publisher and player need to agree on both transport and media format.</figcaption></figure>
+<p>Use the project’s sample media first if it provides any. That gives you a known source while you get the connection and player working. Then try your camera or another live source.</p>
 </section>
-<section id="start-with-the-local-demo" class="level2">
-<h2 class="anchored" data-anchor-id="start-with-the-local-demo">Start with the local demo</h2>
-<p>This walkthrough follows the upstream quick start’s recommended <a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Nix route, with flakes enabled</a>. After installing that prerequisite, obtain the project and record the checkout you are using:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/moq-dev/moq</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> moq</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rev-parse HEAD</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> develop <span class="at">--command</span> just</span></code></pre></div></div>
-<p>The documented default recipe runs a local relay, a test publisher, and the web demo. Follow the setup guide if your platform needs additional configuration. Use the supplied test content first, so a camera permission failure cannot be mistaken for a transport failure.</p>
-<p>Save the revision printed by <code>git rev-parse HEAD</code> with your notes. The final command, <code>nix develop --command just</code>, opens the development environment and starts the demo.</p>
-<p>For more detailed Rust logging, stop the demo and rerun it with the project’s <a href="https://doc.moq.dev/setup/dev" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">documented logging setting</a>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUST_LOG</span><span class="op">=</span>debug <span class="ex">nix</span> develop <span class="at">--command</span> just</span></code></pre></div></div>
-<p>The logs will vary with the version you’re running. Fill in what you can find below, and leave “not observed” for anything the player or logs don’t show.</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Observation</th>
-<th>Your result</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Project revision</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Actual transport selected</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Negotiated protocol and revision, if exposed</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Broadcast/publication name</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Selected media rendition</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Codec and container, if exposed</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Test video visible and audio audible</td>
-<td></td>
-</tr>
-</tbody>
-</table></div>
-<p>Watch the player alongside the relay logs. Follow the connection, discovery, and subscription messages through to the first picture and sound.</p>
-<p>The <a href="https://doc.moq.dev/concept/transport" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev transport guide</a> explains how its clients choose among transports. A browser exposing WebTransport does not prove the library selected it for this connection. Record what happened, including any fallback.</p>
-<p>If you’re connecting different implementations, try a live subscription, a late join, and actual playback. Getting through version negotiation is just the first step; both sides also need the requests and media formats your app uses. The <a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">standards guide</a> lists the project’s support.</p>
-<section id="check-each-boundary" class="level3">
-<h3 class="anchored" data-anchor-id="check-each-boundary">Check each boundary</h3>
-<p>The <a href="https://doc.moq.dev/setup/#what-starts" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">quick start</a> lists a local relay at <code>localhost:4443</code> and a web demo at <code>localhost:5173</code>. If your checkout reports different addresses, use those.</p>
-<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Action</th>
-<th>Look for</th>
-<th>What you’ve checked</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Start the recipe</td>
-<td>The relay, publisher, and web demo start without fatal errors</td>
-<td>The local processes launched</td>
-</tr>
-<tr class="even">
-<td>Open the web demo address</td>
-<td>The player interface loads</td>
-<td>The web server can serve the page</td>
-</tr>
-<tr class="odd">
-<td>Select the test publication, if selection is offered</td>
-<td>Its media or track description becomes available</td>
-<td>The player found the publication</td>
-</tr>
-<tr class="even">
-<td>Start playback</td>
-<td>Pictures change over time; audio is audible when enabled</td>
-<td>At least one complete media path works</td>
-</tr>
-<tr class="odd">
-<td>Inspect available logs</td>
-<td>Selected transport and accepted requests</td>
-<td>Which transport and request path produced that result</td>
-</tr>
-</tbody>
-</table></div>
-<p>If the page loads but nothing plays, check the media connection next. If the video works but audio is silent, check mute and try clicking Play before investigating packet loss. Browsers may need a user action before playing audio; see <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MDN’s autoplay guide</a>.</p>
-</section>
-</section>
-<section id="add-a-second-viewer" class="level2">
-<h2 class="anchored" data-anchor-id="add-a-second-viewer">Add a second viewer</h2>
-<p>Open another viewer for the same publication. The relay now has more downstream work, while the original publication can be shared upstream. Inspect the relay’s metrics or logs instead of assuming the bandwidth pattern from the diagram alone.</p>
-<p>Then close one viewer. Confirm that the other continues. Close both and observe whether the chosen publisher stops producing or transmitting the unused track. Demand-aware behavior depends on the application path and other subscribers, so record what actually happens.</p>
+<section id="add-another-viewer" class="level2">
+<h2 class="anchored" data-anchor-id="add-another-viewer">Add another viewer</h2>
+<p>Open a second player for the same publication. Both viewers should receive the content, and closing one should leave the other playing. If the relay exposes traffic metrics, compare its upstream and downstream traffic as viewers join.</p>
+<p>Try joining after the publisher has been running for a while too. The new viewer needs decoder configuration and a suitable starting point in the media. Watch how long it takes to show the first picture.</p>
 </section>
 <section id="make-the-network-inconvenient" class="level2">
-<h2 class="anchored" data-anchor-id="make-the-network-inconvenient">Test a constrained network</h2>
-<p>Use a network test setup to constrain bandwidth or introduce delay. Start with one change at a time. Watch the selected rendition, playback age, audio continuity, and recovery after the constraint is removed.</p>
-<p>Ordinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.</p>
-<p>Watch what changes when the network slows down. Does the player choose a lower rendition, skip ahead, pause, or keep falling further behind? Compare that behavior with the unthrottled run.</p>
+<h2 class="anchored" data-anchor-id="make-the-network-inconvenient">Change the network</h2>
+<p>Reduce the bandwidth available to one viewer, then restore it. Watch whether the player lowers its video quality, pauses, or falls behind. When the connection recovers, does playback return near live?</p>
+<p>Use a network test tool that affects the connection you’re using. Browser HTTP throttling may not affect WebTransport traffic. Change one condition at a time so you can tell what caused the result.</p>
+<p>You can also briefly disconnect a viewer. Check whether it reconnects on its own and whether it resumes with fresh media or plays through older content first.</p>
 </section>
-<section id="test-a-disconnect" class="level2">
-<h2 class="anchored" data-anchor-id="test-a-disconnect">Test a disconnect</h2>
-<p>Briefly disconnect the viewer, then restore its network access. Record whether the player reconnects by itself or requires a reload, how long it takes to show a new picture, and whether audio and video remain aligned. Compare this with the initial join: recovery may involve stale playback queues as well as a new session and subscriptions.</p>
-</section>
-<section id="going-beyond-localhost" class="level2">
-<h2 class="anchored" data-anchor-id="going-beyond-localhost">Going beyond localhost</h2>
-<p>Moving to another machine adds certificate trust, network reachability, and access policy. QUIC uses UDP; opening only a TCP listener does not establish its path. Follow the deployment guide for the listener and fallback configuration actually in use.</p>
-<p>Do not add recording, multiple regions, and private user accounts simultaneously. Add one boundary, verify it, then continue. When something breaks, use the debugging chapter to find where data stops moving toward the player.</p>
+<section id="run-it-outside-your-machine" class="level2">
+<h2 class="anchored" data-anchor-id="run-it-outside-your-machine">Run it outside your machine</h2>
+<p>Follow your chosen implementation’s deployment guide for certificates, network access, and relay configuration. A local demo may allow anonymous publishing and viewing. Before using private content, configure who can publish and subscribe, then test those permissions. The <a href="../../docs/08-security-and-access/index.html">Security and Access</a> chapter explains the decisions involved.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>
 <ul>
-<li><a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: setup</a></li>
-<li><a href="https://doc.moq.dev/setup/dev" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: development commands</a></li>
-<li><a href="https://doc.moq.dev/setup/prod" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: production deployment</a></li>
+<li><a href="https://moqalliance.org/get-started/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ Alliance: get started</a></li>
+<li><a href="https://moqalliance.org/get-started/#open-source-repositories" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">MoQ Alliance: open-source repositories</a></li>
+<li><a href="https://doc.moq.dev/setup/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq.dev: local setup</a></li>
 </ul>
 
 
 </section>
 
-<nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/08-security-and-access/"><small>Previous chapter</small><span>Security and Access</span></a><a href="../../docs/10-debugging/"><small>Next chapter</small><span>Debugging</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#choose-the-implementation-deliberately">Choose and record the implementation</a><a class="toc-level-2" href="#before-running-commands">Before running commands</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Understand the path of one frame</a><a class="toc-level-2" href="#start-with-the-local-demo">Start with the local demo</a><a class="toc-level-3" href="#check-each-boundary">Check each boundary</a><a class="toc-level-2" href="#add-a-second-viewer">Add a second viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Test a constrained network</a><a class="toc-level-2" href="#test-a-disconnect">Test a disconnect</a><a class="toc-level-2" href="#going-beyond-localhost">Going beyond localhost</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/08-security-and-access/"><small>Previous chapter</small><span>Security and Access</span></a><a href="../../docs/11-faq/"><small>Next chapter</small><span>Frequently Asked Questions</span></a></nav></main>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#choose-the-implementation-deliberately">Find a starting point</a><a class="toc-level-2" href="#trace-one-frame-conceptually">Follow the media</a><a class="toc-level-2" href="#add-another-viewer">Add another viewer</a><a class="toc-level-2" href="#make-the-network-inconvenient">Change the network</a><a class="toc-level-2" href="#run-it-outside-your-machine">Run it outside your machine</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

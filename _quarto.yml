@@ -24,11 +24,10 @@ book:
         - docs/05-relays-and-distribution/index.qmd
         - docs/06-latency-and-congestion/index.qmd
         - docs/07-media-and-the-browser/index.qmd
+        - docs/08-security-and-access/index.qmd
     - part: "In practice"
       chapters:
-        - docs/08-security-and-access/index.qmd
         - docs/09-your-first-moq-system/index.qmd
-        - docs/10-debugging/index.qmd
     - part: "Keep exploring"
       chapters:
         - docs/11-faq/index.qmd

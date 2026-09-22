@@ -36,7 +36,7 @@ for i,(source,title) in enumerate(chapters):
 with tempfile.TemporaryDirectory() as tmp:
     seo.write_discovery(Path(tmp),chapters)
     sitemap=ET.parse(Path(tmp)/'sitemap.xml')
-    assert len(sitemap.getroot())==14
+    assert len(sitemap.getroot())==len(chapters)
     seo.BASE='';seo.write_discovery(Path(tmp),chapters)
     assert not (Path(tmp)/'sitemap.xml').exists()
-print('SEO checks passed: unique metadata, single page headings, production canonicals, structured data, and 14 sitemap URLs.')
+print(f'SEO checks passed: unique metadata, single page headings, production canonicals, structured data, and {len(chapters)} sitemap URLs.')

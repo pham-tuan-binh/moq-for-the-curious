@@ -33,8 +33,8 @@ for number, (source, label) in enumerate(chapters):
         return prefix+'/' + (str(path.parent)+'/' if str(path.parent) != '.' else '')
     navigation=[]
     for n,(path,name) in enumerate(chapters):
-        if n in [1,8,11]:
-            navigation.append('<div class="part">'+{1:'Fundamentals',8:'In practice',11:'Reference'}[n]+'</div>')
+        if n in [1,9,10]:
+            navigation.append('<div class="part">'+{1:'Fundamentals',9:'In practice',10:'Reference'}[n]+'</div>')
         active=' aria-current="page"' if n==number else ''
         navigation.append(f'<a href="{link(path)}"{active}><span>{escape(name)}</span></a>')
     sections=[]

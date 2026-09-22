@@ -169,10 +169,9 @@ You only need to know what a client and server are to begin. Read the chapters i
 5. **[Latency and Congestion](../06-latency-and-congestion/index.qmd).** Why queues grow and how delivery and playback recover.
 6. **[Media and the Browser](../07-media-and-the-browser/index.qmd).** How delivered objects become synchronized sound and pictures.
 7. **[Security and Access](../08-security-and-access/index.qmd).** What connections protect and which permissions the service must enforce.
-8. **[Your First MoQ System](../09-your-first-moq-system/index.qmd).** How to observe one publisher, relay, and player in an upstream demo.
-9. **[Debugging](../10-debugging/index.qmd).** How to locate the first failed part of the media path.
+8. **[Your First MoQ System](../09-your-first-moq-system/index.qmd).** Demos, libraries, and guides to help you start building.
 
-The hands-on chapter assumes familiarity with a terminal, Git, and a development environment. The [FAQ](../11-faq/index.qmd) answers broader questions, the [glossary](../12-glossary/index.qmd) explains terms, and the [references](../13-references/index.qmd) point to the specifications behind the explanations.
+The [FAQ](../11-faq/index.qmd) answers broader questions, the [glossary](../12-glossary/index.qmd) explains terms, and the [references](../13-references/index.qmd) point to the specifications behind the explanations.
 
 ## Sources and further reading {.unnumbered #sources}
 

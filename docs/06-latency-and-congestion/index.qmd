@@ -1,68 +1,66 @@
 # Latency and Congestion
 
-**Playback latency** is the time between capturing media and presenting it to a viewer. Some of that time is spent processing and moving data; some is spent waiting in queues. A connection can keep delivering objects while the viewer falls seconds behind.
+A video can play smoothly and still be seconds behind the person speaking. For someone watching a lecture, that delay might be acceptable. For someone asking the lecturer a question, it makes the conversation difficult.
 
-We’ll work out where the delay comes from, then follow a queue as it grows. That leads to the choices a sender can make: send less, favor some content, or stop sending old content. Finally, we’ll look at how the player catches up. The numbers are made up to keep the examples easy to calculate.
+Keeping playback close to live takes more than a fast connection. The encoder has to produce media at a rate the network can carry, and the player has to decide how long to wait for missing or delayed content. MoQ gives the sender ways to choose which content to deliver and when to give up on it.
 
-## Which rates and delays are we measuring? {#units-before-arithmetic}
+## Latency {#where-the-time-goes}
 
-A **bit** is a binary digit; a **byte** contains eight bits. Network rates commonly use bits per second, while file sizes commonly use bytes. Here, the prefixes are decimal: one megabit is one million bits.
+**Playback latency** is the time between capturing media and presenting it to the viewer. Every stage adds to it: capture, encoding, transmission, buffering, decoding, and display. Data can also wait in queues at the publisher, relay, or receiver.
 
-| Measure | Meaning | Example |
-|---|---|---|
-| Bitrate, in Mb/s | Bits produced or carried each second | 4 Mb/s of encoded media |
-| Byte rate, in MB/s | Bytes produced or carried each second | 4 Mb/s = 0.5 MB/s, before transport overhead |
-| Available capacity | The rate a path can currently sustain for this traffic | A 2 Mb/s path cannot keep up with a 4 Mb/s source |
-| Throughput | The transfer rate actually achieved | Measure delivered bytes over a stated interval |
-| RTT, in milliseconds | Network round-trip time | A 40 ms RTT is not a 40 ms playback delay |
-| Playback latency | Delay from capture to presentation | Includes processing and buffering as well as transit |
+Network delay is only part of this total. A frame that crosses the network quickly can still spend a long time waiting in the player. Likewise, removing a relay hop will do little for a delay caused mainly by encoding or buffering.
 
-A connection might carry plenty of video each second while taking a long time to deliver any one frame. That’s why we measure both capacity and delay. When comparing network capacity with media bitrate, leave room for packet headers and other transport overhead too.
+**Round-trip time**, or RTT, measures how long it takes to send data and receive a response. QUIC uses acknowledgment timing to estimate it. A short RTT helps the sender recover from loss sooner, but it doesn’t tell us how far playback is behind capture. See [RFC 9002 §5](https://www.rfc-editor.org/rfc/rfc9002.html#section-5).
 
-## Where does playback delay come from? {#where-the-time-goes}
+### Jitter and buffering
 
-Capture-to-display latency includes capture, encoding, network transit, buffering, decoding, and presentation. A relay or operating system can add another queue along the way. Measuring only the network leaves much of the path unexplained.
+Frames don’t always arrive at evenly spaced intervals. Some take longer than others, and several may arrive together after a delay. This variation in arrival timing is **jitter**.
 
-Suppose one frame spends its time like this:
+The player buffers media so it can present frames at their intended times despite uneven arrivals. More buffered media gives a late frame more time to arrive, but also makes the viewer wait longer. With a smaller buffer, playback stays closer to live but is more likely to run out of media.
 
-| Stage | Time |
-| --- | ---: |
-| Capture | 20 ms |
-| Encode | 35 ms |
-| Network | 45 ms |
-| Playback buffer | 80 ms |
-| Decode and display | 20 ms |
-| Total | 200 ms |
+There’s no single buffer size that suits every application. A lecture broadcast can tolerate more delay than a conversation with the lecturer. The player has to choose how much delay is acceptable and what to do when a frame misses its playback time.
 
-We could save five milliseconds on the network and bring the total down to 195 ms. The 80 ms playback buffer looks like a bigger opportunity. But if we shrink it, frames that arrive a little late are more likely to miss their playback time. That’s the tradeoff we’re making.
+## Bandwidth {#units-before-arithmetic}
 
-For a student just listening, a slightly longer wait might be fine if it prevents interruptions. For a student asking a question, that same wait makes the conversation awkward. They may prefer a few skipped pictures so they can keep talking.
+The network must carry media as quickly as the publisher produces it. We describe the media’s **bitrate** in bits per second. For example, 4 Mb/s means four million bits each second, or half a megabyte before packet headers and other overhead.
 
-## Why does the queue keep growing? {#how-a-queue-grows}
+The capacity available to a connection changes as it shares links with other traffic. A video that fits comfortably at the start of a session may become too large when another device starts a download or the viewer moves to a weaker wireless connection.
 
-Suppose the publisher produces four megabits each second while Alice's path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.
+Average bitrate also hides bursts. A large keyframe takes more time to send than a small frame, even when the average fits within the available capacity. A queue can absorb a short burst. It cannot absorb a sustained excess without growing.
 
-As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, the incoming rate must fall below the outgoing rate, or the system must discard queued data. Dropping old data once will not solve a continuing rate mismatch: the queue will fill again.
+## Congestion {#how-a-queue-grows}
 
-**Congestion control** limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
+When more traffic reaches a network link than it can forward, packets wait in a queue. As the queue grows, packets take longer to arrive. If the queue fills, packets may be dropped.
 
-One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink.
+**Congestion control** adjusts the transport’s sending behavior in response to network feedback. QUIC uses acknowledgments to track delivery and detect loss; a congestion controller limits how much data can be in flight. The controller described in [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7) reduces its congestion window when it detects loss or explicit congestion signals. QUIC implementations can use other controllers.
 
-For example, lowering production to 1 Mb/s on the same 2 Mb/s path leaves 1 Mb/s to drain the ten-megabit backlog. Clearing it takes ten seconds, assuming constant rates and no overhead. Lowering production only to 2 Mb/s stops the queue growing but leaves the backlog in place. If draining it would take too long, the system can also skip old content to get Alice back near live.
+Slowing transmission helps the network, but the publisher may keep producing media at the same rate. That moves the waiting data into a queue at the sender. Unless the application also changes what it sends, playback can keep falling behind.
 
-### Congestion control, flow control, and adaptation
+### Datagrams can wait too
 
-The transport and application each have a part to play:
+Choosing datagrams doesn’t remove network queues. A router can hold a packet for a long time before forwarding it, even if nobody will retransmit it after loss. Excessive queueing like this is called **bufferbloat**. The viewer can receive most of the media and still be far behind.
 
-| Mechanism | Question it answers | Example |
-| --- | --- | --- |
-| QUIC congestion control | How much traffic should the sender put on the path now? | Packet loss causes the sender to reduce its sending rate |
-| QUIC flow control | How much stream data is the receiver willing to accept? | The receiver stops granting more credit while its buffers are full |
-| Media adaptation | How much media should the application produce or request? | The player switches from a 4 Mb/s rendition to a 1 Mb/s rendition |
+QUIC datagrams also share the connection’s congestion controller. When it prevents transmission, the sender must wait or drop the datagram. Skipping retransmission changes how loss is handled; it doesn’t guarantee prompt delivery. See [RFC 9221 §5.4](https://www.rfc-editor.org/rfc/rfc9221.html#section-5.4).
 
-Flow control protects the receiver with limits on individual streams and the connection as a whole. It does not measure whether a frame is still worth displaying. See [RFC 9000 §4](https://www.rfc-editor.org/rfc/rfc9000.html#section-4). A player can therefore receive data reliably and within its allowed limits while still falling behind the lecture.
+The moq.dev article [Never* use Datagrams](https://moq.dev/blog/never-use-datagrams/) explains why timely delivery takes more than allowing packet loss. It argues for using independent streams, prioritizing useful content, and cancelling work that has become too old. Those choices still need congestion control to keep queues from growing.
 
-## How do priorities choose what to send? {#choosing-which-content-to-send}
+### Flow control
+
+A receiver can also be too slow to consume incoming data. QUIC’s **flow control** lets it limit how much stream data the sender may send, both per stream and across the connection. This protects the receiver’s buffers. It is separate from congestion control, which responds to conditions on the network path. See [RFC 9000 §4](https://www.rfc-editor.org/rfc/rfc9000.html#section-4).
+
+Neither mechanism knows whether the viewer still wants an old video frame. That decision belongs to the media application.
+
+## Media adaptation
+
+To keep up with a slower connection, the application must reduce the amount of media it sends. The publisher can lower its encoding bitrate, or the viewer can request a lower-bitrate rendition. This may mean a smaller picture, fewer frames, or more compression.
+
+Suppose a publisher produces 4 Mb/s while a viewer’s connection carries only 2 Mb/s. Ignoring overhead, each second adds 2 Mb to the sender’s queue. After five seconds, 10 Mb are waiting.
+
+Switching to a 2 Mb/s rendition stops the queue from growing, but the old data is still there. Switching to 1 Mb/s leaves another 1 Mb/s available to clear the backlog, which would take ten seconds. These rates are simplified, but the consequence matters: reducing bitrate doesn’t immediately remove accumulated delay.
+
+If that wait is too long, the sender can abandon old content and deliver a newer decoding starting point. It still needs to reduce the bitrate enough to prevent the queue from filling again.
+
+## Priorities {#choosing-which-content-to-send}
 
 Suppose Alice’s connection can no longer keep up with both audio and video. Sending audio first may let her keep following the lecture while the picture struggles. The **scheduler** chooses which pending data to send, so it needs to know that audio matters more here.
 
@@ -70,13 +68,13 @@ MOQT expresses these choices through priorities and group ordering. In draft-21,
 
 If we send audio first and it uses all the available capacity, video still has to wait. Priority helps us choose who waits; a timeout lets us decide when waiting has gone on too long. When using a library, check its priority conventions, since moq-lite and MOQT use different rules.
 
-## When should delivery stop? {#abandoning-old-content-safely}
+## Abandoning old content {#abandoning-old-content-safely}
 
 Suppose video group 41 remains incomplete while group 42 provides a fresh decoding starting point. Finishing group 41 would preserve older pictures, but sending group 42 may bring Alice closer to the lecturer. Independent groups make that choice possible without requiring every preceding picture.
 
 The sender still has to respect the stream's structure. A reliable byte stream cannot deliver later bytes past a missing section. To abandon a subgroup's remaining stream data, MOQT resets that stream. A receiver must then use the media format's dependencies to decide where decoding can resume.
 
-Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. We’ll look at each separately, using a relay’s clock and a 100 ms limit. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
+Draft-21 has two optional timeouts for this. One checks how long an object has waited before entering the transport. The other limits the time to finish delivering a completed subgroup. The examples below use a relay’s clock and a 100 ms limit. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
 
 ### Waiting to enter the transport
 
@@ -114,13 +112,13 @@ The transport must reach what the specification calls “all data committed” b
 
 For datagrams, the subgroup timeout instead uses the same age check as the object timeout; if both are nonzero, the smaller value applies. Zero disables the corresponding timeout. These rules describe a single hop's delivery decisions. They do not create a capture-to-display deadline across the whole relay network.
 
-### Is moq-lite's maximum age the same timer?
+### Maximum age in moq-lite
 
-No. The moq.dev [moq-lite guide](https://doc.moq.dev/concept/moq-lite) describes a maximum age relative to the media timeline. Older groups can become unwanted as newer media appears. A network stall by itself does not advance that timeline, and sending a backlog in a burst does not make its media new.
+The moq.dev [moq-lite guide](https://doc.moq.dev/concept/moq-lite) describes a maximum age relative to the media timeline. Older groups can become unwanted as newer media appears. A network stall by itself does not advance that timeline, and sending a backlog in a burst does not make its media new.
 
 Both publisher and subscriber apply the limit. This matters when viewers share upstream delivery: content still useful to a patient viewer may already be too old for someone speaking in the call. Keep this implementation setting separate from draft-21's local delivery timers and from a player's capture-to-display delay.
 
-## How does the player return to live? {#returning-to-live-playback}
+## Returning to live playback {#returning-to-live-playback}
 
 After the network recovers, Alice may still be watching frames that reached her earlier. A fresh transport queue does not empty the player's playback queue. The player needs its own policy for skipping stale decoded frames or moving its presentation clock forward, while respecting audio synchronization and decoding dependencies.
 
@@ -135,3 +133,4 @@ Use a repeatable recorded source for the first experiment. It keeps scene comple
 - [MOQT draft-21: priorities and delivery timeouts](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5)
 - [MOQT draft-21: transport considerations](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-14)
 - [QUIC loss detection and congestion control: RFC 9002](https://www.rfc-editor.org/rfc/rfc9002.html)
+- [moq.dev: Never* use Datagrams](https://moq.dev/blog/never-use-datagrams/)
