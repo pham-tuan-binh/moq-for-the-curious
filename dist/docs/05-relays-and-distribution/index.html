@@ -54,7 +54,7 @@
 </div>
 </div>
 <p>With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.</p>
-<p>Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the difference looks like this. These figures count payload only, before transport overhead.</p>
+<p>Each downstream connection still needs its own bytes. For one 2 Mb/s track and 100 viewers, the payload rates are:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <thead>
 <tr class="header">
@@ -79,7 +79,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>Here, the lecturer uploads 2 Mb/s and the relay sends 200 Mb/s across its viewer connections. With more relays, we can do the same calculation for each link.</p>
+<p>Transport overhead adds to these figures. With more relays, we can do the same calculation for each link.</p>
 <section id="what-happens-when-one-relay-is-full" class="level3">
 <h3 class="anchored" data-anchor-id="what-happens-when-one-relay-is-full">What happens when one relay is full?</h3>
 <p>Moving the copies to a server gives us somewhere to add capacity. Suppose our 100 students are split between two regions. We could put a relay in each region and have each receive one copy from an upstream relay. The upstream relay sends two copies, and each regional relay sends 50. The lecturer still sends one.</p>

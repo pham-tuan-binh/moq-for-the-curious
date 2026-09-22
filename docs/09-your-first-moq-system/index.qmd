@@ -8,7 +8,7 @@ Before running it, we’ll look at the path one frame takes. As you work through
 
 We’ll use the **moq.dev project** and its moq-lite and hang stack. The project’s documentation has the latest setup instructions; its [standards guide](https://doc.moq.dev/concept/standard) explains which MOQT features it supports.
 
-Use the [setup guide](https://doc.moq.dev/setup/) to install the prerequisites and download the project. Save the checkout revision and library versions with your notes so you can repeat the experiment later.
+The commands below follow the [setup guide](https://doc.moq.dev/setup/). Save the checkout revision and library versions with your notes so you can repeat the experiment later.
 
 The commands below are documented project recipes reviewed for this edition. They are meant to be run from the moq.dev repository, not from this book’s repository. They have not been executed as part of publishing this guide.
 
@@ -18,7 +18,7 @@ A **terminal** lets you start programs by typing commands. Your **working direct
 
 The demo runs several **processes**: running programs with separate jobs. A **listener** accepts traffic at an address and port. `localhost` refers to the machine running the client, so opening a localhost address on your phone does not connect to the demo on your laptop.
 
-Keep the terminal running while you use the demo. Once the programs have started, open the player to check that video and audio are coming through.
+Keep the terminal running while you use the demo. To stop the foreground recipe, press Ctrl+C in that terminal.
 
 ## Understand the path of one frame {#trace-one-frame-conceptually}
 
@@ -98,6 +98,10 @@ Use a network test setup to constrain bandwidth or introduce delay. Start with o
 Ordinary browser HTTP throttling tools may not shape every WebTransport path as expected. Verify that your chosen test tool affects the actual transport before drawing conclusions. Keep an unthrottled run as a baseline.
 
 Watch what changes when the network slows down. Does the player choose a lower rendition, skip ahead, pause, or keep falling further behind? These observations give you somewhere to start debugging.
+
+## Test a disconnect
+
+Briefly disconnect the viewer, then restore its network access. Record whether the player reconnects by itself or requires a reload, how long it takes to show a new picture, and whether audio and video remain aligned. Compare this with the initial join: recovery may involve stale playback queues as well as a new session and subscriptions.
 
 ## Going beyond localhost
 

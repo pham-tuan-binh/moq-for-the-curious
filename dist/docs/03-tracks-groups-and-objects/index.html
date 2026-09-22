@@ -91,7 +91,7 @@
 </section>
 <section id="an-object-is-a-named-piece-of-data" class="level2">
 <h2 class="anchored" data-anchor-id="an-object-is-a-named-piece-of-data">What identifies an object?</h2>
-<p>Inside each group are <strong>objects</strong>. Each object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently.</p>
+<p>Inside each group are <strong>objects</strong>. Each normal object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently. Subscription delivery also uses payload-free status markers to signal the end of a group or track; those markers are not encoded pictures. See <a href="https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-11.1.2" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">object status in draft-21 §11.1.2</a>.</p>
 <p>We can now give a complete address for one picture:</p>
 <div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
 <thead>
@@ -172,7 +172,7 @@
 </tr>
 </tbody>
 </table></div>
-<p>The video track can last for the whole lecture while the streams carrying it open and close. To start decoding, the player still needs a group with a suitable starting picture.</p>
+<p>This distinction matters in logs: a subgroup stream ending can be normal even while the track and subscription remain active.</p>
 </section>
 </section>
 <section id="restarting-is-a-naming-problem-too" class="level2">

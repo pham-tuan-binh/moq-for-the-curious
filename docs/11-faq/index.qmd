@@ -1,8 +1,6 @@
 # Frequently Asked Questions
 
-Here are some questions that come up when choosing or building a MoQ system. You can jump to whichever one you’re wondering about.
-
-You can read this chapter in any order. For a term rather than a design question, use the [glossary](../12-glossary/index.qmd).
+These questions cover choices you’ll face when building a MoQ system. Read them in any order. For a term rather than a design question, use the [glossary](../12-glossary/index.qmd).
 
 ## Is MoQ a finished standard?
 

@@ -1,22 +1,26 @@
 # MoQ for the Curious
 
-A free online book about **Media over QUIC**: how live media gets from a publisher, through relays, to a player—and what happens when the network cannot keep up.
+A free online book about **Media over QUIC**. We'll follow a live lecture from the publisher to the student's player and work through what happens when the network can't keep up.
 
 **[Read the book →](https://moqforthecurious.com)**
 
-The book starts with what MoQ does and how it relates to WebRTC, then explains why it is useful and how its parts fit together. After introducing TCP/IP and QUIC, it follows a live lecture through tracks, objects, subscriptions, distribution, playback, and debugging. Explanations include native Mermaid diagrams, annotated wire formats, worked examples, and links to primary sources.
+Sending live video sounds simple enough: capture a picture, send it, show it. But what if a student joins halfway through? What if their connection is slower than the video we're producing? Do we keep sending the pictures they've missed, or skip ahead?
 
-## Contribute
+The book builds up the pieces needed to answer those questions. We start with what MoQ does and how it relates to WebRTC, then get into TCP/IP, QUIC, tracks, subscriptions, relays, and playback. There are diagrams, packet layouts, and worked examples along the way, with links to the specifications when you want the details.
 
-Corrections, clearer explanations, better diagrams, and missing topics are welcome. Open an [issue](https://github.com/pham-tuan-binh/moq-for-the-curious/issues) to discuss a change, or send a pull request directly.
+The [MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21) is worth reading alongside the book. It starts with the motivation, introduces the content model, then builds up the protocol behavior before getting into message fields. That progression is useful when you're trying to understand why the pieces exist and how they fit together.
 
-For a technical correction, include the relevant specification section and version. For an unclear explanation, point to the passage and describe where you lost the thread. Small, focused contributions are useful.
+## Contributing
 
-Maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). You can also email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or request an update.
+If something is wrong or hard to follow, I'd like to hear about it. Open an [issue](https://github.com/pham-tuan-binh/moq-for-the-curious/issues), send a pull request, or email me at [binhpham@binhph.am](mailto:binhpham@binhph.am).
 
-## Build and preview
+For a technical correction, include the specification section and version you're referring to. If an explanation lost you, point to where that happened. A better example or a clearer diagram helps too; a contribution doesn't need to be a whole chapter.
 
-Install **Python 3** and [Quarto 1.10.18](https://quarto.org/docs/get-started/), the version used by the publishing workflow. Then run:
+Maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh).
+
+## Running the book locally
+
+You'll need **Python 3** and [Quarto 1.10.18](https://quarto.org/docs/get-started/), the version used to publish the book. Then run:
 
 ```sh
 git clone https://github.com/pham-tuan-binh/moq-for-the-curious.git
@@ -25,62 +29,63 @@ python3 scripts/build.py
 python3 -m http.server 4173 --directory dist
 ```
 
-Open [localhost:4173](http://localhost:4173). After editing a source file, rebuild and refresh the page. The build script uses Quarto from your PATH or an existing project-local `.tools/bin/quarto` installation.
+Open [localhost:4173](http://localhost:4173). When you edit a source file, run the build again and refresh the page. The build script looks for Quarto in your PATH, then in `.tools/bin/quarto` if you have a local installation there.
 
-Quarto renders the chapter content; a custom reader supplies navigation, search, and the dark theme. The output is plain HTML, CSS, and JavaScript with local fonts and diagram dependencies. No application server or API key is required. Serve the output over HTTP so search can load its index.
+Quarto renders the chapters, and a custom reader handles navigation, search, and the dark theme. The result is a static site with its fonts and diagram dependencies included. Keep the local server running while you read: search needs HTTP to load its index.
 
-### Where to edit
+### Where things live
 
-| Path | Purpose |
+| Path | What you'll find |
 |---|---|
 | `index.qmd` | Book introduction and contribution links |
-| `docs/*/index.qmd` | Chapter prose, tables, and Mermaid source |
-| `_quarto.yml` | Chapter order and rendering configuration |
+| `docs/*/index.qmd` | Chapter prose, tables, and Mermaid diagrams |
+| `_quarto.yml` | Chapter order and rendering settings |
 | `assets/reader.css`, `assets/reader.js` | Reading interface, search, and diagram rendering |
-| `assets/illustrations/` | Editable editorial figures |
-| `scripts/post-render.py` | Static page templates and section navigation |
+| `assets/illustrations/` | Editable figures |
+| `scripts/post-render.py` | Page templates and section navigation |
 | `scripts/seo.py` | Chapter metadata, canonical URLs, and sitemap |
-| `dist/` | Generated website; rebuild rather than edit by hand |
+| `dist/` | Generated website; edit the source and rebuild this |
 
-### Check your changes
+### Checking a change
+
+After rebuilding, run:
 
 ```sh
 python3 scripts/check-book.py
 python3 scripts/check-seo.py
 ```
 
-The checks validate local links, section anchors, assets, reading landmarks, and search metadata. Also inspect the affected pages in a browser: check narrow screens, table scrolling, diagram labels, and subsection navigation. Automated checks do not verify technical claims or visual clarity.
+These check links, section anchors, assets, page structure, and search metadata. Then open the pages you changed. Try a narrow window, scroll the tables, and check that diagram labels and section navigation still make sense. A passing check won't tell you whether an explanation is correct or a diagram is readable.
 
-Generated output is currently tracked. Include the rebuilt `dist/` files with source changes.
+We track the generated site in Git, so include the rebuilt `dist/` files when you change the book.
 
-## Writing and visual standards
+## Writing for the book
 
-Open each teaching chapter with its subject, purpose, and a short route through the explanation. Follow that route in the body: define the idea, explain the mechanism, work through an example, then cover limitations and failure. Use headings that name the subject or answer a reader’s question. Give readers links to skip familiar prerequisites or return to optional detail. Reference chapters should favor quick lookup over a forced lesson sequence.
+Start with something the reader wants to understand. Set up an example, try the straightforward approach, and explain what happens. If it breaks, show why. That gives the next idea a reason to exist.
 
-Explain the mechanism before its edge cases. Define terms when first needed, use concrete examples, and distinguish protocol requirements from implementation choices. Link the source near the claim it supports.
+Introduce terms when you need them. Explain how a mechanism works before getting into its exceptions, and make it clear when you're describing a protocol rule or a choice made by one implementation. Put the source next to the claim it supports.
 
-For each mechanism, check whether the reader can understand:
+For example, a subscription explanation should let the reader follow who asks for content, who answers, and where the objects arrive. It should also explain what happens if the request is rejected or the viewer leaves. The same questions apply elsewhere: who does the work, in what order, and what changes when something fails?
 
-- **Participants:** who sends, receives, or makes a decision?
-- **Sequence:** what happens first, what can overlap, and what counts as success?
-- **Structure:** what contains what, and which identifiers belong to each layer?
-- **Failure:** what changes after loss, rejection, timeout, or missing media dependencies?
+Use headings that help readers find an answer. Give them a way to skip prerequisites they already know and return to optional details later. The glossary and reference chapters should be easy to look things up in.
 
-Choose the visual that answers the question: sequence diagrams for exchanges, topology diagrams for distribution, aligned field layouts for wire formats, and tables for comparisons. Mermaid renders directly in the browser. Keep figures legible, use sentence-case labels, and explain omitted details. Avoid decorative generated artwork. The surrounding prose should remain useful without the diagram.
+Choose diagrams for the question at hand. A sequence diagram helps explain an exchange; a network drawing shows where the copies go; a field layout helps someone read a packet. Mermaid renders in the browser, and the illustration sources are editable. Keep labels readable, explain what you've left out, and make sure the prose still works on its own. We don't need decorative generated artwork.
 
-## Sources and scope
+Keep the writing conversational and concrete. Use examples to carry the explanation, cut repeated summaries, and avoid em dashes.
 
-The protocol baseline is **MOQT draft-21**, reviewed on September 16, 2026. Later editorial and setup-resource checks are recorded in the [references chapter](https://moqforthecurious.com/docs/13-references/). Draft-sensitive claims must cite the pinned version; do not silently update a rule to match a newer draft.
+## Which version does this explain?
 
-MOQT, moq-lite, and hang are described separately. Teaching values are not benchmarks. The upstream demonstration commands are documented recipes, not compatibility tests executed for this book.
+The book follows **MOQT draft-21**, initially reviewed on September 16, 2026. The [references chapter](https://moqforthecurious.com/docs/13-references/) records later checks and the sources behind the explanations. When correcting a protocol detail, cite that draft so the chapter doesn't accidentally mix rules from different versions.
+
+Examples using moq-lite or hang say so. The latency numbers are there to make the arithmetic easy to follow; they aren't measurements. The upstream demo commands come from the project's documentation and haven't been run for this book.
 
 ## Publishing
 
-Pushes to `main` run the [GitHub Pages workflow](.github/workflows/pages.yml), which builds the book, checks it, and deploys `dist/` to **[moqforthecurious.com](https://moqforthecurious.com)**.
+Pushing to `main` runs the [GitHub Pages workflow](.github/workflows/pages.yml). It builds the book, checks it, and publishes `dist/` to **[moqforthecurious.com](https://moqforthecurious.com)**.
 
-For a fork, enable **Settings → Pages → GitHub Actions** and change the workflow's `SITE_URL` to your public address. Internal links and assets use relative paths, including on repository-based Pages URLs.
+If you're publishing a fork, enable **Settings → Pages → GitHub Actions** and set the workflow's `SITE_URL` to your public address. Links and assets use relative paths, so the site can also live under a repository path.
 
-For another static host:
+For another static host, build and package it like this:
 
 ```sh
 SITE_URL=https://your-domain.example/book python3 scripts/build.py
@@ -89,6 +94,6 @@ python3 scripts/check-seo.py
 python3 scripts/package-static.py
 ```
 
-Upload `dist/`, or extract `artifacts/moq-for-the-curious-static.zip` into the host's public directory. Builds default to `https://moqforthecurious.com`; set `SITE_URL` explicitly for a different deployment, or to an empty string to omit canonical URLs and the sitemap.
+Upload `dist/`, or extract `artifacts/moq-for-the-curious-static.zip` into the host's public directory. The default site URL is `https://moqforthecurious.com`. Set `SITE_URL` for your deployment, or set it to an empty string if you want to omit canonical URLs and the sitemap.
 
-Production metadata includes unique chapter titles and descriptions, social sharing tags, canonical URLs, structured data, and `sitemap.xml`. Font licenses are included in `assets/fonts/`. Local tooling, archives, and `.openai/` hosting configuration are ignored by Git.
+The build also produces chapter titles and descriptions, social sharing tags, structured data, and `sitemap.xml`. Font licenses live in `assets/fonts/`. Git ignores local tooling, packaged archives, and `.openai/` hosting configuration.

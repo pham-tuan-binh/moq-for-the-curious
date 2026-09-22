@@ -178,7 +178,7 @@
 </div>
 </div>
 </div>
-<p>Each arrow follows one frame through the playback buffer. The diagram uses the table’s receiver clock; arrow lengths are not a time scale.</p>
+<p>Each arrow spans arrival to display, including any parsing and decoding still needed. The example assumes those steps finish before the planned display time. A frame that arrives on time but finishes decoding late can still miss that time. Arrow lengths are not a time scale.</p>
 <p>That first 60 ms wait gives later frames some time to arrive. Now suppose B arrives at 205 ms, after its planned display time of 193 ms. The player can skip it or delay playback. Waiting longer at the start would have made room for B, but it would also have delayed every picture.</p>
 </section>
 <section id="keeping-audio-and-video-together" class="level3">
@@ -190,7 +190,7 @@
 <section id="completing-the-player" class="level2">
 <h2 class="anchored" data-anchor-id="completing-the-player">What else does a browser player need?</h2>
 <p>A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the <a href="https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">media capture permission rules</a>. Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.</p>
-<p>The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing player gives a first experiment a working path through capture, decoding, and presentation. The chapter’s pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.</p>
+<p>The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing publisher and player gives a first experiment a path through capture, decoding, and presentation. The chapter’s pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.</p>
 </section>
 <section id="sources" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="sources">Sources and further reading</h2>

@@ -18,7 +18,7 @@ Separating those pieces gives an application more control over playback. In a co
 
 MoQ uses a **publish/subscribe** model: one endpoint makes content available, and another asks to receive it.
 
-To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.
+In our lecture, the lecturer publishes live audio, video, and slides. Students choose what to receive on their own devices.
 
 In this example, the lecturer is a **publisher**. Each viewer is a **subscriber**. If the lecturer sent a separate 2 Mb/s copy to 100 students, their connection would need to upload 200 Mb/s. Every new student would add more work to the lecturer’s connection.
 
@@ -129,7 +129,7 @@ MoQ relays distribute requested tracks and can retain objects for later requests
 | A browser voice or video call | An integrated browser media stack and connectivity procedure | Capture, codecs, playback, echo handling, and connectivity in the chosen library |
 | A large live audience | Media forwarding through servers such as SFUs | Relay fan-out, track selection, and actual capacity under load |
 | Joining from a recent starting point | Application or media-server behavior around the live stream | Retained objects, a usable decoding point, and a way to request them |
-| Direct connections across home networks | ICE, STUN, and TURN support | The implementation's connection model; MOQT does not define an ICE replacement |
+| Connectivity across home networks | ICE tests possible paths; TURN relays traffic when needed | The implementation's connection model; MOQT does not define an ICE replacement |
 | A predictable deployment | Interoperability across the browsers and services you target | Matching MOQT revisions, media formats, browser APIs, and fallback behavior |
 
 : Questions to ask when choosing an implementation

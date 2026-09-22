@@ -109,13 +109,13 @@
 <td>Check configuration and missing reference pictures</td>
 </tr>
 <tr class="odd">
-<td>Does the displayed frame age keep increasing?</td>
-<td>Inspect queued work and adaptation</td>
-<td>Check whether the player is skipping or pausing instead</td>
+<td>Are decoded frames waiting past their scheduled display times?</td>
+<td>Inspect the playback queue, clock, and rendering</td>
+<td>Trace the missing picture through arrival, parsing, and decoding</td>
 </tr>
 </tbody>
 </table></div>
-<p>Check these counters over the same time interval. A decoder that produced frames a minute ago might have stopped since then. If a stage has no counter, add a log there so you can see whether data is getting through.</p>
+<p>A frozen picture gets older whether the cause is missing data, a decoder failure, or stalled rendering. Its age alone cannot tell you which queue is responsible. Check these counters over the same time interval. A decoder that produced frames a minute ago might have stopped since then. If a stage has no counter, add a log there so you can see whether data is getting through.</p>
 </section>
 <section id="collect-evidence-that-connects-the-layers" class="level2">
 <h2 class="anchored" data-anchor-id="collect-evidence-that-connects-the-layers">Collect evidence that connects the layers</h2>

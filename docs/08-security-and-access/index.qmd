@@ -36,9 +36,9 @@ The lecture service sets these permissions. To check that they work, try each ac
 
 Should someone outside the class even see its title in a room list? For a private lecture, the service may need to restrict discovery as well as playback.
 
-The application can put permissions in a credential, such as a JSON Web Token (JWT) if the implementation supports it. Before accepting it, the relay needs to check who issued it, which service it’s for, whether it has expired, and which names and actions it allows. [RFC 8725](https://www.rfc-editor.org/rfc/rfc8725.html#section-3) covers JWT validation, including issuer and audience checks.
+The application can put permissions in a credential, such as a JSON Web Token (JWT) if the implementation supports it. Before trusting its claims, the relay must verify the token’s signature or other cryptographic protection with a trusted key and an allowed algorithm. It then checks who issued it, which service it’s for, whether it has expired, and which names and actions it allows. Reading a token’s fields is not the same as validating it. [RFC 8725](https://www.rfc-editor.org/rfc/rfc8725.html#section-3) covers JWT validation, including issuer and audience checks.
 
-A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
+A stolen bearer credential can also be reused while it remains valid. Expiration limits when the credential can be accepted, but the service must also decide when to end subscriptions it previously authorized. Test revocation during playback as well as rejection of new requests. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
 
 ## How can content stay private from the relay? {#keeping-the-relay-from-reading-the-lecture}
 

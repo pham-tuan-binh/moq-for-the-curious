@@ -6,7 +6,7 @@ We’ll follow Alice as she connects, finds the lecture, asks for audio, and joi
 
 ## Establishing a session
 
-Alice’s player and the relay first agree on a MoQ session. This gives them a way to exchange requests and content over their transport connection.
+Alice’s player and the relay first agree on a MoQ session. The session holds the settings and request state they need to exchange content over their transport connection.
 
 In MOQT draft-21, version selection happens during transport establishment. Native QUIC uses ALPN, a handshake field identifying the application protocol; WebTransport uses its protocol negotiation header. The identifier for this edition's draft is `moqt-21`. This is why a working network path is only part of establishing a connection: the endpoints must also agree on the protocol they will speak. See [§6.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.2).
 
@@ -107,6 +107,12 @@ In draft-21, cancellation abruptly closes the request stream's open directions. 
 When the publisher ends an established subscription, it closes the associated data streams, sends `PUBLISH_DONE`, and closes its request-stream direction. The data streams and request stream can arrive in different orders. Alice may therefore receive `PUBLISH_DONE` while some final object data is still on its way. See [§3.1.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-3.1.1) and [§9.9](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-9.9).
 
 Subscription lifetime also matters to authorization. If Alice's permission expires during the lecture, the service needs a policy for the subscription she already holds, as well as for any new request. Publication permission is separate: allowing Alice to watch must not allow her to replace the lecturer's content.
+
+## What happens after a disconnect?
+
+If Alice loses the session, opening a new connection is only the first recovery step. Her player needs to establish a new session, make its requests again, and choose a usable place to resume. If the relay still has the missing objects, the player may recover them; if they are gone or too old for live playback, it needs a newer decoding starting point.
+
+A planned shutdown gives the endpoints more time. Draft-21 defines `GOAWAY` so an endpoint can announce that its session will close; a server can also suggest a new session URI. The client still has to establish the replacement session. See [graceful session migration (§6.6.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-6.6.1).
 
 ## Sources and further reading {.unnumbered #sources}
 

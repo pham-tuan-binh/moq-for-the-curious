@@ -10,13 +10,13 @@ This book is inspired by [WebRTC for the Curious](https://webrtcforthecurious.co
 
 ## Where to begin
 
-The first chapter defines MoQ and immediately introduces its relationship to WebRTC. It then explains why MoQ is useful and how five activities fit together: connect, discover, request, deliver, and present. A [detailed WebRTC comparison](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc) and chapter guide follow. Tracks, groups, and objects give those steps a shared vocabulary. The later chapters cover security, a first experiment, and debugging.
-
-A fictional lecture runs through the examples. When a new term appears, we explain what it means and why it matters. The [glossary](docs/12-glossary/index.qmd) is here whenever a word gets in the way.
+Start with the first chapter for an introduction and a [comparison with WebRTC](docs/01-what-why-and-how/index.qmd#how-does-moq-compare-with-webrtc). Continue in order to follow the lecture through networking, subscriptions, relays, and playback. If you already know the basics, try [the local demo](docs/09-your-first-moq-system/index.qmd) or use the [debugging chapter](docs/10-debugging/index.qmd) to investigate a problem. The [glossary](docs/12-glossary/index.qmd) explains unfamiliar terms along the way.
 
 ## A protocol still taking shape
 
-This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.
+This edition uses **[MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21)**, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.
+
+The draft is useful reading alongside the book. Start with its [motivation section](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2), then follow the content model and protocol behavior before looking up individual message fields. Its structure helps connect the details to the problems they solve.
 
 Initial research was completed on **September 16, 2026**, with a technical fact-check on **September 22, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
 

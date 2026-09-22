@@ -87,7 +87,7 @@ flowchart LR
     C["C arrives: 150 ms"] -->|"Wait 77 ms"| F["Display C: 227 ms"]
 ```
 
-Each arrow follows one frame through the playback buffer. The diagram uses the table's receiver clock; arrow lengths are not a time scale.
+Each arrow spans arrival to display, including any parsing and decoding still needed. The example assumes those steps finish before the planned display time. A frame that arrives on time but finishes decoding late can still miss that time. Arrow lengths are not a time scale.
 
 That first 60 ms wait gives later frames some time to arrive. Now suppose B arrives at 205 ms, after its planned display time of 193 ms. The player can skip it or delay playback. Waiting longer at the start would have made room for B, but it would also have delayed every picture.
 
@@ -101,7 +101,7 @@ To measure how far behind the lecture we are, we also need to relate the lecture
 
 A student pressing Play brings the rest of the browser into the picture. Playback may require a user action under autoplay policy. A publisher capturing a camera or microphone needs capture permission; publishing a supplied file does not require access to those devices. See the [media capture permission rules](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia). Devices can disappear, tabs can become hidden, and the page must release resources when the session ends.
 
-The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing player gives a first experiment a working path through capture, decoding, and presentation. The chapter's pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.
+The moq.dev project provides higher-level player and publisher packages that handle much of this integration. Using its existing publisher and player gives a first experiment a path through capture, decoding, and presentation. The chapter's pipeline then provides a way to investigate a failure: determine whether the missing step is media discovery, a decodable starting point, decoding, or presentation.
 
 ## Sources and further reading {.unnumbered #sources}
 

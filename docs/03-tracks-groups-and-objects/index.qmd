@@ -53,7 +53,7 @@ Group IDs order groups within the track. Group 42 does not mean “42 seconds,�
 
 ## What identifies an object? {#an-object-is-a-named-piece-of-data}
 
-Inside each group are **objects**. Each object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently.
+Inside each group are **objects**. Each normal object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently. Subscription delivery also uses payload-free status markers to signal the end of a group or track; those markers are not encoded pictures. See [object status in draft-21 §11.1.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-11.1.2).
 
 We can now give a complete address for one picture:
 
@@ -89,7 +89,7 @@ A track describes content. A stream carries bytes. Their lifetimes need not matc
 | What identifies one picture in this example? | Its track, group ID, and object ID | That identity survives forwarding through a relay |
 | Which bytes wait behind a loss? | Objects may depend on other objects for decoding | Bytes on the same stream share ordered delivery |
 
-The video track can last for the whole lecture while the streams carrying it open and close. To start decoding, the player still needs a group with a suitable starting picture.
+This distinction matters in logs: a subgroup stream ending can be normal even while the track and subscription remain active.
 
 ## What happens to names after a restart? {#restarting-is-a-naming-problem-too}
 

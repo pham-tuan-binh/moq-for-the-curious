@@ -43,7 +43,7 @@
 <section id="a-lecture-as-an-example" class="level3">
 <h3 class="anchored" data-anchor-id="a-lecture-as-an-example">A lecture as an example</h3>
 <p>MoQ uses a <strong>publish/subscribe</strong> model: one endpoint makes content available, and another asks to receive it.</p>
-<p>To demonstrate how this works, we will use an online lecture as an example throughout the book. A lecturer shares live audio, video, and slides with students watching from their own devices.</p>
+<p>In our lecture, the lecturer publishes live audio, video, and slides. Students choose what to receive on their own devices.</p>
 <p>In this example, the lecturer is a <strong>publisher</strong>. Each viewer is a <strong>subscriber</strong>. If the lecturer sent a separate 2 Mb/s copy to 100 students, their connection would need to upload 200 Mb/s. Every new student would add more work to the lecturer’s connection.</p>
 <p>Instead, the lecturer sends one copy to a <strong>relay</strong>, a server that forwards it to the students. The lecturer uploads 2 Mb/s, while the relay handles the copies for all 100 viewers. As the audience grows, we can add relays and spread that work across servers. These numbers count media bytes, before network overhead.</p>
 <p>For the browser setup in this book, <strong>a reachable relay is required when the lecturer and students are behind private networks</strong>. Both sides connect out to it, and it forwards the media between them. They can’t open WebTransport connections directly to each other, and MOQT doesn’t provide NAT traversal to make that possible. So we need the relay even for one lecturer and one student, before scaling becomes a concern. We’ll explain the <a href="#how-content-reaches-people">connection setup below</a>.</p>
@@ -166,8 +166,8 @@
 <td>Retained objects, a usable decoding point, and a way to request them</td>
 </tr>
 <tr class="even">
-<td>Direct connections across home networks</td>
-<td>ICE, STUN, and TURN support</td>
+<td>Connectivity across home networks</td>
+<td>ICE tests possible paths; TURN relays traffic when needed</td>
 <td>The implementation’s connection model; MOQT does not define an ICE replacement</td>
 </tr>
 <tr class="odd">

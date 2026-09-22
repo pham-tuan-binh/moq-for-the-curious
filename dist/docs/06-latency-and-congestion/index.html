@@ -127,9 +127,10 @@
 <section id="how-a-queue-grows" class="level2">
 <h2 class="anchored" data-anchor-id="how-a-queue-grows">Why does the queue keep growing?</h2>
 <p>Suppose the publisher produces four megabits each second while Alice’s path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.</p>
-<p>As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, it needs to produce less data, or the system needs to drop some of the data already waiting.</p>
+<p>As long as the publisher keeps producing four megabits per second, the queue keeps growing. To catch up, the incoming rate must fall below the outgoing rate, or the system must discard queued data. Dropping old data once will not solve a continuing rate mismatch: the queue will fill again.</p>
 <p><strong>Congestion control</strong> limits what the transport sends to avoid overwhelming the network. The transport adjusts its sending rate in response to congestion signals; it does not directly know the path’s available capacity. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of <strong>media adaptation</strong>. See <a href="https://www.rfc-editor.org/rfc/rfc9002.html#section-7" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002 §7</a>.</p>
-<p>One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink. If that would take too long, the system can also skip old content to get Alice back near live.</p>
+<p>One option is for Alice’s player to ask for a lower-bitrate rendition. Another is for the publisher to lower its encoding bitrate. Once less data enters the queue than leaves it, the backlog can shrink.</p>
+<p>For example, lowering production to 1 Mb/s on the same 2 Mb/s path leaves 1 Mb/s to drain the ten-megabit backlog. Clearing it takes ten seconds, assuming constant rates and no overhead. Lowering production only to 2 Mb/s stops the queue growing but leaves the backlog in place. If draining it would take too long, the system can also skip old content to get Alice back near live.</p>
 <section id="congestion-control-flow-control-and-adaptation" class="level3">
 <h3 class="anchored" data-anchor-id="congestion-control-flow-control-and-adaptation">Congestion control, flow control, and adaptation</h3>
 <p>The transport and application each have a part to play:</p>
@@ -149,7 +150,7 @@
 <tbody>
 <tr class="odd">
 <td>QUIC congestion control</td>
-<td>How much traffic can this network path carry?</td>
+<td>How much traffic should the sender put on the path now?</td>
 <td>Packet loss causes the sender to reduce its sending rate</td>
 </tr>
 <tr class="even">

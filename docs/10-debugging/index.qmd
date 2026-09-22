@@ -62,9 +62,9 @@ Suppose the picture freezes while audio continues. Start by writing two facts: a
 |---|---|---|
 | Are new video objects arriving? | Inspect parsing and decoding | Inspect the video subscription and publisher |
 | Are decoded video frames being produced? | Inspect presentation timing and rendering | Check configuration and missing reference pictures |
-| Does the displayed frame age keep increasing? | Inspect queued work and adaptation | Check whether the player is skipping or pausing instead |
+| Are decoded frames waiting past their scheduled display times? | Inspect the playback queue, clock, and rendering | Trace the missing picture through arrival, parsing, and decoding |
 
-Check these counters over the same time interval. A decoder that produced frames a minute ago might have stopped since then. If a stage has no counter, add a log there so you can see whether data is getting through.
+A frozen picture gets older whether the cause is missing data, a decoder failure, or stalled rendering. Its age alone cannot tell you which queue is responsible. Check these counters over the same time interval. A decoder that produced frames a minute ago might have stopped since then. If a stage has no counter, add a log there so you can see whether data is getting through.
 
 ## Collect evidence that connects the layers
 

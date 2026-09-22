@@ -88,7 +88,7 @@ Read more in [What, Why, and How](../01-what-why-and-how/index.qmd).
 
 ## Object, group, and subgroup
 
-**Object:** an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.
+**Object:** an addressed unit in MOQT, identified by its full track name, group ID, and object ID within a scope. Normal objects carry application payloads; subscription delivery also uses payload-free end markers. An object is not necessarily a video frame.
 
 **Group:** a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.
 
@@ -118,7 +118,9 @@ Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
 **Track:** the named sequence of groups a subscriber can request. Audio and each video rendition can use separate tracks.
 
-**Namespace:** the structured naming context for tracks. In MOQT, fields are byte sequences, not necessarily human-readable path components.
+**Namespace:** a tuple of byte sequences that, together with a track name, identifies a track. Slashes in this book make example components readable; they are not the wire encoding.
+
+**Scope:** the set of servers within which a full track name identifies the same track.
 
 Read more in [Publishing and Subscribing](../04-publishing-and-subscribing/index.qmd).
 
