@@ -62,7 +62,7 @@ for number, (source, label) in enumerate(chapters):
 <body data-root="{prefix}/"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="{prefix}/">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
-<div class="reader-tools"><button id="search-open">Search <kbd>/</kbd></button></div>
+<div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button></div>
 <nav id="chapters" aria-label="Chapters">{''.join(navigation)}</nav></aside>
 <main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">{eyebrow}</p><h1>{escape(title)}</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections">{page_contents}</nav></details>{main}<nav class="chapter-navigation" aria-label="Adjacent chapters">{''.join(adjacent)}</nav></main>
 <aside class="outline"><nav aria-label="On this page"><p>On this page</p>{page_contents}</nav></aside></div>
