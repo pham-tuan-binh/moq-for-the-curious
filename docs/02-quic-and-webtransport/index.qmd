@@ -4,6 +4,8 @@ Before following a subscription, we need to understand what carries it. This cha
 
 ## A short introduction to TCP/IP
 
+If you are already familiar with TCP/IP, TCP, and UDP, skip ahead to [Why one ordered stream can hurt](#why-one-ordered-stream-can-hurt).
+
 The Internet connects networks. A **router** forwards packets toward a destination, usually through other routers. **IP**, the Internet Protocol, supplies addressing and packet delivery across those networks. An IP address identifies a network interface; it is not a permanent identity for a person or an application.
 
 A packet contains a **header**, which describes how to handle it, and a **payload**, the data it carries. Layers nest: the payload of an IP packet can contain a UDP datagram, whose payload contains QUIC packets. The receiving software unwraps those layers.
