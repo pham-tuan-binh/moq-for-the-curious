@@ -55,7 +55,7 @@ python3 scripts/package-static.py
 
 The archive is written to `artifacts/moq-for-the-curious-static.zip`, with `index.html` at its root. Serve it over HTTP to use search; opening files directly with `file://` can prevent the browser from loading the search index.
 
-The optional `.openai/hosting.json` file belongs to the earlier Sites deployment. GitHub Pages does not use it. Hosting setup follows the [GitHub Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Local `.openai/` hosting configuration is ignored by Git and is not used by GitHub Pages. Hosting setup follows the [GitHub Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## Writing guidelines
 

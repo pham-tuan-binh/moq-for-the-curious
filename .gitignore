@@ -9,3 +9,6 @@ node_modules/
 artifacts/
 
 __pycache__/
+
+# Local Sites hosting configuration
+/.openai/
