@@ -38,7 +38,9 @@ This is how the distribution tree grows: each relay shares the content coming in
 
 ### Why does everyone connect to a server?
 
-There’s also the problem of reaching the other device. The lecturer and students may all sit behind home routers that translate private addresses and filter incoming traffic. WebRTC uses ICE, STUN, and TURN to work out a path. In our browser MoQ setup, everyone connects out to a relay with a reachable address, as described in the [opening comparison](../01-what-why-and-how/index.qmd#how-content-reaches-people).
+**We need a reachable relay even if there are only two participants behind private networks.** In this browser setup, WebTransport connects each client to a server. It doesn’t open a direct browser-to-browser connection, and MOQT adds no NAT traversal. The lecturer and student therefore both connect out to the relay, which carries the media between them. The [opening comparison](../01-what-why-and-how/index.qmd#how-content-reaches-people) explains how this differs from WebRTC’s ICE, STUN, and TURN setup.
+
+WebRTC can use ICE to test paths between the participants, with STUN to discover addresses and TURN to carry traffic if a direct path fails. That gives a two-person call a chance to avoid a media relay. Our browser MoQ setup connects both participants to the relay from the start.
 
 The relay receives those connections and forwards the requested tracks between them. It doesn’t run a NAT traversal procedure on the clients’ behalf. If the network blocks the chosen transport, the client still needs a supported fallback or another way to reach the server.
 

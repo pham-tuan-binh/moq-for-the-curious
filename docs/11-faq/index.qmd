@@ -42,7 +42,9 @@ For example, a game could start each group with a full snapshot and follow it wi
 
 ## Is MoQ peer-to-peer?
 
-In the browser setup used here, the publisher and viewers connect to a relay over WebTransport. They don’t connect directly to each other, and MOQT doesn’t provide ICE, STUN, or TURN for NAT traversal.
+The browser setup in this book requires a reachable relay when the publisher and viewers are behind private networks, even for a two-person call. Both sides connect out over WebTransport, and the relay forwards the media. MOQT doesn’t provide ICE, STUN, or TURN to establish a direct path between them.
+
+WebRTC can try a direct peer connection using ICE and STUN, then use TURN when needed. WebTransport gives our browser MoQ client a connection to a server instead, so that relay is required from the start.
 
 MOQT can still carry content directly between two endpoints that can reach each other. Native software can add its own peer connectivity, as [moq.dev describes](https://doc.moq.dev/concept/use-case/conferencing). That connectivity comes from the surrounding stack. For our lecture, relays also solve the scaling problem: the lecturer sends one copy and the servers handle distribution to the audience.
 
