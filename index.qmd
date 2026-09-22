@@ -1,8 +1,8 @@
 # About this book {.unnumbered}
 
-Imagine watching a live lecture. You want the lecturer’s voice to arrive on time, the picture to stay close to live, and the system to work just as well when a hundred more people join. How do we make that happen?
+**MoQ for the Curious** explains how Media over QUIC delivers live content: how publishers name it, relays distribute it, and players keep it useful when the network slows.
 
-**MoQ for the Curious** explains Media over QUIC from the first idea to a working mental model. We introduce each problem before the mechanism that solves it. You do not need to know QUIC, video compression, or the language of protocol specifications to begin.
+The book introduces networking and media concepts as they are needed. A live lecture provides a running example, from the first subscription to playback and debugging.
 
 [Start reading: What, Why and How →](docs/01-what-why-and-how/index.qmd)
 
@@ -14,10 +14,10 @@ A fictional lecture runs through the examples. When a new term appears, we expla
 
 ## A protocol still taking shape
 
-This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. Implementation examples are identified separately from the transport specification. Draft-specific details and implementation examples are labeled throughout.
+This edition uses **MOQT draft-21**, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.
 
 The research date is **September 16, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
 
-## About this project
+## Maintenance and contributions
 
-MoQ for the Curious is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/), with original explanations, examples, and diagrams for Media over QUIC.
+This book is maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). Corrections, clearer explanations, and new examples are welcome. You can submit a pull request directly, or email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or ask for an update.

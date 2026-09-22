@@ -32,6 +32,8 @@ for path, page in pages.items():
         url = urlsplit(link)
         if url.scheme or url.netloc:
             continue
+        if url.path.startswith("/"):
+            errors.append(f"{path.relative_to(ROOT)}: root-relative URL breaks repository hosting: {link}")
         target = ((ROOT / url.path.lstrip("/")) if url.path.startswith("/")
                   else (path.parent / unquote(url.path))) if url.path else path
         if target.is_dir():

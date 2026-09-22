@@ -1,8 +1,20 @@
 # Debugging
 
-Find the first broken boundary, instead of guessing at the last symptom.
-
 A black player is a symptom shared by many unrelated failures. The fastest path to an explanation is to work from the connection toward presentation and stop at the first missing fact.
+
+
+```{mermaid}
+flowchart TD
+  accTitle: Locate the first missing step in playback
+  accDescr: Check transport, session, subscription, decoding, and presentation in order. A failure at each stage narrows which layer to investigate.
+  A["Transport connects"] --> B["MoQ session opens"]
+  B --> C["Subscription accepted"]
+  C --> D["Objects arrive"]
+  D --> E["Decoder produces frames"]
+  E --> F["Player presents frames"]
+```
+
+For example, if objects arrive but the decoder produces no frames, changing the relay address is unlikely to help. Start with the media format and decoder configuration. If decoded frames exist but the screen stays black, investigate presentation instead.
 
 ## The transport never connects
 

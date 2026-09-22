@@ -13,9 +13,6 @@ book:
   sidebar:
     style: docked
     collapse-level: 2
-  page-footer:
-    left: "Independent guide · Research edition: September 16, 2026"
-    right: "Built with [Quarto](https://quarto.org/)"
   chapters:
     - index.qmd
     - part: "The fundamentals"
@@ -44,9 +41,9 @@ format:
       light: [cosmo, assets/paper-light.scss]
       dark: [darkly, assets/paper-dark.scss]
     grid:
-      body-width: 720px
-      sidebar-width: 260px
-      margin-width: 200px
+      body-width: 680px
+      sidebar-width: 240px
+      margin-width: 180px
     css: assets/book.css
     toc: true
     toc-depth: 2

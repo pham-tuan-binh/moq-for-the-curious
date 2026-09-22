@@ -24,7 +24,7 @@ Read more in [QUIC and WebTransport](../02-quic-and-webtransport/index.qmd).
 
 **Object:** an addressable payload in MOQT. Its identity includes its track, group ID, and object ID. An object is not necessarily a video frame.
 
-**Group:** a collection of objects providing a join point within a track. It should be independently useful; the application format decides how that maps to media dependencies.
+**Group:** a collection of objects within a track. A media format can arrange groups as independent join points; the group boundary alone does not guarantee that the contained media can be decoded.
 
 **Subgroup:** an ordered subset of objects within one group. Subscription delivery carries a subgroup on a subgroup stream; FETCH uses its own stream representation. This is part of MOQT’s model and is omitted from moq-lite’s simpler model.
 
@@ -109,3 +109,21 @@ Read more in [Security and Access](../08-security-and-access/index.qmd).
 - [MOQT draft-21: terminology](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.3)
 - [moq.dev: concepts](https://doc.moq.dev/concept/)
 - [moq.dev: hang](https://doc.moq.dev/concept/hang)
+
+## IP, TCP, UDP, and QUIC
+
+**IP:** the Internet Protocol, which addresses packets and supports forwarding between networks.
+
+**TCP:** a transport providing a reliable, ordered byte stream in each direction of a connection.
+
+**UDP:** a transport carrying separate datagrams without built-in retransmission or ordering.
+
+**QUIC:** a secure transport over UDP with multiple ordered byte streams and connection-level congestion control.
+
+**Packet:** a network transmission unit. Packet boundaries do not define MoQ object boundaries.
+
+**ACK:** an acknowledgment of transport reception, not proof of decoding or playback.
+
+**RTT:** round-trip time, a measure of network delay to a peer and back.
+
+Read the [networking introduction and comparison tables](../02-quic-and-webtransport/index.qmd#a-short-introduction-to-tcpip).

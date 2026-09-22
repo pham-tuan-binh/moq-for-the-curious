@@ -58,7 +58,6 @@ Research for this edition was checked on **September 16, 2026**. The guide empha
 
 This guide does not claim measured performance results, exhaustive browser compatibility, or successful execution of the upstream walkthrough. The latency values are invented examples. Validate a chosen stack and revision in your own deployment before relying on particular behavior.
 
-This book is based on [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/), with original explanations, examples, and diagrams for Media over QUIC.
 
 ## Keeping an edition accurate
 
@@ -71,4 +70,3 @@ Keep examples identified as examples. If you add benchmarks, publish the workloa
 - [Pinned MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21)
 - [IETF MoQ working group](https://datatracker.ietf.org/wg/moq/about/)
 - [moq.dev documentation](https://doc.moq.dev/)
-- [WebRTC for the Curious](https://webrtcforthecurious.com/docs/01-what-why-and-how/)

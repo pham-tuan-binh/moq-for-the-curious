@@ -1,64 +1,96 @@
 # Tracks, Groups and Objects
 
-Give the bytes a structure, and the network can make better choices.
+A student joins our lecture ten minutes after it begins. They want the lecturer’s voice and a small video that fits their connection. They do not need the earlier ten minutes, the high-resolution video, or anyone else’s captions.
 
-A relay should not need to understand a video codec to forward a lecture. It does, however, need to recognize which pieces belong together. The MoQ object model supplies those boundaries.
-
-## An object is a named piece of data
-
-An **object** is an addressable payload. In our lecture example, we might put one encoded video frame in one object. That is a format choice, not a universal rule: another format can package its bytes differently.
-
-In MOQT, an object’s identity includes its track namespace, track name, group ID, and object ID. Its payload is immutable. If two receivers request that identity, they must not receive different payload bytes simply because they connected at different times.
-
-Those identities apply within an agreed **scope**: a set of servers where the same full track name identifies the same track. They are not globally unique names across every MoQ service. In our lecture service, namespace `lectures / session-7`, track `video-low`, group `42`, object `3` identifies one particular payload. Another relay in the same scope must not serve different bytes under that identity. An unrelated service may use those same labels within its own scope. See [MOQT draft-21 §2.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5).
-
-If a publisher needs to correct an object, it must give the corrected payload a new identity rather than silently replace the old bytes.
-
-This makes shared caching possible. An identity points to a particular piece of content, rather than an instruction to generate a personalized response.
+To make that choice possible, the publisher has to give its data some structure. MoQ uses **tracks** to separate things a viewer can request, **groups** to organize portions of a track, and **objects** to identify individual pieces of data. We will build that structure from the viewer’s request down to one encoded picture.
 
 ## A track is something you subscribe to
 
-A **track** is a sequence of groups. In our application, audio, low-resolution video, high-resolution video, and captions can each have a track. A subscriber chooses tracks instead of receiving a single inseparable bundle.
+Our lecture has an audio track, a low-resolution video track, and a high-resolution video track. A **track** is a named sequence of groups. Subscribing to `video-low` asks for that sequence; it does not also request `video-high`.
 
-The full track name combines a namespace and a track name. MOQT namespace fields and names are byte sequences; human-readable paths in this book are illustrations, not a statement that all implementations use URL strings on the wire.
+Tracks belong to a **namespace**, which lets the application organize related names. For this lecture, we use the namespace `lectures / session-7`. Together, the namespace and track name identify the full track.
 
-For example, we might describe a namespace as `lectures / networking / session-7` and a track as `video-low`. The application must define how those labels become the exact name bytes its peers compare.
+```{mermaid}
+flowchart TD
+  accTitle: Selecting tracks from a lecture
+  accDescr: The lecture namespace contains audio, video-low, and video-high tracks. The example viewer subscribes to audio and video-low.
+  L["Namespace: lectures / session-7"] --> A["Track: audio"]
+  L --> V["Track: video-low"]
+  L --> H["Track: video-high"]
+  A --> S["Student receives audio and low-resolution video"]
+  V --> S
+```
+
+These readable labels are examples. On the wire, MOQT represents namespace components and track names as byte sequences. Both ends must agree on those bytes; writing the same-looking path in a user interface is not enough. See [track naming in draft-21 §2.4.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.4.1).
 
 ## Groups create places to join
 
-A new viewer should not have to receive a lecture from its beginning. A **group** creates a join point within a track. MOQT recommends that groups be independently useful, avoiding dependencies on objects in other groups.
+Choosing a video track leaves another question: where should the student start?
 
-For a simple video format, start a group with a **keyframe**, a picture from which decoding can restart, followed by the frames that depend on it. A viewer can then start at that group instead of reconstructing all preceding video. Decoder configuration may still need to come from the media format’s metadata.
+Many compressed pictures describe changes from earlier pictures. Receiving one of these **predicted frames** without its reference pictures is like receiving “move it two pixels to the left” without knowing what “it” is. A **keyframe** provides a picture from which decoding can restart.
 
-```{=html}
-<figure class="group-figure"><div class="track-label">TRACK · video / low</div><div class="groups"><div><strong>Group 41</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div><div><strong>Group 42</strong><div class="frames"><span>Key</span><span>Δ</span><span>Δ</span><span>Δ</span></div></div></div><figcaption>Example media mapping: each group starts with a keyframe; later frames depend on earlier frames within that group. Δ means a predicted frame.</figcaption></figure>
+For our video format, the publisher begins each group with a keyframe, then puts the frames that depend on it in the same group. The student can start with a recent group instead of reconstructing the entire lecture. The player also needs the codec configuration, which the media format supplies separately.
+
+```{mermaid}
+flowchart LR
+  accTitle: Two independently decodable video groups
+  accDescr: Group 41 starts with its own keyframe and dependent frames. Group 42 starts with a new keyframe and has no picture dependency on group 41 in this example.
+  subgraph G41["Group 41"]
+    direction TB
+    A["Object 0: keyframe"] --> B["Object 1: predicted frame"]
+    B --> C["Object 2: predicted frame"]
+  end
+  subgraph G42["Group 42"]
+    direction TB
+    D["Object 0: new keyframe"] --> E["Object 1: predicted frame"]
+    E --> F["Object 2: predicted frame"]
+  end
 ```
 
-The diagram is one possible media mapping. A group is not automatically a second of media, and its ID is not inherently a timestamp. The format and publisher decide those relationships.
+Each arrow runs from a reference picture to a picture that needs it. These are decoding dependencies, not network packets. A viewer who has missed group 41 can still use group 42. This is why [MOQT recommends independently useful groups](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.3). A group boundary alone cannot make a picture decodable: the publisher must put a suitable picture there.
+
+Group IDs order groups within the track. Group 42 does not mean “42 seconds,” and groups need not have equal duration. The media format carries timing information for playback.
+
+## An object is a named piece of data
+
+Inside each group are **objects**. Each object has an ID and a payload: the bytes being delivered. Our example puts one encoded picture in each object. Other media formats can divide their data differently.
+
+We can now give a complete address for one picture:
+
+| Part of the identity | Example | What it selects |
+| --- | --- | --- |
+| Track namespace | `lectures / session-7` | This lecture |
+| Track name | `video-low` | Its low-resolution video |
+| Group ID | `42` | One group in that track |
+| Object ID | `1` | One piece of data in that group |
+
+The identity applies within an agreed **scope**: the set of servers that treat a full track name as the same track. An unrelated service can use the same labels for different content. Within our lecture service’s scope, however, that complete identity must consistently refer to the same payload. See [objects (§2.1)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.1) and [scope (§2.5)](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.5).
+
+This property is called **immutability**. Once published, an object’s payload does not change. If Alice and Bob request the same object, a relay can serve the same stored bytes to both. A corrected payload needs a new identity; otherwise the relay would have no way to know which version the name means.
 
 ## Subgroups decide what shares a stream
 
-MOQT also has **subgroups** within a group. Objects in a subgroup are ordered by object ID. For subscription delivery, they share a subgroup stream; fetched objects use a separate fetch-stream representation. This can express dependency and priority relationships more precisely than putting an entire group on one stream.
+We have described what the content is. We also need to decide which objects should travel together.
 
-Objects sent as datagrams do not belong to subgroups. The subgroup model describes the stream-based delivery path; a group can also contain datagram objects. See [MOQT draft-21 §2.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2).
+For subscription delivery, MOQT can divide a group into **subgroups**, each carried on a subgroup stream. Within a subgroup, objects are ordered by object ID. This lets the publisher separate work that benefits from separate transport streams.
 
-For example, a layered codec may have a base layer and an enhancement layer. The base layer gives a usable picture; the enhancement layer adds detail and depends on the base. Keeping them separate lets a scheduler favor the base layer. A receiver still needs to understand the codec’s actual dependencies; putting data on a different stream does not make it independently decodable.
+For example, a layered video codec might produce a base layer that gives a usable picture and an enhancement layer that adds detail. Putting them in separate subgroups lets a scheduler favor the base layer when capacity is scarce. The enhancement still depends on the base; a separate stream does not remove that media dependency.
 
-Do not assume “one group equals one QUIC stream” for all MOQT implementations. That simpler model is useful for moq-lite, which omits MOQT subgroups.
-
-## A vocabulary translation
-
-The moq.dev model uses **broadcast** for a named collection of tracks and **frame** for the sized payload unit corresponding to an object. Its stream-based group is a sequence of frames on one stream. These words are convenient at the library level, but they can hide differences from the broader IETF model.
-
-When reading an example, first identify which vocabulary it uses. A “frame” in a generic data track need not be a decoded video image. A “stream” might mean a QUIC byte stream, a live broadcast, or a JavaScript stream. Ask which one the author means.
+A subgroup organizes delivery; its ID is not an extra component of the object address in the table above. Objects delivered as datagrams do not belong to subgroups, and fetched objects have their own stream representation. These distinctions are defined in [draft-21 §2.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2.2).
 
 ## Restarting is a naming problem too
 
-Suppose the lecturer’s publisher crashes, then restarts its counters at group zero under the same track name. A relay may still have old objects with those identities. New payloads would collide with cached ones.
+Suppose the lecturer’s publisher crashes. When it restarts, it reuses `video-low`, group 42, object 1 for a new picture. A relay still has the old picture stored under that address. It cannot safely treat both as the same immutable object.
 
-A practical design gives a new publication a fresh namespace or preserves a non-conflicting sequence across restarts. Decide this before adding caching. Otherwise, a restart that seems harmless locally can produce confusing results elsewhere in the delivery network.
+One solution is to give the restarted publication a fresh namespace, such as `lectures / session-8`. Another is to preserve a non-conflicting sequence of group IDs. The application must choose a strategy that keeps old and new identities distinct throughout its scope.
+
+The same naming rules that make caching useful make this restart decision necessary. In the next chapter, we will follow a request for one of these named tracks from the student to the publisher.
+
+## A vocabulary translation
+
+When working with the moq-lite implementation, you will encounter **broadcast** for a named collection of tracks and **frame** for the payload unit corresponding to an object. moq-lite omits MOQT subgroups and uses a simpler group-per-stream model. Keep that distinction in mind when moving between [its documentation](https://doc.moq.dev/concept/moq-lite) and the IETF specification.
 
 ## Sources and further reading {.unnumbered #sources}
 
 - [MOQT draft-21: object model and naming](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-2)
-- [moq.dev: moq-lite terminology](https://doc.moq.dev/concept/moq-lite)
+- [moq-lite terminology](https://doc.moq.dev/concept/moq-lite)

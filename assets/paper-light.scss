@@ -1,13 +1,13 @@
 /*-- scss:defaults --*/
-$body-bg: #faf8f3;
-$body-color: #303c38;
-$link-color: #276453;
-$sidebar-bg: #f2f0e8;
-$sidebar-fg: #515d56;
-$sidebar-hl: #205c49;
-$border-color: #dedfd5;
-$code-color: #765237;
-$code-bg: #efede5;
+$body-bg: #ffffff;
+$body-color: #242a33;
+$link-color: #315fb4;
+$sidebar-bg: #f5f6f8;
+$sidebar-fg: #515b69;
+$sidebar-hl: #244d98;
+$border-color: #e1e5eb;
+$code-color: #405777;
+$code-bg: #f0f2f5;
 $font-family-sans-serif: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 /*-- scss:rules --*/
-body { --book-muted: #67716a; --book-surface: #f2f0e8; --book-accent: #276453; }
+body { --book-muted: #667180; --book-surface: #f5f6f8; --book-accent: #315fb4; }

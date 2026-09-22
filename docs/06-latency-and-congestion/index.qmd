@@ -1,64 +1,114 @@
 # Latency and Congestion
 
-When the network cannot carry everything, decide what is still useful.
+Alice can hear the lecture clearly, but her video is several seconds behind the lecturer. Objects are still arriving, and the connection has not failed. The player is receiving old work more slowly than the publisher creates new work.
 
-A player can be receiving data continuously and still be getting worse. If the data arrives slower than it is produced, its picture becomes steadily older. The problem is not necessarily a disconnected network. It may be a growing queue.
+To understand how this happens, we need to follow the delay through the system. Some delay is unavoidable: capturing, encoding, and transporting a picture all take time. Other delay comes from waiting in queues. Those queues can continue growing even while every part of the system appears busy.
 
-## Latency has several owners
+## Units before arithmetic
 
-End-to-end delay includes capture, encoding, network transit, buffering, decoding, and presentation. Relays and operating systems can introduce additional queues. Improving one stage does not erase the others.
+A **bit** is a binary digit; a **byte** contains eight bits. Network rates commonly use bits per second, while file sizes commonly use bytes. Here, the prefixes are decimal: one megabit is one million bits.
 
-```{=html}
-<figure class="latency"><div class="latency-bar"><span>Capture<br><b>20 ms</b></span><span>Encode<br><b>35 ms</b></span><span>Network<br><b>45 ms</b></span><span>Buffer<br><b>80 ms</b></span><span>Render<br><b>20 ms</b></span></div><figcaption>Illustrative budget: 200 ms from capture to display. These are teaching values, not a MoQ benchmark.</figcaption></figure>
+| Measure | Meaning | Example |
+|---|---|---|
+| Bitrate, in Mb/s | Bits produced or carried each second | 4 Mb/s of encoded media |
+| Byte rate, in MB/s | Bytes produced or carried each second | 4 Mb/s = 0.5 MB/s, before transport overhead |
+| Available capacity | The rate a path can currently sustain for this traffic | A 2 Mb/s path cannot keep up with a 4 Mb/s source |
+| Throughput | The transfer rate actually achieved | Measure delivered bytes over a stated interval |
+| RTT, in milliseconds | Network round-trip time | A 40 ms RTT is not a 40 ms playback delay |
+| Playback latency | Delay from capture to presentation | Includes processing and buffering as well as transit |
+
+A connection can have high capacity and a long delay. “Fast” is ambiguous; use the rate or time that explains the problem. Transport overhead also consumes capacity, so media bitrate and network bitrate are not identical.
+
+## Where the time goes
+
+Capture-to-display latency includes capture, encoding, network transit, buffering, decoding, and presentation. A relay or operating system can add another queue along the way. Measuring only the network leaves much of the path unexplained.
+
+Consider this illustrative budget for one frame. The numbers are teaching values, not a MoQ benchmark.
+
+| Stage | Time |
+| --- | ---: |
+| Capture | 20 ms |
+| Encode | 35 ms |
+| Network | 45 ms |
+| Playback buffer | 80 ms |
+| Decode and display | 20 ms |
+| Total | 200 ms |
+
+Reducing network time by five milliseconds takes this example from 200 ms to 195 ms. Reducing the playback buffer has more room to help, but that buffer has a purpose: it absorbs variation in arrival time. Removing it may turn uneven network delivery into uneven playback.
+
+The appropriate balance depends on the interaction. Someone listening to a lecture may accept additional buffering to avoid interruptions. Someone speaking with the lecturer needs responses quickly and may prefer occasional missing video to a growing conversational delay.
+
+## How a queue grows
+
+Suppose the publisher produces four megabits each second while Alice's path carries two. Each second adds two megabits to a queue. After five seconds, ten megabits are waiting, ignoring overhead. Even if production stops at that moment, sending that backlog at two megabits per second takes another five seconds.
+
+If production continues at the same rate, waiting longer makes the problem worse. The application must reduce future work, abandon some queued work, or accept increasing delay. This arithmetic applies whether the transport is MoQ, WebRTC, or something else.
+
+**Congestion control** limits what the transport sends to avoid overwhelming the network. When capacity falls, the transport reduces its sending rate. That protects the path, but it cannot decide whether Alice would prefer a smaller picture or an old high-resolution one. That is the job of **media adaptation**. See [RFC 9002 §7](https://www.rfc-editor.org/rfc/rfc9002.html#section-7).
+
+The player might request a lower-bitrate rendition, or the publisher might reduce future encoding quality. Reducing future production prevents further growth; it does not automatically remove an existing backlog. To return near the live edge, the system may also need to skip old content.
+
+## Choosing which content to send
+
+Before discarding content, the sender can choose how to divide the available capacity. In our lecture, preserving audio while reducing video may let Alice continue following the explanation. A scheduler—the part of the implementation choosing which pending data to send—needs to know that preference.
+
+MOQT represents these preferences through priorities and group ordering. In draft-21, a lower numeric priority means more urgent work. Subscriber priority is considered before publisher priority; group ordering helps choose among groups when those priorities are equal. The full scheduling rules are in [§5.1](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.1).
+
+Priority changes which work waits. It does not reserve bandwidth or guarantee arrival by a deadline. If urgent audio consumes the available capacity, less urgent video may remain queued. That is why scheduling preferences need to be paired with limits on how long old work remains useful. Check the conventions of the API you use: moq-lite and MOQT fields are not interchangeable merely because both are called priorities.
+
+## Abandoning old content safely
+
+Suppose video group 41 remains incomplete while group 42 provides a fresh decoding starting point. Finishing group 41 would preserve older pictures, but sending group 42 may bring Alice closer to the lecturer. Independent groups make that choice possible without requiring every preceding picture.
+
+The sender still has to respect the stream's structure. A reliable byte stream cannot deliver later bytes past a missing section. To abandon a subgroup's remaining stream data, MOQT resets that stream. A receiver must then use the media format's dependencies to decide where decoding can resume.
+
+Draft-21 defines two optional delivery timeouts. Their different starting points address different places where data can wait. The following examples use a relay's local clock and a 100 ms timeout. They are separate examples, rather than two required stages for each object. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
+
+### Waiting to enter the transport
+
+The **object delivery timeout** measures age from when the last byte of an object's header arrives from upstream. At the original publisher, it starts when the application supplies that header. Before handing the object to the underlying transport, the implementation checks its age.
+
+```{mermaid}
+flowchart TD
+    accTitle: Object delivery timeout example
+    accDescr: The relay receives the complete object header at zero milliseconds. At 120 milliseconds it checks whether to send the object. The 100 millisecond limit has passed, so it resets a subgroup stream or drops a datagram.
+    A["0 ms: header received"] --> B["120 ms: ready to send"]
+    B --> C["Age exceeds 100 ms"]
+    C --> D["Subgroup: reset stream"]
+    C --> E["Datagram: drop it"]
 ```
 
-The numbers above are an invented teaching example. If this player spends 80 milliseconds buffering, shaving five milliseconds off network transit will not create a five-millisecond experience. Measure the whole path you care about.
+Here the object has already spent too long waiting before transmission. For a subgroup, expiry resets the stream rather than removing a few bytes from its middle. For a datagram, the expired message is dropped.
 
-A lecture viewer might prefer a little extra buffering to avoid interruptions. A person talking back to the lecturer may prefer lower delay, accepting occasional missing video. The best policy depends on the interaction.
+This check is most effective when the application can still control the queue. If it hands large amounts of data to the transport in advance, expired bytes may already be beyond its reach. Draft-21 therefore recommends minimizing transport buffering and checking expiry before retransmission where the transport interface permits it.
 
-## Congestion control versus media adaptation
+### Waiting for delivery to finish
 
-Congestion control governs how much the transport can send without overwhelming the path. Media adaptation decides what content to produce or request within that budget. They cooperate, but they solve different problems.
+The **subgroup delivery timeout** starts when the endpoint knows all objects in the subgroup have been published. At a relay, receiving the upstream stream's `FIN` provides that information. This timer covers remaining delivery work, including recovery after packet loss.
 
-If the encoder continually produces more data than the connection can carry, a careful congestion controller will slow the sender. Unless the application also adapts, data accumulates above it. Respecting the network is necessary; keeping the media fresh takes another decision.
+```{mermaid}
+flowchart TD
+    accTitle: Subgroup delivery timeout example
+    accDescr: At 50 milliseconds the relay learns the subgroup is complete and starts a 100 millisecond timer. At 150 milliseconds it resets the stream if transport delivery is still incomplete.
+    A["50 ms: subgroup complete"] --> B["Start 100 ms timer"]
+    B --> C["150 ms: still undelivered?"]
+    C -->|Yes| D["Reset stream"]
+    C -->|No| E["Delivery finished"]
+```
 
-One response is to request a lower-bitrate rendition. Another is to reduce future encoding quality. A third is to abandon stale content. These choices can be combined, but none makes bandwidth unlimited.
+The transport must reach what the specification calls “all data committed” before the timer expires: its completion state for delivering the data, beyond merely accepting bytes into a send buffer. This concerns transport delivery, not whether the player has decoded or displayed the media. Otherwise, the stream is reset. Unlike the object age check, this timer can expire after the sender has handed all the data to the transport.
 
-## Priority is a preference under scarcity
+For datagrams, the subgroup timeout instead uses the same age check as the object timeout; if both are nonzero, the smaller value applies. Zero disables the corresponding timeout. These rules describe a single hop's delivery decisions. They do not create a capture-to-display deadline across the whole relay network.
 
-For the lecture, audio may deserve service before high-resolution video. If bandwidth becomes scarce, hearing the lecturer while the picture pauses can be better than losing both.
+## Returning to live playback
 
-A scheduler needs that preference in a form it can use. Priority is not a reserved pipe or a promise that every important byte will arrive by a deadline. It only helps choose among work competing for available capacity.
+After the network recovers, Alice may still be watching frames that reached her earlier. A fresh transport queue does not empty the player's playback queue. The player needs its own policy for skipping stale decoded frames or moving its presentation clock forward, while respecting audio synchronization and decoding dependencies.
 
-Numeric priority conventions vary between APIs and protocol fields. Do not copy a number from a moq-lite example into an unrelated MOQT implementation without checking its ordering rules.
+This gives us two places to observe recovery: when fresh objects arrive, and when fresh content is actually displayed. Measuring both distinguishes network backlog from playback backlog.
 
-## Give old work a stopping point
+A useful experiment briefly reduces available bandwidth and then restores it. Watch whether playback returns near live, stays behind, or repeatedly changes rendition. Record interruptions as well as average delay. A large keyframe can briefly exceed the path's capacity even when the average bitrate fits, so the sequence of events matters.
 
-Suppose group 41 is incomplete and group 42 can independently restart decoding. Finishing 41 might preserve a moment the viewer has already missed. Sending 42 may bring the viewer closer to live.
-
-MOQT delivery timeouts and stream cancellation provide mechanisms for giving up on work. Draft-21 defines two optional limits with different starting points. An **object delivery timeout** measures age from when the last byte of the object header arrives from upstream, or is supplied by the original publisher’s application. Before passing an object to the transport, the implementation checks whether it has waited too long. A **subgroup delivery timeout** starts when the endpoint knows all objects in that subgroup have been published, such as when the upstream stream ends with `FIN`. It bounds the remaining wait for transport delivery. See [§5.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-5.2).
-
-Suppose a relay finishes receiving an object header at local time 0 ms and its object timeout is 100 ms. If that object is still waiting to be handed to the transport at 120 ms, it is expired. For stream-based delivery, the relay resets the subgroup stream; it does not cut a hole in the reliable byte stream and continue as if nothing happened. For datagram delivery, an expired datagram must instead be dropped.
-
-For subgroup delivery, now suppose the relay learns at 50 ms that the subgroup is complete, and its subgroup timeout is 100 ms. That separate timer expires at 150 ms. If the transport has not finished delivering all the subgroup data by then—the state the specification calls “all data committed”—the stream is reset. This catches a different problem: data may already have been sent but still be awaiting delivery after loss.
-
-For datagrams, the subgroup timeout uses the same age check as the object timeout; when both are nonzero, the smaller value applies. A value of zero disables that timeout.
-
-These are per-hop decisions, not universal capture-to-display deadlines. They also explain why hidden queues matter: object data already buffered inside the transport may be beyond the application’s ability to expire it. Keep those queues small, and measure the player’s queue too.
-
-The player also needs a policy for already received data. A network can deliver fresh objects quickly while the player continues displaying an old queue. Observe both transport backlog and playback backlog.
-
-## A simple queue calculation
-
-Imagine a publisher generating four megabits each second over a path carrying two. In five seconds, ten megabits of extra work accumulate, ignoring overhead. At two megabits per second, that backlog alone takes five seconds to transmit after production stops.
-
-This simplified arithmetic explains why “wait and catch up” is not a policy when the mismatch continues. Reduce the rate, discard safely, or accept an increasing delay. A different protocol cannot repeal that relationship.
-
-## Test recovery, not just steady playback
-
-A good experiment briefly restricts bandwidth, then restores it. Watch whether playback returns near the live edge, remains far behind, or repeatedly switches quality. Record gaps as well as averages.
-
-Use a repeatable recorded source before involving a camera. You want to distinguish a network response from changes in scene complexity or encoder load. Later, repeat on real devices and real networks; a tidy simulation cannot cover every queue in the path.
+Use a repeatable recorded source for the first experiment. It keeps scene complexity and encoder load stable while you investigate the network response. Once you understand that run, repeat on real devices and networks, where capture, rendering, and additional queues can change the result.
 
 ## Sources and further reading {.unnumbered #sources}
 

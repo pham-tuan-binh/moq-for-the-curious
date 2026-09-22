@@ -1,26 +1,31 @@
 # Relays and Distribution
 
-How one publication reaches many people without becoming many publications.
-
 If every viewer needs a separate copy directly from the lecturer, the lecturer’s upload becomes the audience limit. A relay moves the copying work into the distribution network.
 
 ## A relay plays both roles
 
 A relay is a subscriber toward an upstream source and a publisher toward downstream subscribers. It terminates transport connections and handles MoQ metadata. It is more than a router forwarding encrypted IP packets.
 
-```{=html}
-<figure class="flow"><div class="flow-nodes"><div><span class="node-icon">01</span><strong>Publisher</strong><span>Creates objects</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">02</span><strong>Relay</strong><span>Forwards objects</span></div><span class="connector" aria-hidden="true">→</span><div><span class="node-icon">03</span><strong>Subscribers</strong><span>Choose their tracks</span></div></div><figcaption>One publisher. A shared relay. Each viewer receives the tracks they request.</figcaption></figure>
+```{mermaid}
+flowchart TD
+  accTitle: A relay shares one source among several viewers
+  accDescr: The publisher sends one audio track to a relay. The relay sends a separate copy to Alice, Bob, and a recorder.
+  P["Lecturer publishes audio"] -->|One upstream copy| R["Relay"]
+  R --> A["Alice"]
+  R --> B["Bob"]
+  R --> C["Recorder"]
 ```
+
 
 With several interested viewers, a relay can share upstream content and forward it to each downstream connection. If a second relay is closer to another audience, it can repeat that pattern. A network of these relationships provides distribution across regions.
 
-This does not eliminate bandwidth costs. If a relay sends a two-megabit-per-second track to 100 viewers, the payload egress is roughly 200 megabits per second, before overhead. The benefit is sharing the upstream path and placing fan-out where capacity is available.
+Each downstream connection still needs its own bytes. If a relay sends a two-megabit-per-second track to 100 viewers, the payload egress is roughly 200 megabits per second, before overhead. The benefit is sharing the upstream path and placing fan-out where capacity is available.
 
 ## Caching helps, but has limits
 
 A caching relay can hold recently received objects. A new viewer may obtain a useful group without waiting for the original publisher to send it again. Immutable object identities let different viewers reuse the same cached payload.
 
-MOQT permits caching; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. Never infer that an accepted live subscription includes an unlimited archive.
+MOQT permits caching; it does not require every relay to store every object. Even a caching relay has a retention policy and finite memory. An accepted live subscription therefore tells the viewer nothing about how much history the relay retains.
 
 For the lecture, retaining a few useful recent groups may improve startup. Keeping the entire class for replay is a separate storage feature with different costs and lifetime requirements.
 
@@ -28,7 +33,7 @@ For the lecture, retaining a few useful recent groups may improve startup. Keepi
 
 The lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.
 
-This is also why “the stream has low latency” is incomplete. Which subscriber? Which path? Which queue? A nearby viewer and a distant viewer may have very different experiences of the same publication.
+Alice’s connection may deliver each new group immediately, while Bob’s connection builds a queue. Their playback delay differs even though both request the same publication. The relay can choose delivery settings for each subscription according to that viewer’s path.
 
 Measure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.
 

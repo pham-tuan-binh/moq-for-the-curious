@@ -1,54 +1,69 @@
 # Security and Access
 
-Protecting the connection and protecting the content are different jobs.
+Our lecture is available only to enrolled students. The lecturer publishes through a relay, and students connect to that relay to watch. To make this private, we need to decide who can connect, who can publish or subscribe, and whether the relay itself may read the media. Each decision protects a different part of the system.
 
-Our lecture is private. The browser shows a secure connection. Can we now assume that only invited students can watch? No. We have established one property of the connection, but not the application’s complete access policy.
+## What the secure connection protects
 
-## Connection encryption
+QUIC uses TLS to establish packet-protection keys and authenticate the server. When a student's browser verifies the relay's certificate, it checks that it reached the expected relay under the applicable trust rules. That check does not identify the student to the relay. Client authentication is a separate choice, as explained in [RFC 9001 §4.4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4.4).
 
-QUIC incorporates TLS to authenticate and protect its connection. For a browser connecting to a relay, the certificate and hostname must meet the applicable trust requirements. Disabling verification is not a production solution to a failed connection.
+The lecturer and student each have a connection to the relay. The relay terminates both, so it can read the application payload unless the application adds content encryption.
 
-The usual certificate check tells the browser which relay it reached. It does not tell the relay which student is watching. TLS permits separate client authentication, and an application can use its own identity and authorization mechanism. Keeping these directions separate avoids treating a secure connection as a room invitation. [RFC 9001 §4.4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4.4) describes the distinction.
+```{mermaid}
+flowchart LR
+    accTitle: Two protected connections through a relay
+    accDescr: The lecturer connects securely to a relay, and the relay connects securely to the student. These are separate connections. The relay can read the media unless the application encrypts the content end to end.
+    P[Lecturer] <-->|Protected connection A| R[Relay]
+    R <-->|Protected connection B| S[Student]
+```
 
-With a relay in the path, there are separate transport connections on either side. The relay terminates them. Transport encryption therefore does not, by itself, hide the application’s payload from the relay.
+For a service that trusts its relay operator with the lecture, this may be the intended arrangement. The transport protects traffic between endpoints, while the relay enforces access rules. A certificate failure should be corrected through the deployment's trust configuration; disabling verification removes an essential check on which server receives the connection.
 
-## End-to-end content protection
+## Giving each participant the right permissions
 
-If the relay must not read the media, the payload needs a separate end-to-end encryption design. That includes distributing keys to authorized viewers, changing keys when appropriate, authenticating the content, and defining how new viewers join.
+**Authentication** establishes identity. **Authorization** decides what that identity may do. In our lecture, the lecturer may publish under the class namespace, while students may subscribe to it. A student should not gain publication rights merely because they can watch.
 
-A relay can forward encrypted payloads using visible routing metadata. This does not mean it learns nothing. Names, sizes, timing, and subscription relationships can still reveal information about the session.
+The application can carry these permissions in a credential, such as a JSON Web Token (JWT) where the implementation supports it. The relay must verify the credential and its restrictions: who issued it, which service it is for, whether it has expired, and which names and operations it permits. A token's presence alone establishes none of these facts.
 
-Decide your trust model before picking a feature label. “Encrypted” is incomplete unless you can say who holds the keys and which parties can see the content.
+A stolen bearer credential can also be reused while it remains valid. Expiration limits its lifetime, but the deployment still needs a policy for stolen credentials and revocation. MOQT discusses this replay problem in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
 
-## Who may publish, and who may subscribe?
+Access decisions extend to discovery. Even if an outsider cannot receive the objects, revealing a private lecture's title may disclose information. The service should decide whether that outsider can discover the publication at all.
 
-Publishing and subscribing are separate permissions. A student allowed to watch a lecture should not automatically be allowed to impersonate the lecturer or publish objects under the same namespace.
+## Keeping the relay from reading the lecture
 
-Bind permissions to the relevant identity and namespace. A token format, including JSON Web Token (JWT) when used by an implementation, is a way to carry authorization information. Its mere presence does not prove that an endpoint checks scope, expiry, issuer, or intended audience correctly.
+Some services need a stricter boundary: only the lecturer and enrolled students may read the content, including when a relay operator is untrusted. The lecturer then encrypts the media before handing it to the transport. Students decrypt it after receiving it. This is **end-to-end content encryption**.
 
-Expiry also does not prevent every replay: a stolen bearer credential may be usable again while it remains valid. The deployment needs a policy for stolen credentials, revocation, and any restrictions that bind a credential to its intended use. MOQT discusses replay risks separately from authorization in [draft-21 §15.3.2](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.3.2).
+```{mermaid}
+flowchart LR
+    accTitle: Content encryption across an intermediate relay
+    accDescr: The lecturer encrypts media with content keys. The relay forwards the encrypted payload using visible routing metadata. An authorized student decrypts the media with the required content keys.
+    P[Lecturer encrypts media] --> R[Relay forwards encrypted payload]
+    R --> S[Student decrypts media]
+    N[Names and delivery metadata remain visible] -.-> R
+```
 
-Discovery also needs a policy. A private lecture’s name can be sensitive even if its media requests are rejected. Decide whether unauthorized clients may learn that it exists.
+The service must distribute keys to authorized students, authenticate the content, decide when to change keys, and define how a newly enrolled student joins. These are part of the content-encryption design; establishing QUIC connections does not supply them automatically. MOQT leaves such mechanisms outside the transport specification. See [draft-21 §15.4](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.4).
 
-## Shared caches need trustworthy names
+The relay can still route encrypted payloads using visible metadata. Names, sizes, timing, and subscription relationships can reveal information even when the lecture itself is unreadable. The trust decision therefore includes both who holds the content keys and what the forwarding service can observe.
 
-Caching assumes that the same object identity represents the same payload. If an unauthorized publisher can inject objects under another publisher’s names, the problem can spread beyond a single connection.
+## Protecting cached content
 
-Authorize publication ownership and avoid name collisions across restarts. Consider what happens when two sources claim the same track. A relay should not resolve identity ambiguity by treating whoever arrived last as trustworthy.
+The relay may retain objects so that another student can join quickly. This works because an object identity refers to the same payload wherever it is served within the service's scope. If an attacker could publish different bytes under the lecturer's identity, those bytes might reach several students through the cache.
 
-## Limit work as well as access
+Publication authorization must therefore establish ownership of the relevant names. The service also needs to handle legitimate restarts: a lecturer who reconnects must not reuse old object identities for new payloads. A fresh publication namespace or a continuing non-conflicting sequence prevents old cached objects from colliding with new ones.
 
-Even an authenticated client can request too much. Connections, subscriptions, discovery results, queued bytes, and cached objects all consume resources. Apply bounds that match the deployment and observe when they are reached.
+## Bounding the work a client can cause
 
-A low-priority stream can remain unsent while more urgent work keeps arriving. Its buffered bytes still occupy memory. In MOQT draft-21, reaching a resource limit requires an endpoint, whether publisher or subscriber, to cancel a stream, preferably the lowest-priority one; choosing an actual memory budget remains an implementation decision. See [§15.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.5).
+An enrolled student may be entitled to the lecture without being entitled to unlimited server resources. A client could subscribe to every rendition, repeatedly request discovery results, or leave streams stalled. Connections, subscriptions, queued bytes, and caches all consume resources that the service must bound.
 
-For the lecture, it is reasonable to limit how many tracks a viewer can request at once. Otherwise, a client might subscribe to every rendition while displaying only one. Authorization answers whether it may access the content; resource policy answers how much work the service will do for it.
+Consider a low-priority video stream waiting while more urgent audio keeps arriving. Its bytes still occupy memory. In MOQT draft-21, each endpoint, whether publisher or subscriber, must cancel a stream when it reaches a resource limit, preferably its lowest-priority stream. The actual memory budget remains an implementation decision. See [§15.5](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-15.5).
 
-## Keep experiments private on purpose
+For the lecture service, a limit on concurrent track subscriptions can prevent one viewer from requesting every rendition while displaying only one. Monitoring those limits helps distinguish a slow student connection from an application that is creating more work than intended.
 
-The moq.dev public anonymous relay is documented as public and discoverable. Use public test media there. For private media, use a relay with an explicit access configuration and verify rejection with an unauthorized client.
+## Testing the access policy
 
-A successful authorized playback test proves only the allowed case. Also check that a viewer cannot publish, another room cannot subscribe, and an expired credential cannot begin a new request. Keep tokens out of copied logs and shared URLs wherever your integration permits.
+A successful playback test checks only the enrolled student's path. Test the other roles too: a viewer attempting to publish, a student from another class attempting to subscribe, and a client beginning a request with an expired credential. Confirm that each fails at the intended boundary. Keep credentials out of copied logs and shared URLs wherever the integration permits.
+
+For experiments, the moq.dev public anonymous relay is explicitly public and discoverable. Use public test content there. A private lecture needs a relay with deliberate access configuration, followed by the rejection tests above. The project's [development guide](https://doc.moq.dev/setup/dev) describes the public relay, and its [production guide](https://doc.moq.dev/setup/prod) covers deployment access configuration.
 
 ## Sources and further reading {.unnumbered #sources}
 
