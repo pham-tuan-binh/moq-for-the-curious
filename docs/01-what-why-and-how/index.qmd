@@ -4,6 +4,13 @@ Imagine joining a live lecture from home. You hear the lecturer explain a new sl
 
 A live media system has to do more than deliver a file correctly. It has to keep the different parts of an experience close enough together, decide what to do when a connection slows down, and serve people who join at different times. Media over QUIC, or **MoQ**, is an approach to those problems. Throughout this book, we will use the lecture to understand how it works.
 
+```{=html}
+<figure class="editorial-illustration">
+<img src="../../assets/illustrations/lecture-distribution.png" width="1536" height="1024" loading="lazy" decoding="async" alt="A lecturer sends one publication to a relay, which distributes it to a laptop viewer, a phone listener, and a classroom screen.">
+<figcaption>One lecture, several viewing experiences. The relay distributes the publication; each viewer chooses the tracks it needs. This illustration shows media flowing outward, omitting requests and transport acknowledgments.</figcaption>
+</figure>
+```
+
 ## What is MoQ?
 
 MoQ is a family of work around delivering media over **QUIC**, a secure network transport that can carry several independent sequences of bytes over one connection. At its center is **MoQ Transport**, usually written **MOQT**. It defines how one endpoint makes content available and another asks to receive it. This arrangement is called **publish/subscribe**.

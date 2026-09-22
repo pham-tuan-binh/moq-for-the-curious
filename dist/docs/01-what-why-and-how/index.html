@@ -15,9 +15,9 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/01-what-why-and-how/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=7118d84ea922" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=7118d84ea922"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=7118d84ea922" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=971434ffb33a" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=971434ffb33a"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=971434ffb33a" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
@@ -32,6 +32,10 @@
 
 <p>Imagine joining a live lecture from home. You hear the lecturer explain a new slide while the screen still shows the previous one. All the media may eventually arrive, yet the conversation is difficult to follow.</p>
 <p>A live media system has to do more than deliver a file correctly. It has to keep the different parts of an experience close enough together, decide what to do when a connection slows down, and serve people who join at different times. Media over QUIC, or <strong>MoQ</strong>, is an approach to those problems. Throughout this book, we will use the lecture to understand how it works.</p>
+<figure class="editorial-illustration figure">
+<img src="../../assets/illustrations/lecture-distribution.png" width="1536" height="1024" loading="lazy" decoding="async" alt="A lecturer sends one publication to a relay, which distributes it to a laptop viewer, a phone listener, and a classroom screen." class="figure-img">
+<figcaption>One lecture, several viewing experiences. The relay distributes the publication; each viewer chooses the tracks it needs. This illustration shows media flowing outward, omitting requests and transport acknowledgments.</figcaption>
+</figure>
 <section id="what-is-moq" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-moq">What is MoQ?</h2>
 <p>MoQ is a family of work around delivering media over <strong>QUIC</strong>, a secure network transport that can carry several independent sequences of bytes over one connection. At its center is <strong>MoQ Transport</strong>, usually written <strong>MOQT</strong>. It defines how one endpoint makes content available and another asks to receive it. This arrangement is called <strong>publish/subscribe</strong>.</p>

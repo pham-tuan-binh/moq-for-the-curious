@@ -15,15 +15,15 @@
 <meta property="og:url" content="https://moqforthecurious.com/docs/02-quic-and-webtransport/">
 <link rel="preload" href="../../assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{display:none}@media(max-width:760px){.sidebar{display:block;position:static;width:auto;height:auto;border:0}}</style></noscript>
-<link rel="icon" href="../../assets/favicon.svg?v=7118d84ea922" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/reader.css?v=7118d84ea922"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
-<script src="../../assets/reader.js?v=7118d84ea922" defer></script></head>
+<link rel="icon" href="../../assets/favicon.svg?v=971434ffb33a" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/reader.css?v=971434ffb33a"><script src="../../site_libs/quarto-diagram/mermaid.min.js" defer></script>
+<script src="../../assets/reader.js?v=971434ffb33a" defer></script></head>
 <body data-root="../../"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="../../">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
 <div class="reader-tools"><button id="search-open" aria-keyshortcuts="/" title="Search the book (press /)">Search</button></div>
 <nav id="chapters" aria-label="Chapters"><a href="../../"><span>Introduction</span></a><div class="part">Fundamentals</div><a href="../../docs/01-what-why-and-how/"><span>What, Why and How</span></a><a href="../../docs/02-quic-and-webtransport/" aria-current="page"><span>QUIC and WebTransport</span></a><a href="../../docs/03-tracks-groups-and-objects/"><span>Tracks, Groups and Objects</span></a><a href="../../docs/04-publishing-and-subscribing/"><span>Publishing and Subscribing</span></a><a href="../../docs/05-relays-and-distribution/"><span>Relays and Distribution</span></a><a href="../../docs/06-latency-and-congestion/"><span>Latency and Congestion</span></a><a href="../../docs/07-media-and-the-browser/"><span>Media and the Browser</span></a><div class="part">In practice</div><a href="../../docs/08-security-and-access/"><span>Security and Access</span></a><a href="../../docs/09-your-first-moq-system/"><span>Your First MoQ System</span></a><a href="../../docs/10-debugging/"><span>Debugging</span></a><div class="part">Reference</div><a href="../../docs/11-faq/"><span>Frequently Asked Questions</span></a><a href="../../docs/12-glossary/"><span>Glossary</span></a><a href="../../docs/13-references/"><span>References and Reading</span></a></nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 02</p><h1>QUIC and WebTransport</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">Chapter 02</p><h1>QUIC and WebTransport</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections"><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></details>
 
 
 
@@ -331,6 +331,187 @@
 </table></div>
 <p>Selected first-byte bits and the packet-number bytes have <strong>header protection</strong>. The payload has authenticated encryption. A packet capture therefore does not expose this logical frame view without the relevant keys. Long headers, used by Initial and Handshake packets, also carry a version and source connection ID. Read <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17">RFC 9000 §17</a> for the exact layouts and <a href="https://www.rfc-editor.org/rfc/rfc9001.html#section-5">RFC 9001 §5</a> for protection.</p>
 </section>
+<section id="read-the-first-byte-bit-by-bit" class="level3">
+<h3 class="anchored" data-anchor-id="read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</h3>
+<p>Here is the QUIC v1 short header <strong>before header protection is applied</strong>. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.</p>
+<figure class="wire-format figure">
+
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table" aria-label="QUIC version 1 short header bit layout">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Bit 7</th>
+<th data-quarto-table-cell-role="th">6</th>
+<th data-quarto-table-cell-role="th">5</th>
+<th data-quarto-table-cell-role="th">4</th>
+<th data-quarto-table-cell-role="th">3</th>
+<th data-quarto-table-cell-role="th">2</th>
+<th data-quarto-table-cell-role="th">1</th>
+<th data-quarto-table-cell-role="th">0</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0<br>
+<span class="small">Form</span></td>
+<td>1<br>
+<span class="small">Fixed</span></td>
+<td>S<br>
+<span class="small">Spin</span></td>
+<td colspan="2">00<br>
+<span class="small">Reserved</span></td>
+<td>K<br>
+<span class="small">Key phase</span></td>
+<td colspan="2">PP<br>
+<span class="small">Packet-number length</span></td>
+</tr>
+<tr class="even">
+<td colspan="8">Destination connection ID <span class="small">— length known from connection context; may be zero</span></td>
+</tr>
+<tr class="odd">
+<td colspan="8">Packet number <span class="small">— 1, 2, 3, or 4 bytes</span></td>
+</tr>
+<tr class="even">
+<td colspan="8">Protected payload <span class="small">— encrypted frames and authentication tag</span></td>
+</tr>
+</tbody>
+</table></div>
+
+<figcaption>QUIC v1 short header. Header protection masks the reserved bits, key-phase bit, packet-number-length bits, and packet-number bytes.</figcaption>
+</figure>
+<p><code>PP</code> encodes the packet-number length minus one: <code>00</code> means one byte; <code>11</code> means four. The spin bit supports optional passive latency measurement. The key-phase bit helps identify packet-protection key updates. The short header has no version field or connection-ID-length field; decoding requires connection context. See <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-17.3.1">RFC 9000 §17.3.1</a>.</p>
+<p>For example, first byte <code>0x41</code> is binary <code>01000001</code>: short header, fixed bit set, spin zero, reserved zero, key phase zero, and a two-byte packet number. This is the unprotected value. You cannot apply that reading directly to a protected packet capture.</p>
+</section>
+<section id="how-variable-length-integers-work" class="level3">
+<h3 class="anchored" data-anchor-id="how-variable-length-integers-work">How variable-length integers work</h3>
+<p>Many QUIC frame fields use a <strong>variable-length integer</strong>, abbreviated <em>varint</em>. The first two bits say how many bytes belong to the integer; the remaining bits carry its value, most significant bytes first.</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Prefix bits</th>
+<th style="text-align: right;">Total bytes</th>
+<th style="text-align: right;">Value bits</th>
+<th style="text-align: right;">Largest value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>00</code></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">63</td>
+</tr>
+<tr class="even">
+<td><code>01</code></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">16,383</td>
+</tr>
+<tr class="odd">
+<td><code>10</code></td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">1,073,741,823</td>
+</tr>
+<tr class="even">
+<td><code>11</code></td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">4,611,686,018,427,387,903</td>
+</tr>
+</tbody>
+</table></div>
+<p>A one-byte value of 37 is <code>0x25</code>. The value 64 needs at least two bytes: <code>0x40 0x40</code>. Remove the leading <code>01</code> length prefix, then interpret the remaining 14 bits as the value. This encoding is defined in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-16">RFC 9000 §16</a>. Packet numbers use a different encoding; do not parse them as varints.</p>
+</section>
+<section id="decode-one-stream-frame" class="level3">
+<h3 class="anchored" data-anchor-id="decode-one-stream-frame">Decode one STREAM frame</h3>
+<p>A <code>STREAM</code> frame type is in the range <code>0x08</code>–<code>0x0f</code>. Its low three bits control which fields follow:</p>
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Flag</th>
+<th>Mask</th>
+<th>When set</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OFF</td>
+<td><code>0x04</code></td>
+<td>An Offset field is present; otherwise the offset is zero</td>
+</tr>
+<tr class="even">
+<td>LEN</td>
+<td><code>0x02</code></td>
+<td>A Length field is present; otherwise data extends to the packet’s end</td>
+</tr>
+<tr class="odd">
+<td>FIN</td>
+<td><code>0x01</code></td>
+<td>These bytes end the stream’s sending direction</td>
+</tr>
+</tbody>
+</table></div>
+<figure class="wire-format figure">
+
+<div class="book-table-scroll" tabindex="0" role="region" aria-label="Reference table"><table class="caption-top table" aria-label="QUIC STREAM frame fields in wire order">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Type</th>
+<th data-quarto-table-cell-role="th">Stream ID</th>
+<th data-quarto-table-cell-role="th">Offset</th>
+<th data-quarto-table-cell-role="th">Length</th>
+<th data-quarto-table-cell-role="th">Data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Varint<br>
+<span class="small">0x08–0x0f</span></td>
+<td>Varint<br>
+<span class="small">Always</span></td>
+<td>Varint<br>
+<span class="small">Only if OFF = 1</span></td>
+<td>Varint<br>
+<span class="small">Only if LEN = 1</span></td>
+<td>Bytes<br>
+<span class="small">Application content</span></td>
+</tr>
+</tbody>
+</table></div>
+
+<figcaption>STREAM frame layout after packet decryption. Each variable-length field changes where the next field begins.</figcaption>
+</figure>
+<p>Try this complete illustrative frame, shown <strong>after decryption</strong>:</p>
+<pre class="text"><code>0e  02  00  03  61 62 63
+│   │   │   │   └─────── three data bytes: "abc"
+│   │   │   └─────────── length = 3
+│   │   └─────────────── offset = 0
+│   └────────────────── stream ID = 2
+└────────────────────── STREAM: OFF=1, LEN=1, FIN=0</code></pre>
+<p>Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: <code>abc</code> is just recognizable test data. Exact frame rules appear in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8">RFC 9000 §19.8</a>, with stream IDs in <a href="https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1">§2.1</a>.</p>
+</section>
 </section>
 <section id="what-a-lost-packet-holds-up" class="level2">
 <h2 class="anchored" data-anchor-id="what-a-lost-packet-holds-up">What a lost packet holds up</h2>
@@ -486,6 +667,6 @@
 </section>
 
 <nav class="chapter-navigation" aria-label="Adjacent chapters"><a href="../../docs/01-what-why-and-how/"><small>Previous chapter</small><span>What, Why and How</span></a><a href="../../docs/03-tracks-groups-and-objects/"><small>Next chapter</small><span>Tracks, Groups and Objects</span></a></nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p><a class="toc-level-2" href="#a-short-introduction-to-tcpip">A short introduction to TCP/IP</a><a class="toc-level-3" href="#tcp-and-udp-make-different-promises">TCP and UDP make different promises</a><a class="toc-level-3" href="#delay-rate-and-feedback">Delay, rate, and feedback</a><a class="toc-level-2" href="#why-one-ordered-stream-can-hurt">Why one ordered stream can hurt</a><a class="toc-level-2" href="#independent-streams">Independent streams</a><a class="toc-level-2" href="#reading-a-quic-packet">Reading a QUIC packet</a><a class="toc-level-3" href="#inside-the-packet">Inside the packet</a><a class="toc-level-3" href="#read-the-first-byte-bit-by-bit">Read the first byte, bit by bit</a><a class="toc-level-3" href="#how-variable-length-integers-work">How variable-length integers work</a><a class="toc-level-3" href="#decode-one-stream-frame">Decode one STREAM frame</a><a class="toc-level-2" href="#what-a-lost-packet-holds-up">What a lost packet holds up</a><a class="toc-level-2" href="#reliability-can-have-an-ending">Reliability can have an ending</a><a class="toc-level-2" href="#where-datagrams-fit">Where datagrams fit</a><a class="toc-level-2" href="#security-belongs-to-the-connection">Security belongs to the connection</a><a class="toc-level-3" href="#the-handshake-message-by-message">The handshake, message by message</a><a class="toc-level-2" href="#webtransport-is-the-browser-doorway">WebTransport is the browser doorway</a><a class="toc-level-2" href="#a-fallback-changes-the-tradeoffs">A fallback changes the tradeoffs</a><a class="toc-level-2" href="#sources">Sources and further reading</a></nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>

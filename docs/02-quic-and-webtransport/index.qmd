@@ -139,6 +139,75 @@ For an established QUIC v1 connection, the short-header layout is more compact:
 Selected first-byte bits and the packet-number bytes have **header protection**. The payload has authenticated encryption. A packet capture therefore does not expose this logical frame view without the relevant keys. Long headers, used by Initial and Handshake packets, also carry a version and source connection ID. Read [RFC 9000 §17](https://www.rfc-editor.org/rfc/rfc9000.html#section-17) for the exact layouts and [RFC 9001 §5](https://www.rfc-editor.org/rfc/rfc9001.html#section-5) for protection.
 
 
+### Read the first byte, bit by bit
+
+Here is the QUIC v1 short header **before header protection is applied**. Read the first row from the most significant bit to the least significant bit. The remaining rows show field order; their drawn widths are not proportional to their lengths.
+
+```{=html}
+<figure class="wire-format">
+<table aria-label="QUIC version 1 short header bit layout">
+<thead><tr><th>Bit 7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0</th></tr></thead>
+<tbody>
+<tr><td>0<br><small>Form</small></td><td>1<br><small>Fixed</small></td><td>S<br><small>Spin</small></td><td colspan="2">00<br><small>Reserved</small></td><td>K<br><small>Key phase</small></td><td colspan="2">PP<br><small>Packet-number length</small></td></tr>
+<tr><td colspan="8">Destination connection ID <small>— length known from connection context; may be zero</small></td></tr>
+<tr><td colspan="8">Packet number <small>— 1, 2, 3, or 4 bytes</small></td></tr>
+<tr><td colspan="8">Protected payload <small>— encrypted frames and authentication tag</small></td></tr>
+</tbody></table>
+<figcaption>QUIC v1 short header. Header protection masks the reserved bits, key-phase bit, packet-number-length bits, and packet-number bytes.</figcaption>
+</figure>
+```
+
+`PP` encodes the packet-number length minus one: `00` means one byte; `11` means four. The spin bit supports optional passive latency measurement. The key-phase bit helps identify packet-protection key updates. The short header has no version field or connection-ID-length field; decoding requires connection context. See [RFC 9000 §17.3.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-17.3.1).
+
+For example, first byte `0x41` is binary `01000001`: short header, fixed bit set, spin zero, reserved zero, key phase zero, and a two-byte packet number. This is the unprotected value. You cannot apply that reading directly to a protected packet capture.
+
+### How variable-length integers work
+
+Many QUIC frame fields use a **variable-length integer**, abbreviated *varint*. The first two bits say how many bytes belong to the integer; the remaining bits carry its value, most significant bytes first.
+
+| Prefix bits | Total bytes | Value bits | Largest value |
+|---|---:|---:|---:|
+| `00` | 1 | 6 | 63 |
+| `01` | 2 | 14 | 16,383 |
+| `10` | 4 | 30 | 1,073,741,823 |
+| `11` | 8 | 62 | 4,611,686,018,427,387,903 |
+
+A one-byte value of 37 is `0x25`. The value 64 needs at least two bytes: `0x40 0x40`. Remove the leading `01` length prefix, then interpret the remaining 14 bits as the value. This encoding is defined in [RFC 9000 §16](https://www.rfc-editor.org/rfc/rfc9000.html#section-16). Packet numbers use a different encoding; do not parse them as varints.
+
+### Decode one STREAM frame
+
+A `STREAM` frame type is in the range `0x08`–`0x0f`. Its low three bits control which fields follow:
+
+| Flag | Mask | When set |
+|---|---|---|
+| OFF | `0x04` | An Offset field is present; otherwise the offset is zero |
+| LEN | `0x02` | A Length field is present; otherwise data extends to the packet's end |
+| FIN | `0x01` | These bytes end the stream's sending direction |
+
+```{=html}
+<figure class="wire-format">
+<table aria-label="QUIC STREAM frame fields in wire order">
+<thead><tr><th>Type</th><th>Stream ID</th><th>Offset</th><th>Length</th><th>Data</th></tr></thead>
+<tbody><tr><td>Varint<br><small>0x08–0x0f</small></td><td>Varint<br><small>Always</small></td><td>Varint<br><small>Only if OFF = 1</small></td><td>Varint<br><small>Only if LEN = 1</small></td><td>Bytes<br><small>Application content</small></td></tr></tbody>
+</table>
+<figcaption>STREAM frame layout after packet decryption. Each variable-length field changes where the next field begins.</figcaption>
+</figure>
+```
+
+Try this complete illustrative frame, shown **after decryption**:
+
+```text
+0e  02  00  03  61 62 63
+│   │   │   │   └─────── three data bytes: "abc"
+│   │   │   └─────────── length = 3
+│   │   └─────────────── offset = 0
+│   └────────────────── stream ID = 2
+└────────────────────── STREAM: OFF=1, LEN=1, FIN=0
+```
+
+Every integer in this example fits in one byte. Stream 2 is a client-initiated unidirectional stream. These three bytes occupy offsets 0, 1, and 2; FIN is unset, so the frame does not end the stream. This is a QUIC example, not a valid MoQ message: `abc` is just recognizable test data. Exact frame rules appear in [RFC 9000 §19.8](https://www.rfc-editor.org/rfc/rfc9000.html#section-19.8), with stream IDs in [§2.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-2.1).
+
+
 ## What a lost packet holds up
 
 Suppose camera bytes use stream A and captions use stream B. The offsets below are illustrative byte positions, not MoQ object IDs.

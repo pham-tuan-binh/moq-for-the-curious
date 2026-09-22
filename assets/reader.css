@@ -42,3 +42,5 @@ dialog{width:min(460px,calc(100% - 32px));max-height:60dvh;padding:16px;border-r
 @media print{.mobile-outline{display:none}}
 
 main a:visited{color:#b88dff}#chapters a[aria-current]{color:var(--accent)}
+
+.wire-format{background:var(--bg);border-radius:2px}.wire-format table{table-layout:fixed;margin:0;font-size:14px;min-width:560px}.wire-format th,.wire-format td{text-align:center;border:1px solid var(--line);padding:12px 6px}.wire-format th{font-weight:400;color:var(--muted);font-size:12px}.wire-format td{color:var(--fg)}.wire-format small{display:block;font-size:12px;color:var(--muted);line-height:1.4}.wire-format .book-table-scroll{margin:0}.editorial-illustration img{display:block;width:100%;height:auto}.editorial-illustration{background:var(--bg)}
