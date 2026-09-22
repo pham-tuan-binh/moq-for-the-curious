@@ -57,7 +57,22 @@ Media timestamps preserve the intended spacing. Consider these illustrative valu
 
 The player chooses receiver time 160 as the moment to display media time zero. It adds each subsequent media timestamp to that anchor. Although B and C arrive only five milliseconds apart, the player displays them 34 milliseconds apart, preserving the media timeline.
 
+### Arrival time and presentation time
+
+```{mermaid}
+flowchart LR
+    accTitle: Uneven arrivals become evenly scheduled presentation
+    accDescr: Frame A arrives at receiver time 100 and is displayed at 160. B arrives at 145 and is displayed at 193. C arrives at 150 and is displayed at 227. Each frame waits until its scheduled display time.
+    A["A arrives: 100 ms"] -->|"Wait 60 ms"| D["Display A: 160 ms"]
+    B["B arrives: 145 ms"] -->|"Wait 48 ms"| E["Display B: 193 ms"]
+    C["C arrives: 150 ms"] -->|"Wait 77 ms"| F["Display C: 227 ms"]
+```
+
+Each arrow follows one frame through the playback buffer. The diagram uses the table's receiver clock; arrow lengths are not a time scale.
+
 The initial wait gives later frames some room to arrive. If B instead arrives at receiver time 205, it misses its planned time of 193. The player must then apply its late-frame policy, perhaps skipping the picture or moving playback later. That is the buffering tradeoff: waiting longer can absorb more variation, at the cost of a later picture.
+
+### Keeping audio and video together
 
 Audio follows the same presentation timeline. An audio sample and a picture intended for media time 67 ms can arrive separately; the player schedules them against a shared clock so the lecturer's voice stays aligned with their face. Over longer sessions it may also need to correct differences between clocks.
 

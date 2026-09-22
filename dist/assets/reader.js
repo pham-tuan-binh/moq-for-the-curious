@@ -1,8 +1,5 @@
 (() => {
   const root = document.documentElement;
-  const themeButton = document.querySelector('#theme-toggle');
-  const dark = () => root.dataset.theme === 'dark';
-  const setThemeLabel = () => { themeButton.textContent = dark() ? 'Light' : 'Dark'; themeButton.setAttribute('aria-label', dark() ? 'Switch to light mode' : 'Switch to dark mode'); };
   const sources = [...document.querySelectorAll('pre.mermaid-js')].map(pre => {
     const container = document.createElement('div'); container.className = 'diagram';
     const source = pre.textContent; pre.replaceWith(container);
@@ -13,7 +10,7 @@
     if (!sources.length || !window.mermaid) return;
     rendering = rendering.then(async () => {
       const color = getComputedStyle(root); const css = name => color.getPropertyValue(name).trim();
-      mermaid.initialize({startOnLoad:false, securityLevel:'strict',theme:'base',fontFamily:css('--font'),themeVariables:{darkMode:dark(),fontSize:'15px',primaryColor:css('--surface'),primaryTextColor:css('--fg'),primaryBorderColor:css('--muted'),lineColor:css('--muted'),secondaryColor:css('--surface'),tertiaryColor:css('--bg'),mainBkg:css('--surface'),clusterBkg:css('--bg'),clusterBorder:css('--line'),edgeLabelBackground:css('--bg'),actorBkg:css('--surface'),actorTextColor:css('--fg'),actorBorder:css('--muted'),signalColor:css('--fg'),signalTextColor:css('--fg'),noteBkgColor:css('--surface'),noteTextColor:css('--fg'),noteBorderColor:css('--line')}});
+      mermaid.initialize({startOnLoad:false, securityLevel:'strict',theme:'base',fontFamily:css('--font'),themeVariables:{darkMode:true,fontSize:'15px',primaryColor:css('--surface'),primaryTextColor:css('--fg'),primaryBorderColor:css('--muted'),lineColor:css('--muted'),secondaryColor:css('--surface'),tertiaryColor:css('--bg'),mainBkg:css('--surface'),clusterBkg:css('--bg'),clusterBorder:css('--line'),edgeLabelBackground:css('--bg'),actorBkg:css('--surface'),actorTextColor:css('--fg'),actorBorder:css('--muted'),signalColor:css('--fg'),signalTextColor:css('--fg'),noteBkgColor:css('--surface'),noteTextColor:css('--fg'),noteBorderColor:css('--line')}});
       for (const {container, source} of sources) {
         try { const {svg} = await mermaid.render('diagram-'+(++serial),source); container.innerHTML=svg;
           const el=container.querySelector('svg'); const w=el.viewBox.baseVal.width;
@@ -22,8 +19,7 @@
       }
     });
   }
-  setThemeLabel(); diagrams();
-  themeButton.addEventListener('click',()=>{root.dataset.theme=dark()?'light':'dark';try{localStorage.setItem('reader-theme',root.dataset.theme)}catch{}setThemeLabel();diagrams();});
+  diagrams();
   const menu=document.querySelector('#menu-toggle'), sidebar=document.querySelector('.sidebar');
   menu.addEventListener('click',()=>{const open=sidebar.classList.toggle('open');menu.setAttribute('aria-expanded',String(open));});
   const dialog=document.querySelector('#search-dialog'),input=document.querySelector('#book-search'),results=document.querySelector('#search-results'),status=document.querySelector('#search-status');

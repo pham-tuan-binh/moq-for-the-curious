@@ -35,11 +35,12 @@ for number, (source, label) in enumerate(chapters):
         if n in [1,8,11]:
             navigation.append('<div class="part">'+{1:'Fundamentals',8:'In practice',11:'Reference'}[n]+'</div>')
         active=' aria-current="page"' if n==number else ''
-        navigation.append(f'<a href="{link(path)}"{active}><span class="chapter-number">{n:02d}</span><span>{escape(name)}</span></a>')
+        navigation.append(f'<a href="{link(path)}"{active}><span>{escape(name)}</span></a>')
     sections=[]
-    for m in re.finditer(r'<section id="([^"]+)"[^>]*>\s*<h2[^>]*>(.*?)</h2>',main,re.S):
-        title=unescape(re.sub('<[^>]+>','',m[2]))
-        sections.append(f'<a href="#{m[1]}">{escape(title)}</a>')
+    for m in re.finditer(r'<section id="([^"]+)"[^>]*>\s*<h([2-6])[^>]*>(.*?)</h\2>',main,re.S):
+        title=unescape(re.sub('<[^>]+>','',m[3]))
+        sections.append(f'<a class="toc-level-{m[2]}" href="#{m[1]}">{escape(title)}</a>')
+    page_contents = ''.join(sections)
     adjacent=[]
     for idx,caption in [(number-1,'Previous chapter'),(number+1,'Next chapter')]:
         if 0 <= idx < len(chapters):
@@ -51,21 +52,20 @@ for number, (source, label) in enumerate(chapters):
     has_diagram='mermaid-js' in main
     mermaid=f'<script src="{prefix}/site_libs/quarto-diagram/mermaid.min.js" defer></script>' if has_diagram else ''
     page.write_text(f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 {metadata(number, title, source)}
 <link rel="preload" href="{prefix}/assets/fonts/source-sans-3.woff2" as="font" type="font/woff2" crossorigin>
 <noscript><style>.reader-tools,#menu-toggle{{display:none}}@media(max-width:760px){{.sidebar{{display:block;position:static;width:auto;height:auto;border:0}}}}</style></noscript>
 <link rel="icon" href="{prefix}/assets/favicon.svg" type="image/svg+xml">
-<script>try{{document.documentElement.dataset.theme=localStorage.getItem('reader-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}}catch(e){{}}</script>
 <link rel="stylesheet" href="{prefix}/assets/reader.css?v={version}">{mermaid}
 <script src="{prefix}/assets/reader.js?v={version}" defer></script></head>
 <body data-root="{prefix}/"><a class="skip" href="#quarto-document-content">Skip to content</a>
 <header class="mobile-header"><a href="{prefix}/">MoQ for the Curious</a><button id="menu-toggle" aria-expanded="false" aria-controls="chapters">Chapters</button></header>
 <div class="book-layout"><aside class="sidebar">
-<div class="reader-tools"><button id="search-open">Search <kbd>/</kbd></button><button id="theme-toggle" aria-label="Switch color theme">Theme</button></div>
+<div class="reader-tools"><button id="search-open">Search <kbd>/</kbd></button></div>
 <nav id="chapters" aria-label="Chapters">{''.join(navigation)}</nav></aside>
-<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">{eyebrow}</p><h1>{escape(title)}</h1></header>{main}<nav class="chapter-navigation" aria-label="Adjacent chapters">{''.join(adjacent)}</nav></main>
-<aside class="outline"><nav aria-label="On this page"><p>On this page</p>{''.join(sections)}</nav></aside></div>
+<main id="quarto-document-content" tabindex="-1"><header class="chapter-header"><p class="eyebrow">{eyebrow}</p><h1>{escape(title)}</h1></header><details class="mobile-outline"><summary>On this page</summary><nav aria-label="Page sections">{page_contents}</nav></details>{main}<nav class="chapter-navigation" aria-label="Adjacent chapters">{''.join(adjacent)}</nav></main>
+<aside class="outline"><nav aria-label="On this page"><p>On this page</p>{page_contents}</nav></aside></div>
 <dialog id="search-dialog"><div class="search-top"><label for="book-search">Search the book</label><button id="search-close" aria-label="Close search">Close</button></div><input id="book-search" type="search" placeholder="Tracks, latency, WebRTC…" autocomplete="off"><p id="search-status" role="status"></p><ul id="search-results"></ul></dialog>
 </body></html>''')
 write_discovery(OUT, chapters)

@@ -7,7 +7,7 @@ An independently written, concepts-first guide to Media over QUIC, rendered with
 - `index.qmd`: book introduction.
 - `docs/<chapter>/index.qmd`: the thirteen chapters, including the early WebRTC comparison in chapter one.
 - `_quarto.yml`: source chapter order and rendering options.
-- `assets/reader.css` and `assets/reader.js`: reader typography, navigation, themes, search, and diagrams.
+- `assets/reader.css` and `assets/reader.js`: reader typography, navigation, search, and diagrams.
 - `dist/`: generated static site, tracked for deployment. Do not edit generated pages.
 
 Install [Quarto](https://quarto.org/docs/get-started/) (built and verified with 1.10.18), then:
@@ -23,13 +23,13 @@ Alternatively, `python3 scripts/build.py` finds an installed Quarto CLI or the d
 python3 -m http.server 4173 --directory dist
 ```
 
-Chapter directory URLs remain compatible with the original site. The custom reader supplies full-text search, chapter numbering, previous/next navigation, section outlines, and theme switching. The prose is present in static HTML; a no-JavaScript chapter list provides mobile navigation without scripts.
+Chapter directory URLs remain compatible with the original site. The custom reader supplies full-text search, chapter numbering, previous/next navigation, section outlines, and subsection navigation. The prose is present in static HTML; a no-JavaScript chapter list provides mobile navigation without scripts.
 
 ## Editorial boundaries
 
 Research baseline: September 16, 2026; MOQT draft-21. MOQT, moq-lite, and hang are identified separately. Upstream commands are sourced examples, not executed compatibility tests. Teaching numbers are not benchmarks. See chapter 13 for the source policy.
 
-The explanations and diagrams are original. Quarto renders the content; the published interface uses a custom reader with locally hosted Source Sans 3 and coordinated light and dark themes.
+The explanations and diagrams are original. Quarto renders the content; the published interface uses a custom reader with locally hosted Source Sans 3 and a dark palette matching WebRTC for the Curious.
 
 After rendering, run `python3 scripts/check-book.py` to validate chapter links, fragments, assets, and reading landmarks. Editorial review findings and their resolution are recorded in `reviews/2026-09-16.md`.
 
