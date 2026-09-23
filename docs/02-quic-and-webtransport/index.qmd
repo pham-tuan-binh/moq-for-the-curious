@@ -104,6 +104,18 @@ That can suit a small, replaceable sensor update. It is less convenient for a la
 
 A QUIC datagram is also different from a UDP packet. QUIC adds its own framing, encryption, and congestion behavior on top of UDP.
 
+## Migration and multipath
+
+Suppose a publisher has both cellular and satellite access. It could switch to cellular when satellite service becomes poor, or use both links at once. These are different transport capabilities.
+
+**Connection migration** lets a QUIC connection move to a new network path while keeping the connection alive, subject to validation and the peer’s migration settings. Base QUIC sends application data on one path at a time. Migration can preserve a session when a device changes networks, though detecting and validating the new path can still interrupt delivery. See [RFC 9000 §9](https://www.rfc-editor.org/rfc/rfc9000.html#section-9).
+
+The **multipath extension** allows one QUIC connection to use several paths simultaneously. Both endpoints must support and negotiate it. This is separate from the MOQT specification; we refer here to [QUIC multipath draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-quic-multipath-21), which is still awaiting RFC publication at the time of writing.
+
+Having two links also creates a scheduling decision: which data should use which path? The extension leaves that policy to implementations. A path with spare capacity may have too much delay for an urgent frame. Sending successive parts of a stream over paths with different delays can also make later bytes wait for earlier ones. More capacity alone doesn’t ensure lower playback latency.
+
+An application can instead open separate MoQ connections and decide which one carries each subscription. Those are separate sessions, rather than multiple paths inside one QUIC connection. The moq.dev article [On a Boat](https://moq.dev/blog/on-a-boat/) discusses both approaches. Check the chosen implementation’s support before relying on either in a deployment.
+
 ## Security belongs to the connection
 
 Running over UDP does not mean sending plaintext. QUIC uses Transport Layer Security (TLS) 1.3, the security protocol also used by HTTPS, to authenticate the server and establish keys that protect packets. With a relay in the middle, the publisher-to-relay and relay-to-viewer connections have separate protection. Hiding the content from the relay itself requires another layer, which we will discuss in the security chapter. See [RFC 9001 §4](https://www.rfc-editor.org/rfc/rfc9001.html#section-4).

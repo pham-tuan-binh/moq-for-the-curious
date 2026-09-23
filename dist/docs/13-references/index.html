@@ -129,6 +129,7 @@
 <h2 class="anchored" data-anchor-id="the-transport-underneath">The transport underneath</h2>
 <p><a href="https://www.rfc-editor.org/rfc/rfc9000.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9000</a> defines QUIC’s transport, including streams, flow control, and cancellation. <a href="https://www.rfc-editor.org/rfc/rfc9001.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9001</a> describes its use of TLS. <a href="https://www.rfc-editor.org/rfc/rfc9002.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9002</a> covers loss detection and congestion control.</p>
 <p><a href="https://www.rfc-editor.org/rfc/rfc9221.html" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RFC 9221</a> defines the QUIC DATAGRAM extension. Read it when deciding whether a small payload should be retried or replaced, and when checking message-size constraints.</p>
+<p><a href="https://datatracker.ietf.org/doc/html/draft-ietf-quic-multipath-21" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">QUIC multipath draft-21</a> describes using several network paths within one connection. It is a separate extension from MOQT. Its <a href="https://datatracker.ietf.org/doc/draft-ietf-quic-multipath/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">publication status</a> was checked on September 23, 2026; it was in the RFC Editor queue.</p>
 </section>
 <section id="browser-interfaces" class="level2">
 <h2 class="anchored" data-anchor-id="browser-interfaces">Browser interfaces</h2>
@@ -172,47 +173,53 @@
 <td>The opening WebRTC comparison</td>
 </tr>
 <tr class="even">
+<td>How can subscribers share a limited uplink?</td>
+<td><a href="https://moq.dev/blog/on-a-boat/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">On a Boat</a> (2026)</td>
+<td>Relays and Distribution</td>
+</tr>
+<tr class="odd">
 <td>Can subscriber choices reduce publisher work?</td>
 <td><a href="https://doc.moq.dev/concept/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Concepts</a></td>
 <td>Relays and Distribution</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>How does a conference use publications?</td>
 <td><a href="https://doc.moq.dev/concept/use-case/conferencing" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Conferencing</a></td>
 <td>Publishing and Subscribing</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Why can datagrams still arrive late?</td>
 <td><a href="https://moq.dev/blog/never-use-datagrams/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Never* use Datagrams</a> (2024)</td>
 <td>Latency and Congestion</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Which age limit does this implementation apply?</td>
 <td><a href="https://doc.moq.dev/concept/moq-lite#subscriptions" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">moq-lite subscriptions</a></td>
 <td>Latency and Congestion</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>What is inside a delivered media payload?</td>
 <td><a href="https://doc.moq.dev/concept/hang" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">hang</a></td>
 <td>Media and the Browser</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>How do existing WebRTC tools connect?</td>
 <td><a href="https://doc.moq.dev/bin/rtc" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">RTC gateways</a></td>
 <td>The detailed WebRTC comparison</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>What must agree between different stacks?</td>
 <td><a href="https://doc.moq.dev/concept/standard" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Standards support</a></td>
 <td>Your First MoQ System</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>How do multiple relays find upstream content?</td>
 <td><a href="https://doc.moq.dev/bin/relay/cluster" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">Relay clustering</a></td>
 <td>Relays and Distribution</td>
 </tr>
 </tbody>
 </table></div>
+<p>The priority examples and backfill behavior in <em>On a Boat</em> describe the moq.dev stack. Its higher-number-first priorities differ from draft-21’s lower-number-first convention.</p>
 <p>The older blog posts describe the software available at the time. This also applies to the <a href="https://www.meetecho.com/blog/moq-webrtc/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">2024 Meetecho gateway demo</a> linked in chapter 1. Use the current project guides for browser support and setup, and draft-21 for the protocol details explained here.</p>
 </section>
 </section>

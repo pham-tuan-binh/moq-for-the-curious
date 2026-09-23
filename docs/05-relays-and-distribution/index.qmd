@@ -50,6 +50,8 @@ Suppose the lecturer offers high- and low-resolution video, but every viewer cho
 
 The moq.dev [concepts guide](https://doc.moq.dev/concept/) describes how subscriptions carry demand back to the publisher. An application using its library can start an encoder for the first subscriber and stop it after the last one leaves. A recorder counts too, so closing every player may still leave someone receiving the track. The application has to implement this behavior; MOQT doesn’t control the encoder.
 
+The moq.dev article [On a Boat](https://moq.dev/blog/on-a-boat/) gives another example: several cameras share a limited uplink, with higher-resolution tracks requested only when needed. Subscriptions can save bandwidth even with a single viewer.
+
 There’s a startup cost to consider. When the first viewer asks for an idle rendition, the publisher needs to start encoding and send the configuration and a picture the viewer can decode. Until then, that viewer has to wait.
 
 ## What does a relay need to know? {#relays-need-structure-not-codec-knowledge}
@@ -71,6 +73,8 @@ For the lecture, retaining a few useful recent groups may improve startup. Keepi
 The lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.
 
 Alice’s connection may deliver each new group immediately, while Bob’s connection builds a queue. Their playback delay differs even though both request the same publication. The relay can choose delivery settings for each subscription according to that viewer’s path.
+
+A live viewer and a recorder can also have different needs. The viewer may skip an old group to stay near live, while the recorder waits for it. If the publisher or relay retains the objects and spare bandwidth becomes available, the recorder can catch up later. Once those objects have been discarded upstream, a more patient subscriber cannot recover them from that source.
 
 Measure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.
 

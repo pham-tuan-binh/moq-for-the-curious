@@ -45,6 +45,8 @@ Read the explanatory sections first, then use [control messages (§9)](https://d
 
 [RFC 9221](https://www.rfc-editor.org/rfc/rfc9221.html) defines the QUIC DATAGRAM extension. Read it when deciding whether a small payload should be retried or replaced, and when checking message-size constraints.
 
+[QUIC multipath draft-21](https://datatracker.ietf.org/doc/html/draft-ietf-quic-multipath-21) describes using several network paths within one connection. It is a separate extension from MOQT. Its [publication status](https://datatracker.ietf.org/doc/draft-ietf-quic-multipath/) was checked on September 23, 2026; it was in the RFC Editor queue.
+
 ## Browser interfaces
 
 The [W3C WebTransport specification](https://www.w3.org/TR/webtransport/) describes the browser API for streams and datagrams. Its presence does not remove the need for a protocol library above it.
@@ -82,6 +84,7 @@ These moq.dev articles and guides are useful companions to the chapters:
 | Question | Material | Read alongside |
 | --- | --- | --- |
 | Why separate delivery from the browser's media stack? | [Replacing WebRTC](https://moq.dev/blog/replacing-webrtc/) (2023) | The opening WebRTC comparison |
+| How can subscribers share a limited uplink? | [On a Boat](https://moq.dev/blog/on-a-boat/) (2026) | Relays and Distribution |
 | Can subscriber choices reduce publisher work? | [Concepts](https://doc.moq.dev/concept/) | Relays and Distribution |
 | How does a conference use publications? | [Conferencing](https://doc.moq.dev/concept/use-case/conferencing) | Publishing and Subscribing |
 | Why can datagrams still arrive late? | [Never* use Datagrams](https://moq.dev/blog/never-use-datagrams/) (2024) | Latency and Congestion |
@@ -90,6 +93,8 @@ These moq.dev articles and guides are useful companions to the chapters:
 | How do existing WebRTC tools connect? | [RTC gateways](https://doc.moq.dev/bin/rtc) | The detailed WebRTC comparison |
 | What must agree between different stacks? | [Standards support](https://doc.moq.dev/concept/standard) | Your First MoQ System |
 | How do multiple relays find upstream content? | [Relay clustering](https://doc.moq.dev/bin/relay/cluster) | Relays and Distribution |
+
+The priority examples and backfill behavior in *On a Boat* describe the moq.dev stack. Its higher-number-first priorities differ from draft-21’s lower-number-first convention.
 
 The older blog posts describe the software available at the time. This also applies to the [2024 Meetecho gateway demo](https://www.meetecho.com/blog/moq-webrtc/) linked in chapter 1. Use the current project guides for browser support and setup, and draft-21 for the protocol details explained here.
 

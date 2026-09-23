@@ -95,6 +95,7 @@
 <h3 class="anchored" data-anchor-id="can-subscriptions-reduce-encoding-work-too">Can subscriptions reduce encoding work too?</h3>
 <p>Suppose the lecturer offers high- and low-resolution video, but every viewer chooses the lower resolution. Forwarding only that track saves network traffic. Avoiding the unused high-resolution encoding can also save work at the publisher.</p>
 <p>The moq.dev <a href="https://doc.moq.dev/concept/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">concepts guide</a> describes how subscriptions carry demand back to the publisher. An application using its library can start an encoder for the first subscriber and stop it after the last one leaves. A recorder counts too, so closing every player may still leave someone receiving the track. The application has to implement this behavior; MOQT doesn’t control the encoder.</p>
+<p>The moq.dev article <a href="https://moq.dev/blog/on-a-boat/" target="_blank" rel="noopener noreferrer" title="Opens in a new tab">On a Boat</a> gives another example: several cameras share a limited uplink, with higher-resolution tracks requested only when needed. Subscriptions can save bandwidth even with a single viewer.</p>
 <p>There’s a startup cost to consider. When the first viewer asks for an idle rendition, the publisher needs to start encoding and send the configuration and a picture the viewer can decode. Until then, that viewer has to wait.</p>
 </section>
 </section>
@@ -113,6 +114,7 @@
 <h2 class="anchored" data-anchor-id="each-hop-has-its-own-conditions">How does delivery differ between viewers?</h2>
 <p>The lecturer’s connection can be fast while one viewer’s connection is slow. A relay has to make downstream delivery decisions for each path. Slowing every viewer to match the slowest one would defeat the point of independent subscriptions.</p>
 <p>Alice’s connection may deliver each new group immediately, while Bob’s connection builds a queue. Their playback delay differs even though both request the same publication. The relay can choose delivery settings for each subscription according to that viewer’s path.</p>
+<p>A live viewer and a recorder can also have different needs. The viewer may skip an old group to stay near live, while the recorder waits for it. If the publisher or relay retains the objects and spare bandwidth becomes available, the recorder can catch up later. Once those objects have been discarded upstream, a more patient subscriber cannot recover them from that source.</p>
 <p>Measure at the edges, then trace through the hops. A healthy publisher-to-relay connection says little about a congested relay-to-viewer connection.</p>
 </section>
 <section id="what-a-relay-does-not-automatically-do" class="level2">
