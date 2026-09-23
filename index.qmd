@@ -18,8 +18,6 @@ This edition uses **[MOQT draft-21](https://datatracker.ietf.org/doc/html/draft-
 
 The draft is useful reading alongside the book. Start with its [motivation section](https://datatracker.ietf.org/doc/html/draft-ietf-moq-transport-21#section-1.2), then follow the content model and protocol behavior before looking up individual message fields.
 
-Initial research was completed on **September 16, 2026**, with a technical fact-check on **September 22, 2026**. Each chapter links to primary sources; the [references](docs/13-references/index.qmd) explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.
-
 ## Maintenance and contributions
 
 This book is maintained by [@pham-tuan-binh](https://github.com/pham-tuan-binh). Corrections, clearer explanations, and new examples are welcome. The [GitHub repository and contribution guide](https://github.com/pham-tuan-binh/moq-for-the-curious#readme) explain how to edit and build the book. You can submit a pull request directly, or email [binhpham@binhph.am](mailto:binhpham@binhph.am) to suggest a change or ask for an update.

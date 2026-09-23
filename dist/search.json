@@ -24,7 +24,7 @@
     "href": "index.html#a-protocol-still-taking-shape",
     "title": "MoQ for the Curious",
     "section": "A protocol still taking shape",
-    "text": "A protocol still taking shape\nThis edition uses MOQT draft-21, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.\nThe draft is useful reading alongside the book. Start with its motivation section, then follow the content model and protocol behavior before looking up individual message fields.\nInitial research was completed on September 16, 2026, with a technical fact-check on September 22, 2026. Each chapter links to primary sources; the references explain the source policy and limitations. Example latency values are teaching aids, not benchmarks, and the upstream walkthrough commands have not been executed for this guide.",
+    "text": "A protocol still taking shape\nThis edition uses MOQT draft-21, published September 8, 2026, as its IETF baseline. Implementation examples are labeled separately from protocol requirements.\nThe draft is useful reading alongside the book. Start with its motivation section, then follow the content model and protocol behavior before looking up individual message fields.",
     "crumbs": [
       "About this book"
     ]
